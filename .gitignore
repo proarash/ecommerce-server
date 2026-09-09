@@ -1,0 +1,39 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/build/
+/dist/
+ecommerce-server
+
+# Test & coverage
+*.test
+*.out
+coverage.*
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor (uncomment if not vendoring)
+# vendor/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Logs & local data
+*.log
+tmp/
