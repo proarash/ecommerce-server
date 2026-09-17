@@ -1,5 +1,5 @@
 services:
-  ecommerce-app:
+  app:
     build: .
     ports:
       - "4000:4000"

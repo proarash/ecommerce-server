@@ -31,6 +31,6 @@ func (h *authHandler) SignIn(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(200, gin.H{
-		"msg": h.repo.SignIn(authDto),
+		"msg": h.repo.SignIn(authDto, ctx),
 	})
 }

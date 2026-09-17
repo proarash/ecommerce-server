@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/proarash/ecommerce-server/internal/auth"
 	"github.com/proarash/ecommerce-server/internal/user"
@@ -11,10 +9,9 @@ import (
 )
 
 func Bootstrap(env string) bool {
-
-	db, err := gorm.Open(postgres.Open(""), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open("host=db user=postgres password=postgres dbname=ecommerce port=5432 sslmode=disable TimeZone=Asia/Tehran"), &gorm.Config{})
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 	db.AutoMigrate(&user.User{})
 	if env == "" {
