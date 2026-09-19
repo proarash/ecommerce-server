@@ -37,3 +37,4 @@ go.work.sum
 # Logs & local data
 *.log
 tmp/
+bin

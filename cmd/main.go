@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"github.com/proarash/ecommerce-server/internal/config"
 )
 
 func main() {
-	env := os.Getenv("ENV")
-	fmt.Println(Bootstrap(env))
+	config := config.GetEnvConfig()
+	Bootstrap(config)
 }

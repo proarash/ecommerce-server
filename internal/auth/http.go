@@ -1,6 +1,8 @@
 package auth
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type AuthHandler interface {
 	RegisterRoutes(router gin.IRouter)
@@ -21,16 +23,20 @@ func NewAuthHandler(repo AuthRepo) AuthHandler {
 }
 
 // SignIn implements [AuthHandler].
-func (h *authHandler) SignIn(ctx *gin.Context) {
+func (h *authHandler) SignIn(c *gin.Context) {
 	var authDto SignInDto
-	if err := ctx.ShouldBindJSON(&authDto); err != nil {
-		ctx.JSON(400, gin.H{
+	if err := c.ShouldBindJSON(&authDto); err != nil {
+		c.JSON(400, gin.H{
 			"msg":    "Bad request",
 			"fields": &authDto,
 		})
 		return
 	}
-	ctx.JSON(200, gin.H{
-		"msg": h.repo.SignIn(authDto, ctx),
-	})
+	result := h.repo.SignIn(authDto, c)
+	if result == "" {
+		c.JSON(401, "error while generating auth token")
+		return
+	}
+	c.SetCookie("access_token", result, 3600, "/", "localhost", false, true)
+	c.JSON(200, result)
 }
