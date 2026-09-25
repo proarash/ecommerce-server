@@ -27,4 +27,13 @@ type Product struct {
 	CategoryID  uint          `json:"category_id" gorm:"index;not null"`
 	Category    *Category     `json:"category,omitempty"`
 	Media       []media.Media `json:"media,omitempty" gorm:"many2many:product_media"`
+	Attributes  []Attribute   `json:"attributes,omitempty" gorm:"many2many:product_attributes"`
+}
+
+type Attribute struct {
+	gorm.Model
+	Key      string    `json:"key" gorm:"uniqueIndex;not null"`
+	Title    string    `json:"title"`
+	Name     string    `json:"name"`
+	Products []Product `json:"products,omitempty" gorm:"many2many:product_attributes" swaggerignore:"true"`
 }

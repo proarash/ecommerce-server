@@ -43,6 +43,7 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 		&user.User{},
 		&product.Category{},
 		&product.Product{},
+		&product.Attribute{},
 		&cart.Cart{},
 		&cart.CartItem{},
 		&finance.Order{},

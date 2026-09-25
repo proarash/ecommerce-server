@@ -70,6 +70,23 @@ definitions:
       url:
         type: string
     type: object
+  github_com_proarash_ecommerce-server_internal_product.Attribute:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      key:
+        type: string
+      name:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   github_com_proarash_ecommerce-server_internal_product.Category:
     properties:
       createdAt:
@@ -93,6 +110,10 @@ definitions:
     type: object
   github_com_proarash_ecommerce-server_internal_product.Product:
     properties:
+      attributes:
+        items:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Attribute'
+        type: array
       category:
         $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Category'
       category_id:
@@ -1029,6 +1050,33 @@ definitions:
       wage:
         type: integer
     type: object
+  internal_product.AssignAttributesDto:
+    properties:
+      attribute_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - attribute_ids
+    type: object
+  internal_product.Attribute:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      key:
+        type: string
+      name:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   internal_product.Category:
     properties:
       createdAt:
@@ -1069,6 +1117,25 @@ definitions:
       slug:
         type: string
     type: object
+  internal_product.CreateAttributeDto:
+    properties:
+      key:
+        example: color
+        maxLength: 100
+        type: string
+      name:
+        example: Red
+        maxLength: 200
+        type: string
+      title:
+        example: Color
+        maxLength: 200
+        type: string
+    required:
+    - key
+    - name
+    - title
+    type: object
   internal_product.CreateCategoryDto:
     properties:
       media_id:
@@ -1089,6 +1156,10 @@ definitions:
     type: object
   internal_product.CreateProductDto:
     properties:
+      attribute_ids:
+        items:
+          type: integer
+        type: array
       category_id:
         minimum: 1
         type: integer
@@ -1116,6 +1187,10 @@ definitions:
     type: object
   internal_product.Product:
     properties:
+      attributes:
+        items:
+          $ref: '#/definitions/internal_product.Attribute'
+        type: array
       category:
         $ref: '#/definitions/internal_product.Category'
       category_id:
@@ -1143,6 +1218,18 @@ definitions:
       updatedAt:
         type: string
     type: object
+  internal_product.UpdateAttributeDto:
+    properties:
+      key:
+        maxLength: 100
+        type: string
+      name:
+        maxLength: 200
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    type: object
   internal_product.UpdateCategoryDto:
     properties:
       media_id:
@@ -1160,6 +1247,10 @@ definitions:
     type: object
   internal_product.UpdateProductDto:
     properties:
+      attribute_ids:
+        items:
+          type: integer
+        type: array
       category_id:
         minimum: 1
         type: integer
@@ -1690,6 +1781,235 @@ paths:
       summary: System statistics
       tags:
       - Admin
+  /api/attributes:
+    get:
+      parameters:
+      - description: Search in key, title or name
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_product.Attribute'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: List attributes
+      tags:
+      - Attributes
+    post:
+      consumes:
+      - application/json
+      description: Creates a standalone attribute that can later be assigned to any
+        product. key must be unique.
+      parameters:
+      - description: Attribute
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.CreateAttributeDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Attribute'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create attribute
+      tags:
+      - Attributes
+  /api/attributes/{id}:
+    delete:
+      description: Soft-deletes the attribute and unassigns it from all products
+      parameters:
+      - description: Attribute ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete attribute
+      tags:
+      - Attributes
+    get:
+      parameters:
+      - description: Attribute ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Attribute'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Get attribute
+      tags:
+      - Attributes
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Attribute ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.UpdateAttributeDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Attribute'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update attribute
+      tags:
+      - Attributes
   /api/auth/login:
     post:
       consumes:
@@ -3292,7 +3612,7 @@ paths:
       consumes:
       - application/json
       description: Product title and SKU must be unique. media_ids attaches uploaded
-        images/videos.
+        images/videos. attribute_ids assigns existing attributes.
       parameters:
       - description: Product
         in: body
@@ -3412,7 +3732,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: media_ids, when provided, replaces the product media set
+      description: media_ids and attribute_ids, when provided, replace the product
+        media set and attribute set
       parameters:
       - description: Product ID
         in: path
@@ -3469,6 +3790,107 @@ paths:
       summary: Update product
       tags:
       - Products
+  /api/products/{id}/attributes:
+    post:
+      consumes:
+      - application/json
+      description: Adds existing attributes to the product; already assigned attributes
+        are kept
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Attribute IDs
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.AssignAttributesDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Assign attributes to product
+      tags:
+      - Attributes
+  /api/products/{id}/attributes/{attributeId}:
+    delete:
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Attribute ID
+        in: path
+        name: attributeId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Unassign attribute from product
+      tags:
+      - Attributes
   /api/staff/me:
     get:
       produces:

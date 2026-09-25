@@ -179,6 +179,13 @@ ecommerce-server/
   - `CategoryID` (`uint`, indexed): Belongs to exactly one Category
   - `Category` (`Category`)
   - `Media` (`[]Media`): Many-to-many relationship via join table `product_media` (supporting multiple images and videos per product)
+  - `Attributes` (`[]Attribute`): Many-to-many relationship via join table `product_attributes`
+- **`Attribute` Table**:
+  - `gorm.Model`
+  - `Key` (`string`, unique, indexed)
+  - `Title` (`string`)
+  - `Name` (`string`)
+  - Created independently and assignable to any product
 
 ### 4.4 Cart & Cart Items (`internal/cart`)
 - **`Cart` Table**:
@@ -409,6 +416,7 @@ ecommerce-server/
 - `GET /api/cms/blogs` & `GET /api/cms/blogs/:slug`
 - `GET /api/products` & `GET /api/products/:id`
 - `GET /api/categories` & `GET /api/categories/:id`
+- `GET /api/attributes` & `GET /api/attributes/:id`
 
 ### User / Customer Area (`role: user`)
 - `GET /api/user/profile`, `PATCH /api/user/profile`: Personal profile (mobile, name, address, coordinates, telegram chat id; no avatar)
@@ -428,6 +436,9 @@ ecommerce-server/
 ### Storekeeper Area (`roles: storekeeper, admin`)
 - `POST /api/products`, `PATCH /api/products/:id`, `DELETE /api/products/:id`: Unique title product management
 - `POST /api/categories`, `PATCH /api/categories/:id`, `DELETE /api/categories/:id`: Category management with parent-child nesting
+- `POST /api/attributes`, `PATCH /api/attributes/:id`, `DELETE /api/attributes/:id`: Standalone product attribute management
+- `POST /api/products/:id/attributes`: Assign attributes to a product
+- `DELETE /api/products/:id/attributes/:attributeId`: Unassign attribute from a product
 - `GET /api/inventory`: Current product stock list
 - `POST /api/inventory/inbound`: Stock intake
 - `POST /api/inventory/outbound`: Stock dispatch

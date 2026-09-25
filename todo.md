@@ -26,4 +26,5 @@
 - [x] go build / go vet pass
 - [x] CORS middleware, Makefile `swag` target, .env-example updated
 - [x] Route/guard smoke test (67 routes register; 401/403/400 envelopes verified)
+- [x] product: Attribute entity (key, title, name) with many-to-many product_attributes, CRUD, assign/unassign endpoints, attribute_ids on product create/update
 - [ ] End-to-end run against PostgreSQL/MinIO/Zibal sandbox (no Postgres available in this environment)
