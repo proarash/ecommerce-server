@@ -34,3 +34,7 @@ fmt: ## Format the code
 .PHONY: clean
 clean: ## Remove build artifacts
 	rm -rf $(BIN_DIR) tmp coverage.out
+
+.PHONY: swag
+swag: ## Generate Swagger docs
+	swag init -g cmd/main.go -o ./docs --parseInternal --parseDependency --parseDepth 2

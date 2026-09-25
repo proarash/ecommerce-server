@@ -1,0 +1,29 @@
+# TODO
+
+- [x] Fetch official package docs via curl (gorilla/websocket, gin-swagger, swaggo/files, minio-go, golang-jwt, gorm)
+- [x] Config: extend env (Zibal, admin seed, client redirect URL, Telegram admin chat)
+- [x] pkg/token: AuthPayload (user_id, mobile, role, user_type), generate & parse
+- [x] middleware: auth.go (JWT Bearer), role.go (RequireRoles, admin bypass), api_response skip for ws/swagger/redirect
+- [x] media: MinIO client, Media model, upload/get endpoints
+- [x] staff: StaffUser model, store, handler
+- [x] user: User model, store, service, profile handler
+- [x] user area: orders, preinvoices (finance), chat inbox (chat), notifications (notification)
+- [x] auth: login (staff & customer), register
+- [x] product: Category (nested) & Product (unique title, media m2m) CRUD
+- [x] cart: Cart, CartItem, add/update/remove, checkout into Order
+- [x] inventory: Stock, Log, inbound/outbound atomic, logs
+- [x] finance: Order, OrderItem, PreInvoice, reports, manual pre-invoice
+- [x] payment: Zibal client (request/verify/inquiry), checkout, callback redirect `?inv=inv-<ID>`, status
+- [x] cms: BlogPost, Banner, SiteContent + public & marketer endpoints
+- [x] chat: hub, client pumps, WS handler, rooms & messages endpoints
+- [x] notification: model, Telegram client, SendAutomatedMessage, admin CRUD, user list
+- [x] admin: staff create/list/status
+- [x] support: read-only orders/preinvoices, chat rooms
+- [x] seed: admin, staff, categories, 100 products, 30 blogs, site content, banners
+- [x] bootstrap: migrations, seeder, route registration, swagger route
+- [x] Swagger annotations on every handler + main general info
+- [x] swag init docs generation
+- [x] go build / go vet pass
+- [x] CORS middleware, Makefile `swag` target, .env-example updated
+- [x] Route/guard smoke test (67 routes register; 401/403/400 envelopes verified)
+- [ ] End-to-end run against PostgreSQL/MinIO/Zibal sandbox (no Postgres available in this environment)

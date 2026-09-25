@@ -1,0 +1,4333 @@
+basePath: /
+definitions:
+  github_com_proarash_ecommerce-server_internal_finance.Order:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_finance.OrderItem'
+        type: array
+      status:
+        enum:
+        - pending
+        - paid
+        - failed
+        - cancelled
+        - processing
+        - delivered
+        type: string
+      total_amount:
+        type: number
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_proarash_ecommerce-server_internal_finance.OrderItem:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      order_id:
+        type: integer
+      product:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Product'
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_media.Media:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      id:
+        type: integer
+      media_type:
+        type: string
+      mime_type:
+        type: string
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_product.Category:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      media_id:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_product.Product:
+    properties:
+      category:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Category'
+      category_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      media:
+        items:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+        type: array
+      price:
+        type: number
+      sku:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_staff.StaffUser:
+    properties:
+      avatar_media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      avatar_media_id:
+        type: integer
+      createdAt:
+        type: string
+      default_avatar_id:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      mobile:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      status:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.ApiResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.PaginatedResponse:
+    properties:
+      items: {}
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  internal_admin.CreateStaffDto:
+    properties:
+      avatar_media_id:
+        minimum: 1
+        type: integer
+      default_avatar_id:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        example: 1
+        maximum: 5
+        minimum: 1
+        type: integer
+      mobile:
+        example: "09121112233"
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        maxLength: 72
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - storekeeper
+        - accountant
+        - marketer
+        - support
+        type: string
+    required:
+    - mobile
+    - name
+    - password
+    - role
+    type: object
+  internal_admin.StatsResponse:
+    properties:
+      blog_posts:
+        type: integer
+      open_chats:
+        type: integer
+      orders:
+        type: integer
+      paid_orders:
+        type: integer
+      products:
+        type: integer
+      revenue:
+        type: number
+      staff:
+        type: integer
+      users:
+        type: integer
+    type: object
+  internal_admin.UpdateStaffStatusDto:
+    properties:
+      status:
+        type: boolean
+    required:
+    - status
+    type: object
+  internal_auth.LoginDto:
+    properties:
+      mobile:
+        example: "09120000000"
+        type: string
+      password:
+        example: secret123
+        maxLength: 72
+        minLength: 6
+        type: string
+      user_type:
+        enum:
+        - staff
+        - customer
+        type: string
+    required:
+    - mobile
+    - password
+    type: object
+  internal_auth.RegisterDto:
+    properties:
+      mobile:
+        example: "09120000000"
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        example: secret123
+        maxLength: 72
+        minLength: 6
+        type: string
+    required:
+    - mobile
+    - password
+    type: object
+  internal_auth.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      role:
+        type: string
+      user_id:
+        type: integer
+      user_type:
+        enum:
+        - staff
+        - customer
+        type: string
+    type: object
+  internal_cart.AddItemDto:
+    properties:
+      product_id:
+        minimum: 1
+        type: integer
+      quantity:
+        maximum: 1000
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    type: object
+  internal_cart.CartItem:
+    properties:
+      cart_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      product:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Product'
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  internal_cart.CartResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/internal_cart.CartItem'
+        type: array
+      total_amount:
+        type: number
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_cart.UpdateItemDto:
+    properties:
+      quantity:
+        maximum: 1000
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  internal_chat.ChatMessage:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      message:
+        type: string
+      payload:
+        type: string
+      room_id:
+        type: integer
+      sender_id:
+        type: integer
+      sender_role:
+        enum:
+        - bot
+        - support
+        - user
+        type: string
+      type:
+        enum:
+        - text
+        - invoice
+        - preinvoice
+        - payment_success
+        - payment_failed
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_chat.ChatRoom:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      status:
+        enum:
+        - open
+        - in_progress
+        - closed
+        type: string
+      support_id:
+        type: integer
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_chat.RoomStatusDto:
+    properties:
+      status:
+        enum:
+        - open
+        - in_progress
+        - closed
+        type: string
+    required:
+    - status
+    type: object
+  internal_chat.SendMessageDto:
+    properties:
+      message:
+        maxLength: 4000
+        minLength: 1
+        type: string
+    required:
+    - message
+    type: object
+  internal_cms.Banner:
+    properties:
+      alt_name:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      display_order:
+        type: integer
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      link_url:
+        type: string
+      media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      media_id:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_cms.BlogPost:
+    properties:
+      author_id:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      keywords:
+        type: string
+      media:
+        items:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+        type: array
+      seo_description:
+        type: string
+      seo_title:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_cms.ContentResponse:
+    properties:
+      banners:
+        items:
+          $ref: '#/definitions/internal_cms.Banner'
+        type: array
+      contents:
+        items:
+          $ref: '#/definitions/internal_cms.SiteContent'
+        type: array
+    type: object
+  internal_cms.CreateBannerDto:
+    properties:
+      alt_name:
+        maxLength: 200
+        type: string
+      display_order:
+        type: integer
+      is_active:
+        type: boolean
+      link_url:
+        maxLength: 500
+        type: string
+      media_id:
+        minimum: 1
+        type: integer
+      title:
+        maxLength: 200
+        type: string
+    required:
+    - alt_name
+    - media_id
+    - title
+    type: object
+  internal_cms.CreateBlogDto:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      keywords:
+        maxLength: 500
+        type: string
+      media_ids:
+        items:
+          type: integer
+        type: array
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_title:
+        maxLength: 200
+        type: string
+      slug:
+        maxLength: 220
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    required:
+    - content
+    - slug
+    - title
+    type: object
+  internal_cms.SiteContent:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      key:
+        type: string
+      media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      media_id:
+        type: integer
+      updatedAt:
+        type: string
+      value:
+        type: string
+    type: object
+  internal_cms.SiteContentItemDto:
+    properties:
+      description:
+        type: string
+      key:
+        example: h1_title
+        maxLength: 100
+        type: string
+      media_id:
+        minimum: 1
+        type: integer
+      value:
+        type: string
+    required:
+    - key
+    type: object
+  internal_cms.UpdateBannerDto:
+    properties:
+      alt_name:
+        maxLength: 200
+        type: string
+      display_order:
+        type: integer
+      is_active:
+        type: boolean
+      link_url:
+        maxLength: 500
+        type: string
+      media_id:
+        minimum: 1
+        type: integer
+      title:
+        maxLength: 200
+        type: string
+    type: object
+  internal_cms.UpdateBlogDto:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      keywords:
+        maxLength: 500
+        type: string
+      media_ids:
+        items:
+          type: integer
+        type: array
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_title:
+        maxLength: 200
+        type: string
+      slug:
+        maxLength: 220
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    type: object
+  internal_cms.UpdateSiteContentDto:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_cms.SiteContentItemDto'
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
+  internal_finance.CreatePreInvoiceDto:
+    properties:
+      amount:
+        type: number
+      order_id:
+        minimum: 1
+        type: integer
+    required:
+    - order_id
+    type: object
+  internal_finance.Order:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/internal_finance.OrderItem'
+        type: array
+      status:
+        enum:
+        - pending
+        - paid
+        - failed
+        - cancelled
+        - processing
+        - delivered
+        type: string
+      total_amount:
+        type: number
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_finance.OrderItem:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      order_id:
+        type: integer
+      product:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Product'
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  internal_finance.PreInvoice:
+    properties:
+      amount:
+        type: number
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      invoice_number:
+        type: string
+      issued_by:
+        type: string
+      order_id:
+        type: integer
+      status:
+        enum:
+        - issued
+        - paid
+        - cancelled
+        type: string
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_finance.ReportResponse:
+    properties:
+      orders_count:
+        type: integer
+      period:
+        enum:
+        - daily
+        - weekly
+        - monthly
+        - annually
+        type: string
+      rows:
+        items:
+          $ref: '#/definitions/internal_finance.ReportRow'
+        type: array
+      total_amount:
+        type: number
+    type: object
+  internal_finance.ReportRow:
+    properties:
+      orders_count:
+        type: integer
+      period_start:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  internal_inventory.InboundDto:
+    properties:
+      product_id:
+        minimum: 1
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+      supplier_note:
+        maxLength: 500
+        type: string
+      warehouse_location:
+        maxLength: 100
+        type: string
+    required:
+    - product_id
+    - quantity
+    type: object
+  internal_inventory.InventoryLog:
+    properties:
+      created_by:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      reason:
+        type: string
+      type:
+        enum:
+        - inbound
+        - outbound
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_inventory.InventoryStock:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      product:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Product'
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      updatedAt:
+        type: string
+      warehouse_location:
+        type: string
+    type: object
+  internal_inventory.OutboundDto:
+    properties:
+      product_id:
+        minimum: 1
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+      reason:
+        maxLength: 500
+        type: string
+    required:
+    - product_id
+    - quantity
+    - reason
+    type: object
+  internal_media.Media:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      id:
+        type: integer
+      media_type:
+        type: string
+      mime_type:
+        type: string
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  internal_media.UploadResponse:
+    properties:
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      id:
+        type: integer
+      media_type:
+        type: string
+      mime_type:
+        type: string
+      url:
+        type: string
+    type: object
+  internal_notification.CreateNotificationDto:
+    properties:
+      channel:
+        enum:
+        - in_app
+        - telegram
+        - both
+        type: string
+      message:
+        type: string
+      title:
+        maxLength: 200
+        type: string
+      type:
+        enum:
+        - order
+        - payment
+        - system
+        - promo
+        type: string
+      user_id:
+        minimum: 1
+        type: integer
+    required:
+    - channel
+    - message
+    - title
+    - type
+    type: object
+  internal_notification.Notification:
+    properties:
+      channel:
+        enum:
+        - in_app
+        - telegram
+        - both
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      message:
+        type: string
+      title:
+        type: string
+      type:
+        enum:
+        - order
+        - payment
+        - system
+        - promo
+        type: string
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_notification.UpdateNotificationDto:
+    properties:
+      channel:
+        enum:
+        - in_app
+        - telegram
+        - both
+        type: string
+      is_read:
+        type: boolean
+      message:
+        type: string
+      title:
+        maxLength: 200
+        type: string
+      type:
+        enum:
+        - order
+        - payment
+        - system
+        - promo
+        type: string
+    type: object
+  internal_payment.CheckoutResponse:
+    properties:
+      payment_url:
+        type: string
+      track_id:
+        type: integer
+    type: object
+  internal_payment.InquiryResponse:
+    properties:
+      gateway:
+        $ref: '#/definitions/internal_payment.ZibalInquiryResponse'
+      transaction:
+        $ref: '#/definitions/internal_payment.PaymentTransaction'
+    type: object
+  internal_payment.PaymentTransaction:
+    properties:
+      amount:
+        type: integer
+      card_number:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      order_id:
+        type: integer
+      paid_at:
+        type: string
+      ref_number:
+        type: integer
+      result:
+        type: integer
+      status:
+        type: integer
+      track_id:
+        type: integer
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_payment.ZibalInquiryResponse:
+    properties:
+      amount:
+        type: integer
+      cardNumber:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      message:
+        type: string
+      orderId:
+        type: string
+      paidAt:
+        type: string
+      refNumber:
+        type: integer
+      result:
+        type: integer
+      status:
+        type: integer
+      verified:
+        type: boolean
+      wage:
+        type: integer
+    type: object
+  internal_product.Category:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      media_id:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_product.CategoryTree:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/internal_product.CategoryTree'
+        type: array
+      id:
+        type: integer
+      media_id:
+        type: integer
+      media_url:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+    type: object
+  internal_product.CreateCategoryDto:
+    properties:
+      media_id:
+        minimum: 1
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+      parent_id:
+        minimum: 1
+        type: integer
+      slug:
+        maxLength: 120
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  internal_product.CreateProductDto:
+    properties:
+      category_id:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      is_active:
+        type: boolean
+      media_ids:
+        items:
+          type: integer
+        type: array
+      price:
+        type: number
+      sku:
+        maxLength: 64
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    required:
+    - category_id
+    - price
+    - sku
+    - title
+    type: object
+  internal_product.Product:
+    properties:
+      category:
+        $ref: '#/definitions/internal_product.Category'
+      category_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      media:
+        items:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+        type: array
+      price:
+        type: number
+      sku:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_product.UpdateCategoryDto:
+    properties:
+      media_id:
+        minimum: 1
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+      parent_id:
+        minimum: 1
+        type: integer
+      slug:
+        maxLength: 120
+        type: string
+    type: object
+  internal_product.UpdateProductDto:
+    properties:
+      category_id:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      is_active:
+        type: boolean
+      media_ids:
+        items:
+          type: integer
+        type: array
+      price:
+        type: number
+      sku:
+        maxLength: 64
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    type: object
+  internal_staff.StaffUser:
+    properties:
+      avatar_media:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
+      avatar_media_id:
+        type: integer
+      createdAt:
+        type: string
+      default_avatar_id:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      mobile:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      status:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
+  internal_staff.UpdateProfileDto:
+    properties:
+      avatar_media_id:
+        minimum: 1
+        type: integer
+      default_avatar_id:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        example: 1
+        maximum: 5
+        minimum: 1
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  internal_user.UpdateProfileDto:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      mobile:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      telegram_chat_id:
+        type: integer
+    type: object
+  internal_user.User:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      mobile:
+        type: string
+      name:
+        type: string
+      status:
+        type: boolean
+      telegram_chat_id:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  description: 'E-commerce backend: catalog, cart, orders, Zibal payments, inventory,
+    CMS, support chat and notifications. All JSON responses are wrapped in {"message":
+    string, "data": any}.'
+  title: E-Commerce Server API
+  version: "1.0"
+paths:
+  /api/admin/notifications:
+    get:
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_notification.Notification'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List notifications
+      tags:
+      - Admin Notifications
+    post:
+      consumes:
+      - application/json
+      description: Stores the notification and dispatches it via Telegram when channel
+        is telegram or both. Omit user_id to broadcast.
+      parameters:
+      - description: Notification
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_notification.CreateNotificationDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_notification.Notification'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create and dispatch notification
+      tags:
+      - Admin Notifications
+  /api/admin/notifications/{id}:
+    delete:
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete notification
+      tags:
+      - Admin Notifications
+    get:
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_notification.Notification'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get notification
+      tags:
+      - Admin Notifications
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_notification.UpdateNotificationDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_notification.Notification'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update notification
+      tags:
+      - Admin Notifications
+  /api/admin/staff:
+    get:
+      parameters:
+      - description: Role
+        enum:
+        - admin
+        - storekeeper
+        - accountant
+        - marketer
+        - support
+        in: query
+        name: role
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List staff users
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Creates storekeeper, accountant, marketer or support users. Creating
+        another admin is not allowed. default_avatar_id is a preset frontend avatar
+        index (1..5); avatar_media_id references an uploaded MinIO media asset.
+      parameters:
+      - description: Staff user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_admin.CreateStaffDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create staff user
+      tags:
+      - Admin
+  /api/admin/staff/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Staff ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_admin.UpdateStaffStatusDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Enable or disable staff user
+      tags:
+      - Admin
+  /api/admin/stats:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_admin.StatsResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: System statistics
+      tags:
+      - Admin
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Staff and customer login with mobile/password. user_type is optional;
+        when omitted staff accounts are checked first.
+      parameters:
+      - description: Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.LoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Login
+      tags:
+      - Auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Registration data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.RegisterDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Customer registration
+      tags:
+      - Auth
+  /api/cart:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cart.CartResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get current cart
+      tags:
+      - Cart
+  /api/cart/checkout:
+    post:
+      description: Converts the cart into a pending order, issues a system pre-invoice
+        and sends invoice/pre-invoice bot messages
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_finance.Order'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Checkout cart
+      tags:
+      - Cart
+  /api/cart/items:
+    post:
+      consumes:
+      - application/json
+      description: Adds the product or increases its quantity if already present
+      parameters:
+      - description: Item
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cart.AddItemDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cart.CartResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add product to cart
+      tags:
+      - Cart
+  /api/cart/items/{id}:
+    delete:
+      parameters:
+      - description: Cart item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cart.CartResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from cart
+      tags:
+      - Cart
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Cart item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Quantity
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cart.UpdateItemDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cart.CartResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update cart item quantity
+      tags:
+      - Cart
+  /api/categories:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_product.CategoryTree'
+                  type: array
+              type: object
+      summary: List categories as a tree
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Category
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.CreateCategoryDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create category
+      tags:
+      - Categories
+  /api/categories/{id}:
+    delete:
+      description: Soft-deletes the category; direct children become root categories
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete category
+      tags:
+      - Categories
+    get:
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Category'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Get category with direct children
+      tags:
+      - Categories
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.UpdateCategoryDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update category
+      tags:
+      - Categories
+  /api/cms/banners:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Banner
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cms.CreateBannerDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.Banner'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create banner
+      tags:
+      - CMS
+  /api/cms/banners/{id}:
+    delete:
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete banner
+      tags:
+      - CMS
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cms.UpdateBannerDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.Banner'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update banner
+      tags:
+      - CMS
+  /api/cms/blogs:
+    get:
+      parameters:
+      - description: Title search
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_cms.BlogPost'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: List blog posts
+      tags:
+      - CMS
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Blog post
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cms.CreateBlogDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.BlogPost'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create blog post
+      tags:
+      - CMS
+  /api/cms/blogs/{id}:
+    delete:
+      description: The path segment is the blog post ID
+      parameters:
+      - description: Blog ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete blog post
+      tags:
+      - CMS
+    patch:
+      consumes:
+      - application/json
+      description: The path segment is the blog post ID. media_ids, when provided,
+        replaces the attached media.
+      parameters:
+      - description: Blog ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cms.UpdateBlogDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.BlogPost'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update blog post
+      tags:
+      - CMS
+  /api/cms/blogs/{slug}:
+    get:
+      parameters:
+      - description: Blog slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.BlogPost'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Get blog post by slug
+      tags:
+      - CMS
+  /api/cms/content:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.ContentResponse'
+              type: object
+      summary: Static site settings and active banners
+      tags:
+      - CMS
+    patch:
+      consumes:
+      - application/json
+      description: Upserts site content entries by key (H1 titles, footer links, descriptions,
+        logos)
+      parameters:
+      - description: Content items
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_cms.UpdateSiteContentDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.ContentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update site content
+      tags:
+      - CMS
+  /api/finance/preinvoices:
+    get:
+      parameters:
+      - description: Status
+        enum:
+        - issued
+        - paid
+        - cancelled
+        in: query
+        name: status
+        type: string
+      - description: User ID
+        in: query
+        name: user_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_finance.PreInvoice'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List pre-invoices
+      tags:
+      - Finance
+    post:
+      consumes:
+      - application/json
+      description: Issues a pre-invoice for an order (amount defaults to the order
+        total) and notifies the customer
+      parameters:
+      - description: Pre-invoice
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_finance.CreatePreInvoiceDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_finance.PreInvoice'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create manual pre-invoice
+      tags:
+      - Finance
+  /api/finance/reports:
+    get:
+      description: Paid, processing and delivered orders aggregated per period bucket
+      parameters:
+      - default: daily
+        description: Bucket size
+        enum:
+        - daily
+        - weekly
+        - monthly
+        - annually
+        in: query
+        name: period
+        type: string
+      - description: From date (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: To date inclusive (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_finance.ReportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Sales report
+      tags:
+      - Finance
+  /api/inventory:
+    get:
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_inventory.InventoryStock'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Current stock levels
+      tags:
+      - Inventory
+  /api/inventory/inbound:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Inbound movement
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_inventory.InboundDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_inventory.InventoryStock'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Stock intake
+      tags:
+      - Inventory
+  /api/inventory/logs/{productId}:
+    get:
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_inventory.InventoryLog'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Stock movement audit logs
+      tags:
+      - Inventory
+  /api/inventory/outbound:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Outbound movement
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_inventory.OutboundDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_inventory.InventoryStock'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Stock dispatch or reduction
+      tags:
+      - Inventory
+  /api/media/{id}:
+    get:
+      parameters:
+      - description: Media ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_media.Media'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get media metadata
+      tags:
+      - Media
+  /api/media/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads an image, video or document to MinIO and stores its metadata
+      parameters:
+      - description: Media file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_media.UploadResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Upload media
+      tags:
+      - Media
+  /api/payment/callback:
+    get:
+      description: Called by the Zibal gateway. Verifies the payment, updates order/transaction/pre-invoice,
+        sends bot messages and redirects (302) to the client app with ?inv=inv-<ORDER-ID>
+      parameters:
+      - description: Zibal track ID
+        in: query
+        name: trackId
+        required: true
+        type: integer
+      - description: 1 when payment succeeded
+        in: query
+        name: success
+        type: integer
+      - description: Zibal status
+        in: query
+        name: status
+        type: integer
+      - description: Merchant order ID
+        in: query
+        name: orderId
+        type: string
+      responses:
+        "302":
+          description: Redirect to client payment result page
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+      summary: Zibal payment callback
+      tags:
+      - Payment
+  /api/payment/checkout/{orderId}:
+    post:
+      description: Requests a Zibal trackId for a pending/failed order and returns
+        the gateway redirect URL
+      parameters:
+      - description: Order ID
+        in: path
+        name: orderId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_payment.CheckoutResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Start Zibal payment for an order
+      tags:
+      - Payment
+  /api/payment/inquiry/{trackId}:
+    post:
+      description: Queries Zibal /v1/inquiry for the track ID and returns it with
+        the local transaction record
+      parameters:
+      - description: Zibal track ID
+        in: path
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_payment.InquiryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Manual gateway transaction inquiry
+      tags:
+      - Payment
+  /api/payment/status/{trackId}:
+    get:
+      parameters:
+      - description: Zibal track ID
+        in: path
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_payment.PaymentTransaction'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Payment transaction status
+      tags:
+      - Payment
+  /api/products:
+    get:
+      parameters:
+      - description: Category ID
+        in: query
+        name: category_id
+        type: integer
+      - description: Title search
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_product.Product'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: List active products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Product title and SKU must be unique. media_ids attaches uploaded
+        images/videos.
+      parameters:
+      - description: Product
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.CreateProductDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create product
+      tags:
+      - Products
+  /api/products/{id}:
+    delete:
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete product
+      tags:
+      - Products
+    get:
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Product'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Get product
+      tags:
+      - Products
+    patch:
+      consumes:
+      - application/json
+      description: media_ids, when provided, replaces the product media set
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_product.UpdateProductDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_product.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update product
+      tags:
+      - Products
+  /api/staff/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_staff.StaffUser'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get current staff profile
+      tags:
+      - Staff
+    patch:
+      consumes:
+      - application/json
+      description: default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id
+        references an uploaded MinIO media asset
+      parameters:
+      - description: Profile fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_staff.UpdateProfileDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_staff.StaffUser'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update current staff profile
+      tags:
+      - Staff
+  /api/support/chat/rooms:
+    get:
+      parameters:
+      - description: Room status
+        enum:
+        - open
+        - in_progress
+        - closed
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_chat.ChatRoom'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List support chat rooms
+      tags:
+      - Support
+  /api/support/chat/rooms/{id}/messages:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_chat.ChatMessage'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List messages of a chat room
+      tags:
+      - Support
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_chat.SendMessageDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_chat.ChatMessage'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Reply to a chat room as support
+      tags:
+      - Support
+  /api/support/chat/rooms/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_chat.RoomStatusDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update chat room status
+      tags:
+      - Support
+  /api/support/orders:
+    get:
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
+      - description: User ID
+        in: query
+        name: user_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_finance.Order'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Read-only customer orders
+      tags:
+      - Support
+  /api/support/preinvoices:
+    get:
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
+      - description: User ID
+        in: query
+        name: user_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_finance.PreInvoice'
+                        type: array
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Read-only customer pre-invoices
+      tags:
+      - Support
+  /api/user/chat/messages:
+    get:
+      description: Chat history of the current customer including automated bot messages
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_chat.ChatMessage'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Customer chat inbox
+      tags:
+      - Chat
+    post:
+      consumes:
+      - application/json
+      description: REST fallback for sending a message to support; opens a room if
+        none is active
+      parameters:
+      - description: Message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_chat.SendMessageDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_chat.ChatMessage'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Send chat message as customer
+      tags:
+      - Chat
+  /api/user/notifications:
+    get:
+      description: Personal and broadcast in-app notifications
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_notification.Notification'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Customer in-app notifications
+      tags:
+      - User
+  /api/user/notifications/{id}/read:
+    patch:
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Mark notification as read
+      tags:
+      - User
+  /api/user/orders:
+    get:
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_finance.Order'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Customer orders
+      tags:
+      - User
+  /api/user/orders/{id}:
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_finance.Order'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Customer order details
+      tags:
+      - User
+  /api/user/preinvoices:
+    get:
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_finance.PreInvoice'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Customer pre-invoices
+      tags:
+      - User
+  /api/user/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.User'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer profile
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: Updates name, mobile, address, coordinates and telegram chat id
+        (customers have no avatar)
+      parameters:
+      - description: Profile fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.UpdateProfileDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_user.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update customer profile
+      tags:
+      - User
+  /ws/chat:
+    get:
+      description: Upgrades to WebSocket. Pass the JWT as ?token= query, Authorization
+        header or access_token cookie. Customers send {"message":"..."}; support agents
+        send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
+      parameters:
+      - description: JWT access token
+        in: query
+        name: token
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            $ref: '#/definitions/internal_chat.ChatMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Real-time support chat WebSocket
+      tags:
+      - Chat
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
