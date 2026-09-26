@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	// "context" // TODO: restore with MinIO
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -80,7 +80,7 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	protected := api.Group("", authMW)
 	customer := api.Group("", authMW, middleware.RequireCustomer())
 	storekeeper := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper))
-	mediaGroup := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper, staff.RoleMarketer, staff.RoleSupport))
+	// mediaGroup := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper, staff.RoleMarketer, staff.RoleSupport))
 	accountant := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant))
 	marketer := api.Group("", authMW, middleware.RequireRoles(staff.RoleMarketer))
 	support := api.Group("/support", authMW, middleware.RequireRoles(staff.RoleSupport))
@@ -98,12 +98,13 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	chatService.OnRoomCreated = notifier.OnChatRoomCreated
 
 	financeStore := finance.NewStore(db, notifier)
-	mediaClient := media.NewClient(context.Background(), envConfig)
+	// TODO: MinIO disabled for now
+	// mediaClient := media.NewClient(context.Background(), envConfig)
 
 	auth.NewAuthHandler(auth.NewAuthRepo(staffStore, userStore, envConfig.JwtSecret), envConfig.Domain, envConfig.Env == "production").RegisterRoutes(api)
 	user.NewHandler(user.NewService(userStore)).RegisterRoutes(customer)
 	staff.NewHandler(staffStore).RegisterRoutes(protected)
-	media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)
+	// media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
 	cart.NewHandler(cart.NewStore(db, financeStore)).RegisterRoutes(customer)
@@ -115,6 +116,7 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	admin.NewHandler(db, staffStore).RegisterRoutes(adminGroup)
 
 	router.Run(":" + envConfig.Port)
+	log.Println("server is running")
 
 	return true
 }
