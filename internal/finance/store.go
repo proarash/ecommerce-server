@@ -9,18 +9,24 @@ import (
 
 	"github.com/proarash/ecommerce-server/internal/notification"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-var ErrEmptyOrder = errors.New("order has no items")
+var (
+	ErrEmptyOrder      = errors.New("order has no items")
+	ErrOrderNotPayable = errors.New("order is not payable in its current status")
+)
 
 type Store interface {
-	CreateOrderTx(tx *gorm.DB, userID uint, lines []OrderLine) (Order, PreInvoice, error)
+	CreateOrderTx(tx *gorm.DB, userID uint, lines []OrderLine, discount *OrderDiscount) (Order, PreInvoice, error)
 	NotifyOrderPlaced(ctx context.Context, order Order, pre PreInvoice)
 	FindOrder(ctx context.Context, id uint) (Order, error)
 	FindUserOrder(ctx context.Context, id, userID uint) (Order, error)
 	ListOrders(ctx context.Context, q ListQuery) ([]Order, int64, error)
 	UpdateOrderStatus(ctx context.Context, id uint, status string) error
 	MarkPaid(ctx context.Context, orderID uint) error
+	MarkPaidTx(tx *gorm.DB, orderID uint) error
+	LockPayableOrderTx(tx *gorm.DB, orderID, userID uint) (Order, error)
 	CreatePreInvoice(ctx context.Context, dto CreatePreInvoiceDto, issuedBy string) (PreInvoice, error)
 	ListPreInvoices(ctx context.Context, q ListQuery) ([]PreInvoice, int64, error)
 	Report(ctx context.Context, q ReportQuery) (ReportResponse, error)
@@ -39,7 +45,7 @@ func invoiceNumber(orderID uint) string {
 	return fmt.Sprintf("INV-%d-%d", orderID, time.Now().UnixNano())
 }
 
-func (s *store) CreateOrderTx(tx *gorm.DB, userID uint, lines []OrderLine) (Order, PreInvoice, error) {
+func (s *store) CreateOrderTx(tx *gorm.DB, userID uint, lines []OrderLine, discount *OrderDiscount) (Order, PreInvoice, error) {
 	if len(lines) == 0 {
 		return Order{}, PreInvoice{}, ErrEmptyOrder
 	}
@@ -47,6 +53,11 @@ func (s *store) CreateOrderTx(tx *gorm.DB, userID uint, lines []OrderLine) (Orde
 	for _, l := range lines {
 		order.Items = append(order.Items, OrderItem{ProductID: l.ProductID, Quantity: l.Quantity, UnitPrice: l.UnitPrice})
 		order.TotalAmount += l.UnitPrice * float64(l.Quantity)
+	}
+	if discount != nil {
+		order.DiscountID = &discount.ID
+		order.DiscountAmount = min(discount.Amount, order.TotalAmount)
+		order.TotalAmount -= order.DiscountAmount
 	}
 	if err := tx.Create(&order).Error; err != nil {
 		return Order{}, PreInvoice{}, err
@@ -123,23 +134,38 @@ func (s *store) UpdateOrderStatus(ctx context.Context, id uint, status string) e
 
 func (s *store) MarkPaid(ctx context.Context, orderID uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var order Order
-		if err := tx.First(&order, orderID).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(&order).Update("status", OrderPaid).Error; err != nil {
-			return err
-		}
-		res := tx.Model(&PreInvoice{}).Where("order_id = ? AND status = ?", orderID, PreInvoiceIssued).Update("status", PreInvoicePaid)
-		if res.Error != nil {
-			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			pre := PreInvoice{OrderID: orderID, UserID: order.UserID, InvoiceNumber: invoiceNumber(orderID), Amount: order.TotalAmount, IssuedBy: IssuedBySystem, Status: PreInvoicePaid}
-			return tx.Create(&pre).Error
-		}
-		return nil
+		return s.MarkPaidTx(tx, orderID)
 	})
+}
+
+func (s *store) MarkPaidTx(tx *gorm.DB, orderID uint) error {
+	var order Order
+	if err := tx.First(&order, orderID).Error; err != nil {
+		return err
+	}
+	if err := tx.Model(&order).Update("status", OrderPaid).Error; err != nil {
+		return err
+	}
+	res := tx.Model(&PreInvoice{}).Where("order_id = ? AND status = ?", orderID, PreInvoiceIssued).Update("status", PreInvoicePaid)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		pre := PreInvoice{OrderID: orderID, UserID: order.UserID, InvoiceNumber: invoiceNumber(orderID), Amount: order.TotalAmount, IssuedBy: IssuedBySystem, Status: PreInvoicePaid}
+		return tx.Create(&pre).Error
+	}
+	return nil
+}
+
+func (s *store) LockPayableOrderTx(tx *gorm.DB, orderID, userID uint) (Order, error) {
+	var order Order
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? AND user_id = ?", orderID, userID).First(&order).Error; err != nil {
+		return Order{}, err
+	}
+	if order.Status != OrderPending && order.Status != OrderFailed {
+		return Order{}, ErrOrderNotPayable
+	}
+	return order, nil
 }
 
 func (s *store) CreatePreInvoice(ctx context.Context, dto CreatePreInvoiceDto, issuedBy string) (PreInvoice, error) {

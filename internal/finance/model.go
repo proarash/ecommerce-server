@@ -22,10 +22,12 @@ const (
 
 type Order struct {
 	gorm.Model
-	UserID      uint        `json:"user_id" gorm:"index;not null"`
-	Status      string      `json:"status" gorm:"index;default:pending" enums:"pending,paid,failed,cancelled,processing,delivered"`
-	TotalAmount float64     `json:"total_amount"`
-	Items       []OrderItem `json:"items,omitempty"`
+	UserID         uint        `json:"user_id" gorm:"index;not null"`
+	Status         string      `json:"status" gorm:"index;default:pending" enums:"pending,paid,failed,cancelled,processing,delivered"`
+	TotalAmount    float64     `json:"total_amount"`
+	DiscountID     *uint       `json:"discount_id" gorm:"index"`
+	DiscountAmount float64     `json:"discount_amount" gorm:"not null;default:0"`
+	Items          []OrderItem `json:"items,omitempty"`
 }
 
 type OrderItem struct {

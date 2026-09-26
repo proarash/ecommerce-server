@@ -8,6 +8,11 @@ type OrderLine struct {
 	UnitPrice float64
 }
 
+type OrderDiscount struct {
+	ID     uint
+	Amount float64
+}
+
 type CreatePreInvoiceDto struct {
 	OrderID uint     `json:"order_id" binding:"required,min=1"`
 	Amount  *float64 `json:"amount" binding:"omitempty,gt=0"`

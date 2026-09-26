@@ -2,9 +2,11 @@ package cart
 
 import (
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/types"
@@ -32,7 +34,7 @@ func (h *Handler) fail(c *gin.Context, err error, notFound string) {
 		types.BadRequest(c, err)
 		return
 	}
-	types.HandleError(c, err, notFound)
+	discount.Fail(c, err, notFound)
 }
 
 // Get godoc
@@ -135,17 +137,25 @@ func (h *Handler) RemoveItem(c *gin.Context) {
 
 // Checkout godoc
 // @Summary Checkout cart
-// @Description Converts the cart into a pending order, issues a system pre-invoice and sends invoice/pre-invoice bot messages
+// @Description Converts the cart into a pending order, optionally redeeming a discount code, issues a system pre-invoice and sends invoice/pre-invoice bot messages
 // @Tags Cart
+// @Accept json
 // @Produce json
 // @Security BearerAuth
+// @Param body body CheckoutDto false "Optional discount code"
 // @Success 201 {object} types.ApiResponse{data=finance.Order}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
+// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /api/cart/checkout [post]
 func (h *Handler) Checkout(c *gin.Context) {
+	var dto CheckoutDto
+	if err := c.ShouldBindJSON(&dto); err != nil && !errors.Is(err, io.EOF) {
+		types.BadRequest(c, err)
+		return
+	}
 	var order finance.Order
-	order, err := h.store.Checkout(c.Request.Context(), middleware.GetAuth(c).UserID)
+	order, err := h.store.Checkout(c.Request.Context(), middleware.GetAuth(c).UserID, dto.DiscountCode)
 	if err != nil {
 		h.fail(c, err, "cart not found")
 		return

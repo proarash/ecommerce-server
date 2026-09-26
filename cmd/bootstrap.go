@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "context" // TODO: restore with MinIO
+	"context"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +12,7 @@ import (
 	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/config"
+	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/media"
@@ -22,6 +23,7 @@ import (
 	"github.com/proarash/ecommerce-server/internal/seed"
 	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/user"
+	"github.com/proarash/ecommerce-server/internal/wallet"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/postgres"
@@ -39,6 +41,8 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	}
 	if err := db.AutoMigrate(
 		&media.Media{},
+		&wallet.Wallet{},
+		&wallet.WalletTransaction{},
 		&staff.StaffUser{},
 		&user.User{},
 		&product.Category{},
@@ -58,10 +62,14 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 		&chat.ChatRoom{},
 		&chat.ChatMessage{},
 		&notification.Notification{},
+		&discount.Discount{},
 	); err != nil {
 		panic(err)
 	}
 	seed.Run(db, envConfig)
+	if err := wallet.NewStore(db).Backfill(context.Background()); err != nil {
+		panic(err)
+	}
 
 	switch envConfig.Env {
 	case "production":
@@ -84,6 +92,8 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	accountant := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant))
 	marketer := api.Group("", authMW, middleware.RequireRoles(staff.RoleMarketer))
 	support := api.Group("/support", authMW, middleware.RequireRoles(staff.RoleSupport))
+	discountReader := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer, staff.RoleSupport))
+	discountManager := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer))
 	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(staff.RoleAdmin))
 	ws := router.Group("/ws", authMW)
 
@@ -98,6 +108,8 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	chatService.OnRoomCreated = notifier.OnChatRoomCreated
 
 	financeStore := finance.NewStore(db, notifier)
+	walletStore := wallet.NewStore(db)
+	discountStore := discount.NewStore(db)
 	// TODO: MinIO disabled for now
 	// mediaClient := media.NewClient(context.Background(), envConfig)
 
@@ -107,13 +119,15 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	// media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
-	cart.NewHandler(cart.NewStore(db, financeStore)).RegisterRoutes(customer)
+	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(customer)
 	finance.NewHandler(financeStore).RegisterRoutes(accountant, customer, support)
-	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, customer, accountant)
+	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, walletStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, customer, accountant)
 	cms.NewHandler(cms.NewStore(db)).RegisterRoutes(api, marketer)
 	chat.NewHandler(hub, chatService).RegisterRoutes(ws, customer, support)
 	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, customer)
 	admin.NewHandler(db, staffStore).RegisterRoutes(adminGroup)
+	wallet.NewHandler(walletStore).RegisterRoutes(protected, accountant)
+	discount.NewHandler(discountStore, userStore).RegisterRoutes(discountReader, discountManager, customer)
 
 	router.Run(":" + envConfig.Port)
 	log.Println("server is running")
