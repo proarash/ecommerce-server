@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/product"
@@ -22,16 +23,17 @@ type Store interface {
 	AddItem(ctx context.Context, userID uint, dto AddItemDto) error
 	UpdateItem(ctx context.Context, userID, itemID uint, quantity int) error
 	RemoveItem(ctx context.Context, userID, itemID uint) error
-	Checkout(ctx context.Context, userID uint) (finance.Order, error)
+	Checkout(ctx context.Context, userID uint, discountCode string) (finance.Order, error)
 }
 
 type store struct {
-	db      *gorm.DB
-	finance finance.Store
+	db        *gorm.DB
+	finance   finance.Store
+	discounts discount.Store
 }
 
-func NewStore(db *gorm.DB, financeStore finance.Store) Store {
-	return &store{db: db, finance: financeStore}
+func NewStore(db *gorm.DB, financeStore finance.Store, discountStore discount.Store) Store {
+	return &store{db: db, finance: financeStore, discounts: discountStore}
 }
 
 func ensureCart(tx *gorm.DB, userID uint) (Cart, error) {
@@ -108,7 +110,7 @@ func (s *store) RemoveItem(ctx context.Context, userID, itemID uint) error {
 	return nil
 }
 
-func (s *store) Checkout(ctx context.Context, userID uint) (finance.Order, error) {
+func (s *store) Checkout(ctx context.Context, userID uint, discountCode string) (finance.Order, error) {
 	var order finance.Order
 	var pre finance.PreInvoice
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -124,17 +126,27 @@ func (s *store) Checkout(ctx context.Context, userID uint) (finance.Order, error
 			return err
 		}
 		lines := make([]finance.OrderLine, 0, len(items))
+		var subtotal float64
 		for _, it := range items {
 			if it.Product == nil || !it.Product.IsActive {
 				return ErrProductUnavailable
 			}
 			lines = append(lines, finance.OrderLine{ProductID: it.ProductID, Quantity: it.Quantity, UnitPrice: it.Product.Price})
+			subtotal += it.Product.Price * float64(it.Quantity)
 		}
 		if len(lines) == 0 {
 			return ErrEmptyCart
 		}
+		var applied *finance.OrderDiscount
+		if discountCode != "" {
+			d, amount, err := s.discounts.RedeemTx(tx, discountCode, userID, subtotal)
+			if err != nil {
+				return err
+			}
+			applied = &finance.OrderDiscount{ID: d.ID, Amount: amount}
+		}
 		var err error
-		if order, pre, err = s.finance.CreateOrderTx(tx, userID, lines); err != nil {
+		if order, pre, err = s.finance.CreateOrderTx(tx, userID, lines, applied); err != nil {
 			return err
 		}
 		for _, l := range lines {

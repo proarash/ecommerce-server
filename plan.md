@@ -99,6 +99,16 @@ ecommerce-server/
 │   │   ├── service.go         # SendAutomatedMessage dispatcher (In-app + Telegram API)
 │   │   ├── store.go
 │   │   └── telegram.go        # Telegram HTTP client using TELEGRAM_BOT_TOKEN
+│   ├── wallet/                # Wallet per user & staff (polymorphic owner), ledger, manual adjust
+│   │   ├── dto.go
+│   │   ├── handler.go
+│   │   ├── model.go           # Wallet, WalletTransaction
+│   │   └── store.go           # Row-locked credit/debit, backfill
+│   ├── discount/              # Discount codes (percent/value, max_price, use_count, owner)
+│   │   ├── dto.go
+│   │   ├── handler.go
+│   │   ├── model.go           # Discount
+│   │   └── store.go
 │   ├── admin/                 # Admin operations (staff creation, system stats)
 │   │   ├── dto.go
 │   │   └── handler.go
@@ -115,9 +125,9 @@ ecommerce-server/
 | :--- | :--- |
 | **Admin** | Full system access to all endpoints. Manages staff in `staff_users` table (`storekeeper`, `accountant`, `marketer`, `support`, prevents duplicate Admin). Full CRUD on notifications. |
 | **Storekeeper** | Product catalog management (Products with unique titles, hierarchical categories, media attachments). Internal inventory tracking (inbound, outbound, stock audit logs). |
-| **Accountant** | Financial management: sales analytics (daily, weekly, monthly, annual reports), manual & automated pre-invoices, payment transaction inquiry. |
-| **Marketer** | CMS & Marketing: Blog posts (SEO fields, multiple media attachments), banners (with media and `alt_name`), static site content (H1 titles, footer links, descriptions). |
-| **Support** | Read-only access to customer orders and pre-invoices. Customer live chat support (Gorilla WebSocket), answering user inquiries. |
+| **Accountant** | Financial management: sales analytics (daily, weekly, monthly, annual reports), manual & automated pre-invoices, payment transaction inquiry. Wallet management (credit/debit any wallet except locked admin wallets and their own). Discount code management. |
+| **Marketer** | CMS & Marketing: Blog posts (SEO fields, multiple media attachments), banners (with media and `alt_name`), static site content (H1 titles, footer links, descriptions). Discount code management. |
+| **Support** | Read-only access to customer orders, pre-invoices and discount codes. Customer live chat support (Gorilla WebSocket), answering user inquiries. |
 | **User (Customer)** | Separated in `users` table. Manage personal profile (name, mobile, address, lat, long; no avatar upload), active cart management, order placement, personal pre-invoices, customer live chat inbox (receives automated bot notifications for payments and invoices). |
 
 ---

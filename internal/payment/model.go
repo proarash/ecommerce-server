@@ -6,11 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-const StatusPending = -1
+const (
+	StatusPending = -1
+
+	PurposeOrder        = "order"
+	PurposeWalletCharge = "wallet_charge"
+)
 
 type PaymentTransaction struct {
 	gorm.Model
-	OrderID     uint       `json:"order_id" gorm:"index;not null"`
+	Purpose     string     `json:"purpose" gorm:"size:16;index;not null;default:order" enums:"order,wallet_charge"`
+	OrderID     *uint      `json:"order_id" gorm:"index"`
 	UserID      uint       `json:"user_id" gorm:"index;not null"`
 	Amount      int64      `json:"amount"`
 	TrackID     int64      `json:"track_id" gorm:"uniqueIndex;not null"`

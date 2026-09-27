@@ -6,6 +6,10 @@ definitions:
         type: string
       deletedAt:
         $ref: '#/definitions/gorm.DeletedAt'
+      discount_amount:
+        type: number
+      discount_id:
+        type: integer
       id:
         type: integer
       items:
@@ -171,6 +175,8 @@ definitions:
         type: boolean
       updatedAt:
         type: string
+      wallet:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
     type: object
   github_com_proarash_ecommerce-server_internal_types.ApiResponse:
     properties:
@@ -197,6 +203,55 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  github_com_proarash_ecommerce-server_internal_user.User:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      mobile:
+        type: string
+      name:
+        type: string
+      status:
+        type: boolean
+      telegram_chat_id:
+        type: integer
+      updatedAt:
+        type: string
+      wallet:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
+    type: object
+  github_com_proarash_ecommerce-server_internal_wallet.Wallet:
+    properties:
+      amount:
+        type: number
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      locked:
+        type: boolean
+      owner_id:
+        type: integer
+      owner_type:
+        enum:
+        - user
+        - staff
+        type: string
+      updatedAt:
+        type: string
     type: object
   gorm.DeletedAt:
     properties:
@@ -372,6 +427,13 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  internal_cart.CheckoutDto:
+    properties:
+      discount_code:
+        example: SUMMER30
+        maxLength: 32
+        type: string
     type: object
   internal_cart.UpdateItemDto:
     properties:
@@ -668,6 +730,122 @@ definitions:
     required:
     - items
     type: object
+  internal_discount.CheckDto:
+    properties:
+      amount:
+        example: 200000
+        type: number
+      code:
+        example: SUMMER30
+        maxLength: 32
+        type: string
+    required:
+    - amount
+    - code
+    type: object
+  internal_discount.CheckResponse:
+    properties:
+      amount:
+        type: number
+      code:
+        type: string
+      discount_amount:
+        type: number
+      payable_amount:
+        type: number
+      type:
+        enum:
+        - percent
+        - value
+        type: string
+    type: object
+  internal_discount.CreateDiscountDto:
+    properties:
+      code:
+        example: SUMMER30
+        maxLength: 32
+        minLength: 4
+        type: string
+      max_price:
+        example: 50000
+        type: number
+      owner_mobile:
+        example: "09121112233"
+        type: string
+      status:
+        type: boolean
+      type:
+        enum:
+        - percent
+        - value
+        type: string
+      use_count:
+        example: 100
+        minimum: 1
+        type: integer
+      value:
+        example: 30
+        type: number
+    required:
+    - type
+    - use_count
+    - value
+    type: object
+  internal_discount.Discount:
+    properties:
+      code:
+        example: SUMMER30
+        type: string
+      created_by_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      max_price:
+        type: number
+      owner:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
+      owner_id:
+        type: integer
+      status:
+        type: boolean
+      type:
+        enum:
+        - percent
+        - value
+        type: string
+      updatedAt:
+        type: string
+      use_count:
+        type: integer
+      used_count:
+        type: integer
+      value:
+        type: number
+    type: object
+  internal_discount.UpdateDiscountDto:
+    properties:
+      max_price:
+        minimum: 0
+        type: number
+      owner_mobile:
+        type: string
+      status:
+        type: boolean
+      type:
+        enum:
+        - percent
+        - value
+        type: string
+      use_count:
+        minimum: 1
+        type: integer
+      value:
+        type: number
+    type: object
   internal_finance.CreatePreInvoiceDto:
     properties:
       amount:
@@ -684,6 +862,10 @@ definitions:
         type: string
       deletedAt:
         $ref: '#/definitions/gorm.DeletedAt'
+      discount_amount:
+        type: number
+      discount_id:
+        type: integer
       id:
         type: integer
       items:
@@ -1010,6 +1192,11 @@ definitions:
         type: integer
       paid_at:
         type: string
+      purpose:
+        enum:
+        - order
+        - wallet_charge
+        type: string
       ref_number:
         type: integer
       result:
@@ -1022,6 +1209,22 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  internal_payment.WalletChargeDto:
+    properties:
+      amount:
+        example: 500000
+        minimum: 1000
+        type: integer
+    required:
+    - amount
+    type: object
+  internal_payment.WalletPayResponse:
+    properties:
+      order:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_finance.Order'
+      wallet:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
     type: object
   internal_payment.ZibalInquiryResponse:
     properties:
@@ -1303,6 +1506,8 @@ definitions:
         type: boolean
       updatedAt:
         type: string
+      wallet:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
     type: object
   internal_staff.UpdateProfileDto:
     properties:
@@ -1367,6 +1572,93 @@ definitions:
         type: integer
       updatedAt:
         type: string
+      wallet:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
+    type: object
+  internal_wallet.AdjustDto:
+    properties:
+      amount:
+        example: 50000
+        type: number
+      description:
+        maxLength: 255
+        type: string
+      type:
+        enum:
+        - credit
+        - debit
+        type: string
+    required:
+    - amount
+    - description
+    - type
+    type: object
+  internal_wallet.AdjustResponse:
+    properties:
+      transaction:
+        $ref: '#/definitions/internal_wallet.WalletTransaction'
+      wallet:
+        $ref: '#/definitions/internal_wallet.Wallet'
+    type: object
+  internal_wallet.Wallet:
+    properties:
+      amount:
+        type: number
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      locked:
+        type: boolean
+      owner_id:
+        type: integer
+      owner_type:
+        enum:
+        - user
+        - staff
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_wallet.WalletTransaction:
+    properties:
+      amount:
+        type: number
+      balance_after:
+        type: number
+      balance_before:
+        type: number
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      order_id:
+        type: integer
+      performed_by_id:
+        type: integer
+      source:
+        enum:
+        - gateway
+        - purchase
+        - manual
+        type: string
+      track_id:
+        type: integer
+      type:
+        enum:
+        - credit
+        - debit
+        type: string
+      updatedAt:
+        type: string
+      wallet_id:
+        type: integer
     type: object
 host: localhost:4000
 info:
@@ -2150,9 +2442,17 @@ paths:
       - Cart
   /api/cart/checkout:
     post:
-      description: Converts the cart into a pending order, reserves stock (outbound
-        inventory movement), issues a system pre-invoice and sends invoice/pre-invoice
-        bot messages
+      consumes:
+      - application/json
+      description: Converts the cart into a pending order, optionally redeeming a
+        discount code, issues a system pre-invoice and sends invoice/pre-invoice bot
+        messages
+      parameters:
+      - description: Optional discount code
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/internal_cart.CheckoutDto'
       produces:
       - application/json
       responses:
@@ -2183,8 +2483,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
-        "409":
-          description: Conflict
+        "403":
+          description: Forbidden
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2935,6 +3235,304 @@ paths:
       summary: Update site content
       tags:
       - CMS
+  /api/discounts:
+    get:
+      description: Available to admin, accountant, marketer and support (read-only)
+      parameters:
+      - description: Code contains
+        in: query
+        name: code
+        type: string
+      - description: Type
+        enum:
+        - percent
+        - value
+        in: query
+        name: type
+        type: string
+      - description: Status
+        in: query
+        name: status
+        type: boolean
+      - description: Owner user ID
+        in: query
+        name: owner_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_discount.Discount'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List discount codes
+      tags:
+      - Discounts
+    post:
+      consumes:
+      - application/json
+      description: Creates a discount code (admin, accountant, marketer). Omit code
+        to auto-generate an 8 character uppercase code. max_price caps the discount
+        and is only allowed for percent type (e.g. 30% up to 50000). When owner_mobile
+        is set only the customer with that mobile can use the code.
+      parameters:
+      - description: Discount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_discount.CreateDiscountDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_discount.Discount'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Generate discount code
+      tags:
+      - Discounts
+  /api/discounts/{id}:
+    delete:
+      parameters:
+      - description: Discount ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete discount code
+      tags:
+      - Discounts
+    get:
+      description: Available to admin, accountant, marketer and support (read-only)
+      parameters:
+      - description: Discount ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_discount.Discount'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get discount code
+      tags:
+      - Discounts
+    patch:
+      consumes:
+      - application/json
+      description: Updates a discount (admin, accountant, marketer). Send max_price
+        0 to remove the cap and owner_mobile "" to make the code public.
+      parameters:
+      - description: Discount ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_discount.UpdateDiscountDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_discount.Discount'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update discount code
+      tags:
+      - Discounts
   /api/finance/preinvoices:
     get:
       parameters:
@@ -3342,8 +3940,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Uploads an image, video or document to MinIO and stores its metadata.
-        The MIME type is detected from the file content, not the client header.
+      description: Uploads an image, video or document to MinIO and stores its metadata
       parameters:
       - description: Media file
         in: formData
@@ -3405,8 +4002,11 @@ paths:
       - Media
   /api/payment/callback:
     get:
-      description: Called by the Zibal gateway. Verifies the payment, updates order/transaction/pre-invoice,
-        sends bot messages and redirects (302) to the client app with ?inv=inv-<ORDER-ID>
+      description: Called by the Zibal gateway. Verifies the payment and credits the
+        paid amount to the customer wallet. For orders the order price is then debited
+        from the wallet and order/transaction/pre-invoice are updated. Sends bot messages
+        and redirects (302) to the client app with ?inv=inv-<ORDER-ID> for orders
+        or ?wallet=wlt-<TRACK-ID> for wallet charges
       parameters:
       - description: Zibal track ID
         in: query
@@ -3442,7 +4042,8 @@ paths:
   /api/payment/checkout/{orderId}:
     post:
       description: Requests a Zibal trackId for a pending/failed order and returns
-        the gateway redirect URL
+        the gateway redirect URL. On success the paid amount is credited to the customer
+        wallet and the order price is then debited from it.
       parameters:
       - description: Order ID
         in: path
@@ -3491,6 +4092,60 @@ paths:
       security:
       - BearerAuth: []
       summary: Start Zibal payment for an order
+      tags:
+      - Payment
+  /api/payment/checkout/{orderId}/wallet:
+    post:
+      description: Debits the order total from the customer wallet balance and marks
+        the order as paid
+      parameters:
+      - description: Order ID
+        in: path
+        name: orderId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_payment.WalletPayResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Pay order from wallet
       tags:
       - Payment
   /api/payment/inquiry/{trackId}:
@@ -3588,6 +4243,64 @@ paths:
       security:
       - BearerAuth: []
       summary: Payment transaction status
+      tags:
+      - Payment
+  /api/payment/wallet/charge:
+    post:
+      consumes:
+      - application/json
+      description: Requests a Zibal trackId to top up the customer wallet. After a
+        verified payment the wallet is credited automatically and the callback redirects
+        to the client app with ?wallet=wlt-<TRACK-ID>
+      parameters:
+      - description: Charge amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_payment.WalletChargeDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_payment.CheckoutResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Charge wallet via Zibal
       tags:
       - Payment
   /api/products:
@@ -4435,6 +5148,54 @@ paths:
       summary: Send chat message as customer
       tags:
       - Chat
+  /api/user/discounts/check:
+    post:
+      consumes:
+      - application/json
+      description: Validates a discount code for the current customer against an amount
+        and returns the discount and payable amount without redeeming it
+      parameters:
+      - description: Code and amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_discount.CheckDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_discount.CheckResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Check discount code
+      tags:
+      - User
   /api/user/notifications:
     get:
       description: Personal and broadcast in-app notifications
@@ -4739,6 +5500,379 @@ paths:
       summary: Update customer profile
       tags:
       - User
+  /api/wallet:
+    get:
+      description: Returns the wallet of the authenticated user or staff member
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_wallet.Wallet'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get my wallet
+      tags:
+      - Wallet
+  /api/wallet/transactions:
+    get:
+      parameters:
+      - description: Type
+        enum:
+        - credit
+        - debit
+        in: query
+        name: type
+        type: string
+      - description: Source
+        enum:
+        - gateway
+        - purchase
+        - manual
+        in: query
+        name: source
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_wallet.WalletTransaction'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List my wallet transactions
+      tags:
+      - Wallet
+  /api/wallets:
+    get:
+      parameters:
+      - description: Owner type
+        enum:
+        - user
+        - staff
+        in: query
+        name: owner_type
+        type: string
+      - description: Owner ID
+        in: query
+        name: owner_id
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_wallet.Wallet'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List wallets
+      tags:
+      - Wallet Management
+  /api/wallets/{id}:
+    get:
+      parameters:
+      - description: Wallet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_wallet.Wallet'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get wallet
+      tags:
+      - Wallet Management
+  /api/wallets/{id}/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Credits or debits a wallet (admin and accountant only). Admin wallets
+        are locked and cannot be modified by anyone, and staff cannot change their
+        own wallet.
+      parameters:
+      - description: Wallet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Adjustment
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_wallet.AdjustDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_wallet.AdjustResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Change wallet amount
+      tags:
+      - Wallet Management
+  /api/wallets/{id}/transactions:
+    get:
+      parameters:
+      - description: Wallet ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Type
+        enum:
+        - credit
+        - debit
+        in: query
+        name: type
+        type: string
+      - description: Source
+        enum:
+        - gateway
+        - purchase
+        - manual
+        in: query
+        name: source
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_wallet.WalletTransaction'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List wallet transactions
+      tags:
+      - Wallet Management
   /ws/chat:
     get:
       description: Upgrades to WebSocket. Pass the JWT as ?token= query, Authorization

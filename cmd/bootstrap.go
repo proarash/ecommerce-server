@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "context" // TODO: restore with MinIO
+	"context"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -12,18 +12,18 @@ import (
 	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/config"
+	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
-	// TODO: restore with auto migrations
-	// "github.com/proarash/ecommerce-server/internal/media"
+	"github.com/proarash/ecommerce-server/internal/media"
 	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/notification"
 	"github.com/proarash/ecommerce-server/internal/payment"
 	"github.com/proarash/ecommerce-server/internal/product"
-	// TODO: restore with seeder
-	// "github.com/proarash/ecommerce-server/internal/seed"
+	"github.com/proarash/ecommerce-server/internal/seed"
 	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/user"
+	"github.com/proarash/ecommerce-server/internal/wallet"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/postgres"
@@ -40,34 +40,37 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	if err != nil {
 		panic(err)
 	}
-	// TODO: run later when PostgreSQL is available - auto migrations
-	// if err := db.AutoMigrate(
-	// 	&media.Media{},
-	// 	&staff.StaffUser{},
-	// 	&user.User{},
-	// 	&product.Category{},
-	// 	&product.Product{},
-	// 	&product.Attribute{},
-	// 	&cart.Cart{},
-	// 	&cart.CartItem{},
-	// 	&finance.Order{},
-	// 	&finance.OrderItem{},
-	// 	&finance.PreInvoice{},
-	// 	&payment.PaymentTransaction{},
-	// 	&inventory.InventoryStock{},
-	// 	&inventory.InventoryLog{},
-	// 	&cms.BlogPost{},
-	// 	&cms.Banner{},
-	// 	&cms.SiteContent{},
-	// 	&chat.ChatRoom{},
-	// 	&chat.ChatMessage{},
-	// 	&notification.Notification{},
-	// 	&notification.NotificationRead{},
-	// ); err != nil {
-	// 	panic(err)
-	// }
-	// TODO: run later when PostgreSQL is available - admin/sample data seeder
-	// seed.Run(db, envConfig)
+	if err := db.AutoMigrate(
+		&media.Media{},
+		&wallet.Wallet{},
+		&wallet.WalletTransaction{},
+		&staff.StaffUser{},
+		&user.User{},
+		&product.Category{},
+		&product.Product{},
+		&product.Attribute{},
+		&cart.Cart{},
+		&cart.CartItem{},
+		&finance.Order{},
+		&finance.OrderItem{},
+		&finance.PreInvoice{},
+		&payment.PaymentTransaction{},
+		&inventory.InventoryStock{},
+		&inventory.InventoryLog{},
+		&cms.BlogPost{},
+		&cms.Banner{},
+		&cms.SiteContent{},
+		&chat.ChatRoom{},
+		&chat.ChatMessage{},
+		&notification.Notification{},
+		&discount.Discount{},
+	); err != nil {
+		panic(err)
+	}
+	seed.Run(db, envConfig)
+	if err := wallet.NewStore(db).Backfill(context.Background()); err != nil {
+		panic(err)
+	}
 
 	switch envConfig.Env {
 	case "production":
@@ -90,6 +93,8 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	accountant := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant))
 	marketer := api.Group("", authMW, middleware.RequireRoles(staff.RoleMarketer))
 	support := api.Group("/support", authMW, middleware.RequireRoles(staff.RoleSupport))
+	discountReader := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer, staff.RoleSupport))
+	discountManager := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer))
 	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(staff.RoleAdmin))
 	ws := router.Group("/ws", authMW)
 
@@ -104,6 +109,8 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	chatService.OnRoomCreated = notifier.OnChatRoomCreated
 
 	financeStore := finance.NewStore(db, notifier)
+	walletStore := wallet.NewStore(db)
+	discountStore := discount.NewStore(db)
 	// TODO: MinIO disabled for now
 	// mediaClient := media.NewClient(context.Background(), envConfig)
 
@@ -113,13 +120,15 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	// media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
-	cart.NewHandler(cart.NewStore(db, financeStore)).RegisterRoutes(customer)
+	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(customer)
 	finance.NewHandler(financeStore).RegisterRoutes(accountant, customer, support)
-	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, customer, accountant)
+	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, walletStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, customer, accountant)
 	cms.NewHandler(cms.NewStore(db)).RegisterRoutes(api, marketer)
 	chat.NewHandler(hub, chatService).RegisterRoutes(ws, customer, support)
 	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, customer)
 	admin.NewHandler(db, staffStore).RegisterRoutes(adminGroup)
+	wallet.NewHandler(walletStore).RegisterRoutes(protected, accountant)
+	discount.NewHandler(discountStore, userStore).RegisterRoutes(discountReader, discountManager, customer)
 
 	log.Println("server listening on :" + envConfig.Port)
 	if err := router.Run(":" + envConfig.Port); err != nil {

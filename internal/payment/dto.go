@@ -1,5 +1,10 @@
 package payment
 
+import (
+	"github.com/proarash/ecommerce-server/internal/finance"
+	"github.com/proarash/ecommerce-server/internal/wallet"
+)
+
 type ZibalRequest struct {
 	Merchant    string `json:"merchant"`
 	Amount      int64  `json:"amount"`
@@ -50,6 +55,15 @@ type ZibalInquiryResponse struct {
 type CheckoutResponse struct {
 	TrackID    int64  `json:"track_id"`
 	PaymentURL string `json:"payment_url"`
+}
+
+type WalletChargeDto struct {
+	Amount int64 `json:"amount" binding:"required,min=1000" example:"500000"`
+}
+
+type WalletPayResponse struct {
+	Order  finance.Order `json:"order"`
+	Wallet wallet.Wallet `json:"wallet"`
 }
 
 type InquiryResponse struct {

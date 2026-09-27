@@ -27,4 +27,6 @@
 - [x] CORS middleware, Makefile `swag` target, dev.example.sh / .bat / .ps1 env runners
 - [x] Route/guard smoke test (67 routes register; 401/403/400 envelopes verified)
 - [x] product: Attribute entity (key, title, name) with many-to-many product_attributes, CRUD, assign/unassign endpoints, attribute_ids on product create/update
+- [x] wallet: Wallet (polymorphic owner user/staff, amount, locked for admin) + WalletTransaction ledger, auto-create hooks & backfill, my wallet, admin/accountant adjust, Zibal wallet charge, gateway purchase credit→debit, pay order from wallet
+- [x] discount: Discount (code, percent/value, max_price for percent, use_count/used_count, status, owner user), CRUD for admin/accountant/marketer, read-only support, customer check, redeem on cart checkout
 - [ ] End-to-end run against PostgreSQL/MinIO/Zibal sandbox (no Postgres available in this environment)
