@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/proarash/ecommerce-server/internal/finance"
+	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/types"
 )
@@ -30,6 +31,10 @@ func (h *Handler) RegisterRoutes(customer gin.IRouter) {
 func (h *Handler) fail(c *gin.Context, err error, notFound string) {
 	if errors.Is(err, ErrProductUnavailable) || errors.Is(err, ErrEmptyCart) {
 		types.BadRequest(c, err)
+		return
+	}
+	if errors.Is(err, inventory.ErrInsufficientStock) {
+		c.JSON(http.StatusConflict, types.ErrorResponse{Error: err.Error()})
 		return
 	}
 	types.HandleError(c, err, notFound)
@@ -135,13 +140,14 @@ func (h *Handler) RemoveItem(c *gin.Context) {
 
 // Checkout godoc
 // @Summary Checkout cart
-// @Description Converts the cart into a pending order, issues a system pre-invoice and sends invoice/pre-invoice bot messages
+// @Description Converts the cart into a pending order, reserves stock (outbound inventory movement), issues a system pre-invoice and sends invoice/pre-invoice bot messages
 // @Tags Cart
 // @Produce json
 // @Security BearerAuth
 // @Success 201 {object} types.ApiResponse{data=finance.Order}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
+// @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /api/cart/checkout [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	var order finance.Order

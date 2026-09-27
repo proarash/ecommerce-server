@@ -19,7 +19,7 @@ type Store interface {
 	FindOrder(ctx context.Context, id uint) (Order, error)
 	FindUserOrder(ctx context.Context, id, userID uint) (Order, error)
 	ListOrders(ctx context.Context, q ListQuery) ([]Order, int64, error)
-	UpdateOrderStatus(ctx context.Context, id uint, status string) error
+	MarkFailed(ctx context.Context, id uint) error
 	MarkPaid(ctx context.Context, orderID uint) error
 	CreatePreInvoice(ctx context.Context, dto CreatePreInvoiceDto, issuedBy string) (PreInvoice, error)
 	ListPreInvoices(ctx context.Context, q ListQuery) ([]PreInvoice, int64, error)
@@ -110,15 +110,10 @@ func (s *store) ListOrders(ctx context.Context, q ListQuery) ([]Order, int64, er
 	return items, total, err
 }
 
-func (s *store) UpdateOrderStatus(ctx context.Context, id uint, status string) error {
-	res := s.db.WithContext(ctx).Model(&Order{}).Where("id = ?", id).Update("status", status)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+func (s *store) MarkFailed(ctx context.Context, id uint) error {
+	return s.db.WithContext(ctx).Model(&Order{}).
+		Where("id = ? AND status IN ?", id, []string{OrderPending, OrderFailed}).
+		Update("status", OrderFailed).Error
 }
 
 func (s *store) MarkPaid(ctx context.Context, orderID uint) error {

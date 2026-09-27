@@ -750,6 +750,24 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
@@ -1414,7 +1432,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Converts the cart into a pending order, issues a system pre-invoice and sends invoice/pre-invoice bot messages",
+                "description": "Converts the cart into a pending order, reserves stock (outbound inventory movement), issues a system pre-invoice and sends invoice/pre-invoice bot messages",
                 "produces": [
                     "application/json"
                 ],
@@ -1461,6 +1479,24 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "allOf": [
                                 {
@@ -1920,7 +1956,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft-deletes the category; direct children become root categories",
+                "description": "Soft-deletes the category; direct children become root categories. Fails with 409 while products still belong to it.",
                 "produces": [
                     "application/json"
                 ],
@@ -1973,6 +2009,24 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -1982,6 +2036,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Set make_root=true to detach the category from its parent (cannot be combined with parent_id)",
                 "consumes": [
                     "application/json"
                 ],
@@ -3469,7 +3524,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Uploads an image, video or document to MinIO and stores its metadata",
+                "description": "Uploads an image, video or document to MinIO and stores its metadata. The MIME type is detected from the file content, not the client header.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -7968,6 +8023,9 @@ const docTemplate = `{
         "internal_product.UpdateCategoryDto": {
             "type": "object",
             "properties": {
+                "make_root": {
+                    "type": "boolean"
+                },
                 "media_id": {
                     "type": "integer",
                     "minimum": 1

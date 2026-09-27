@@ -14,12 +14,14 @@ import (
 	"github.com/proarash/ecommerce-server/internal/config"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
-	"github.com/proarash/ecommerce-server/internal/media"
+	// TODO: restore with auto migrations
+	// "github.com/proarash/ecommerce-server/internal/media"
 	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/notification"
 	"github.com/proarash/ecommerce-server/internal/payment"
 	"github.com/proarash/ecommerce-server/internal/product"
-	"github.com/proarash/ecommerce-server/internal/seed"
+	// TODO: restore with seeder
+	// "github.com/proarash/ecommerce-server/internal/seed"
 	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/user"
 	swaggerfiles "github.com/swaggo/files"
@@ -28,40 +30,44 @@ import (
 	"gorm.io/gorm"
 )
 
-func Bootstrap(envConfig *config.EnvConfig) bool {
+func Bootstrap(envConfig *config.EnvConfig) {
 	if envConfig.JwtSecret == "" {
 		log.Fatal("JWT_SECRET is required")
 	}
 
-	db, err := gorm.Open(postgres.Open(envConfig.Dsn), &gorm.Config{TranslateError: true})
+	// TODO: remove DisableAutomaticPing once PostgreSQL is available (it lets the server start without a database)
+	db, err := gorm.Open(postgres.Open(envConfig.Dsn), &gorm.Config{TranslateError: true, DisableAutomaticPing: true})
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(
-		&media.Media{},
-		&staff.StaffUser{},
-		&user.User{},
-		&product.Category{},
-		&product.Product{},
-		&product.Attribute{},
-		&cart.Cart{},
-		&cart.CartItem{},
-		&finance.Order{},
-		&finance.OrderItem{},
-		&finance.PreInvoice{},
-		&payment.PaymentTransaction{},
-		&inventory.InventoryStock{},
-		&inventory.InventoryLog{},
-		&cms.BlogPost{},
-		&cms.Banner{},
-		&cms.SiteContent{},
-		&chat.ChatRoom{},
-		&chat.ChatMessage{},
-		&notification.Notification{},
-	); err != nil {
-		panic(err)
-	}
-	seed.Run(db, envConfig)
+	// TODO: run later when PostgreSQL is available - auto migrations
+	// if err := db.AutoMigrate(
+	// 	&media.Media{},
+	// 	&staff.StaffUser{},
+	// 	&user.User{},
+	// 	&product.Category{},
+	// 	&product.Product{},
+	// 	&product.Attribute{},
+	// 	&cart.Cart{},
+	// 	&cart.CartItem{},
+	// 	&finance.Order{},
+	// 	&finance.OrderItem{},
+	// 	&finance.PreInvoice{},
+	// 	&payment.PaymentTransaction{},
+	// 	&inventory.InventoryStock{},
+	// 	&inventory.InventoryLog{},
+	// 	&cms.BlogPost{},
+	// 	&cms.Banner{},
+	// 	&cms.SiteContent{},
+	// 	&chat.ChatRoom{},
+	// 	&chat.ChatMessage{},
+	// 	&notification.Notification{},
+	// 	&notification.NotificationRead{},
+	// ); err != nil {
+	// 	panic(err)
+	// }
+	// TODO: run later when PostgreSQL is available - admin/sample data seeder
+	// seed.Run(db, envConfig)
 
 	switch envConfig.Env {
 	case "production":
@@ -72,7 +78,7 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 
 	router := gin.Default()
 	router.SetTrustedProxies([]string{"127.0.0.1"})
-	router.Use(middleware.Cors, middleware.ApiResponseMiddleware)
+	router.Use(middleware.Cors(envConfig.CorsOrigins), middleware.ApiResponseMiddleware)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	authMW := middleware.Auth(envConfig.JwtSecret)
@@ -115,8 +121,8 @@ func Bootstrap(envConfig *config.EnvConfig) bool {
 	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, customer)
 	admin.NewHandler(db, staffStore).RegisterRoutes(adminGroup)
 
-	router.Run(":" + envConfig.Port)
-	log.Println("server is running")
-
-	return true
+	log.Println("server listening on :" + envConfig.Port)
+	if err := router.Run(":" + envConfig.Port); err != nil {
+		log.Fatal(err)
+	}
 }

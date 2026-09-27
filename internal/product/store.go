@@ -8,7 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrCategoryCycle = errors.New("category cannot be its own ancestor")
+var (
+	ErrCategoryCycle       = errors.New("category cannot be its own ancestor")
+	ErrCategoryHasProducts = errors.New("category still has products; move or delete them first")
+)
 
 type Store interface {
 	CreateCategory(ctx context.Context, c *Category) error
@@ -88,6 +91,13 @@ func (s *store) UpdateCategory(ctx context.Context, id uint, fields map[string]a
 
 func (s *store) DeleteCategory(ctx context.Context, id uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var products int64
+		if err := tx.Model(&Product{}).Where("category_id = ?", id).Count(&products).Error; err != nil {
+			return err
+		}
+		if products > 0 {
+			return ErrCategoryHasProducts
+		}
 		if err := tx.Model(&Category{}).Where("parent_id = ?", id).Update("parent_id", nil).Error; err != nil {
 			return err
 		}

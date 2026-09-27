@@ -168,15 +168,20 @@ func (h *Handler) Callback(c *gin.Context) {
 	if !success && tx.Status == StatusPending {
 		tx.Status = q.Status
 	}
-	if err := h.store.Save(ctx, &tx); err != nil {
-		log.Println("payment: save:", err)
+	settled, err := h.store.Settle(ctx, &tx)
+	if err != nil {
+		log.Println("payment: settle:", err)
+	}
+	if !settled {
+		h.redirect(c, tx.OrderID)
+		return
 	}
 
 	if success {
 		if err := h.finance.MarkPaid(ctx, tx.OrderID); err != nil {
 			log.Println("payment: mark paid:", err)
 		}
-	} else if err := h.finance.UpdateOrderStatus(ctx, tx.OrderID, finance.OrderFailed); err != nil {
+	} else if err := h.finance.MarkFailed(ctx, tx.OrderID); err != nil {
 		log.Println("payment: mark failed:", err)
 	}
 	go h.notify(tx.OrderID, tx.UserID, tx.TrackID, success)

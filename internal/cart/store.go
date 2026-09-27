@@ -3,8 +3,10 @@ package cart
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/proarash/ecommerce-server/internal/finance"
+	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/product"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -134,6 +136,11 @@ func (s *store) Checkout(ctx context.Context, userID uint) (finance.Order, error
 		var err error
 		if order, pre, err = s.finance.CreateOrderTx(tx, userID, lines); err != nil {
 			return err
+		}
+		for _, l := range lines {
+			if err := inventory.DispatchTx(tx, l.ProductID, l.Quantity, fmt.Sprintf("order #%d", order.ID)); err != nil {
+				return err
+			}
 		}
 		return tx.Unscoped().Where("cart_id = ?", c.ID).Delete(&CartItem{}).Error
 	})

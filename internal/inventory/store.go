@@ -73,19 +73,31 @@ func (s *store) Outbound(ctx context.Context, dto OutboundDto, staffID uint) (In
 	var stock InventoryStock
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var err error
-		if stock, err = lockStock(tx, dto.ProductID); err != nil {
-			return err
-		}
-		if stock.Quantity < dto.Quantity {
-			return ErrInsufficientStock
-		}
-		stock.Quantity -= dto.Quantity
-		if err := tx.Save(&stock).Error; err != nil {
-			return err
-		}
-		return tx.Create(&InventoryLog{ProductID: dto.ProductID, Type: LogOutbound, Quantity: dto.Quantity, Reason: dto.Reason, CreatedBy: staffID}).Error
+		stock, err = dispatch(tx, dto.ProductID, dto.Quantity, dto.Reason, staffID)
+		return err
 	})
 	return stock, err
+}
+
+func dispatch(tx *gorm.DB, productID uint, quantity int, reason string, createdBy uint) (InventoryStock, error) {
+	stock, err := lockStock(tx, productID)
+	if err != nil {
+		return InventoryStock{}, err
+	}
+	if stock.Quantity < quantity {
+		return InventoryStock{}, ErrInsufficientStock
+	}
+	stock.Quantity -= quantity
+	if err := tx.Save(&stock).Error; err != nil {
+		return InventoryStock{}, err
+	}
+	err = tx.Create(&InventoryLog{ProductID: productID, Type: LogOutbound, Quantity: quantity, Reason: reason, CreatedBy: createdBy}).Error
+	return stock, err
+}
+
+func DispatchTx(tx *gorm.DB, productID uint, quantity int, reason string) error {
+	_, err := dispatch(tx, productID, quantity, reason, 0)
+	return err
 }
 
 func (s *store) Logs(ctx context.Context, productID uint, offset, limit int) ([]InventoryLog, int64, error) {

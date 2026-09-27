@@ -41,6 +41,7 @@ func (h *authHandler) respond(c *gin.Context, status int, res TokenResponse, err
 	case err != nil:
 		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
 	default:
+		c.SetSameSite(http.SameSiteStrictMode)
 		c.SetCookie("access_token", res.AccessToken, int(tokenTTL.Seconds()), "/", h.domain, h.secure, true)
 		c.JSON(status, res)
 	}

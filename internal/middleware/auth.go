@@ -15,8 +15,10 @@ func extractToken(c *gin.Context) string {
 	if h := c.GetHeader("Authorization"); strings.HasPrefix(h, "Bearer ") {
 		return strings.TrimPrefix(h, "Bearer ")
 	}
-	if q := c.Query("token"); q != "" {
-		return q
+	if strings.HasPrefix(c.Request.URL.Path, "/ws/") {
+		if q := c.Query("token"); q != "" {
+			return q
+		}
 	}
 	if ck, err := c.Cookie("access_token"); err == nil {
 		return ck

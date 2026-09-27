@@ -22,3 +22,9 @@ type Notification struct {
 	IsRead  bool   `json:"is_read" gorm:"default:false"`
 	Channel string `json:"channel" enums:"in_app,telegram,both"`
 }
+
+type NotificationRead struct {
+	gorm.Model
+	NotificationID uint `json:"notification_id" gorm:"uniqueIndex:idx_notification_reads_notification_user;not null"`
+	UserID         uint `json:"user_id" gorm:"uniqueIndex:idx_notification_reads_notification_user;not null"`
+}

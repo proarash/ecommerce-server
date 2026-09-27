@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 type EnvConfig struct {
 	Env                 string
@@ -22,6 +25,7 @@ type EnvConfig struct {
 	AdminName           string
 	AdminMobile         string
 	AdminPassword       string
+	CorsOrigins         []string
 }
 
 func getEnv(key, fallback string) string {
@@ -29,6 +33,16 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func splitList(v string) []string {
+	var out []string
+	for _, p := range strings.Split(v, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func GetEnvConfig() *EnvConfig {
@@ -52,5 +66,6 @@ func GetEnvConfig() *EnvConfig {
 		AdminName:           getEnv("ADMIN_NAME", "Admin"),
 		AdminMobile:         os.Getenv("ADMIN_MOBILE"),
 		AdminPassword:       os.Getenv("ADMIN_PASSWORD"),
+		CorsOrigins:         splitList(getEnv("CORS_ORIGINS", "http://localhost:3000")),
 	}
 }

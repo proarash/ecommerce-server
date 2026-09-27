@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Store interface {
@@ -52,7 +53,33 @@ func (s *store) List(ctx context.Context, userID *uint, offset, limit int) ([]No
 
 func (s *store) ListForUser(ctx context.Context, userID uint, offset, limit int) ([]Notification, int64, error) {
 	q := s.db.WithContext(ctx).Model(&Notification{}).Where("(user_id = ? OR user_id IS NULL) AND channel <> ?", userID, ChannelTelegram)
-	return s.page(q, offset, limit)
+	items, total, err := s.page(q, offset, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	var broadcastIDs []uint
+	for _, n := range items {
+		if n.UserID == nil {
+			broadcastIDs = append(broadcastIDs, n.ID)
+		}
+	}
+	if len(broadcastIDs) == 0 {
+		return items, total, nil
+	}
+	var readIDs []uint
+	if err := s.db.WithContext(ctx).Model(&NotificationRead{}).Where("user_id = ? AND notification_id IN ?", userID, broadcastIDs).Pluck("notification_id", &readIDs).Error; err != nil {
+		return nil, 0, err
+	}
+	read := map[uint]bool{}
+	for _, id := range readIDs {
+		read[id] = true
+	}
+	for i := range items {
+		if items[i].UserID == nil {
+			items[i].IsRead = read[items[i].ID]
+		}
+	}
+	return items, total, nil
 }
 
 func (s *store) Update(ctx context.Context, id uint, fields map[string]any) error {
@@ -78,12 +105,12 @@ func (s *store) Delete(ctx context.Context, id uint) error {
 }
 
 func (s *store) MarkRead(ctx context.Context, id, userID uint) error {
-	res := s.db.WithContext(ctx).Model(&Notification{}).Where("id = ? AND user_id = ?", id, userID).Update("is_read", true)
-	if res.Error != nil {
-		return res.Error
+	n, err := gorm.G[Notification](s.db).Where("id = ? AND (user_id = ? OR user_id IS NULL) AND channel <> ?", id, userID, ChannelTelegram).First(ctx)
+	if err != nil {
+		return err
 	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	if n.UserID != nil {
+		return s.db.WithContext(ctx).Model(&Notification{}).Where("id = ?", id).Update("is_read", true).Error
 	}
-	return nil
+	return s.db.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&NotificationRead{NotificationID: id, UserID: userID}).Error
 }

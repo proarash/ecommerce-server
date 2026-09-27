@@ -129,24 +129,36 @@ func (h *Handler) UpdateStaffStatus(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} types.ApiResponse{data=StatsResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
+// @Failure 500 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /api/admin/stats [get]
 func (h *Handler) Stats(c *gin.Context) {
 	db := h.db.WithContext(c.Request.Context())
 	var s StatsResponse
+	var err error
 	count := func(table string, dst *int64, where ...any) {
+		if err != nil {
+			return
+		}
 		q := db.Table(table).Where("deleted_at IS NULL")
 		if len(where) > 0 {
 			q = q.Where(where[0], where[1:]...)
 		}
-		q.Count(dst)
+		err = q.Count(dst).Error
 	}
+	paid := []string{"paid", "processing", "delivered"}
 	count("users", &s.Users)
 	count("staff_users", &s.Staff)
 	count("products", &s.Products)
 	count("orders", &s.Orders)
-	count("orders", &s.PaidOrders, "status IN ?", []string{"paid", "processing", "delivered"})
+	count("orders", &s.PaidOrders, "status IN ?", paid)
 	count("chat_rooms", &s.OpenChats, "status <> ?", "closed")
 	count("blog_posts", &s.BlogPosts)
-	db.Table("orders").Where("deleted_at IS NULL AND status IN ?", []string{"paid", "processing", "delivered"}).Select("COALESCE(SUM(total_amount), 0)").Scan(&s.Revenue)
+	if err == nil {
+		err = db.Table("orders").Where("deleted_at IS NULL AND status IN ?", paid).Select("COALESCE(SUM(total_amount), 0)").Scan(&s.Revenue).Error
+	}
+	if err != nil {
+		types.HandleError(c, err, "not found")
+		return
+	}
 	c.JSON(http.StatusOK, s)
 }

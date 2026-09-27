@@ -134,6 +134,7 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 
 // UpdateCategory godoc
 // @Summary Update category
+// @Description Set make_root=true to detach the category from its parent (cannot be combined with parent_id)
 // @Tags Categories
 // @Accept json
 // @Produce json
@@ -165,6 +166,9 @@ func (h *Handler) UpdateCategory(c *gin.Context) {
 	if dto.ParentID != nil {
 		fields["parent_id"] = *dto.ParentID
 	}
+	if dto.MakeRoot {
+		fields["parent_id"] = nil
+	}
 	if dto.MediaID != nil {
 		fields["media_id"] = *dto.MediaID
 	}
@@ -183,13 +187,14 @@ func (h *Handler) UpdateCategory(c *gin.Context) {
 
 // DeleteCategory godoc
 // @Summary Delete category
-// @Description Soft-deletes the category; direct children become root categories
+// @Description Soft-deletes the category; direct children become root categories. Fails with 409 while products still belong to it.
 // @Tags Categories
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Category ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
+// @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /api/categories/{id} [delete]
 func (h *Handler) DeleteCategory(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -197,6 +202,10 @@ func (h *Handler) DeleteCategory(c *gin.Context) {
 		return
 	}
 	if err := h.store.DeleteCategory(c.Request.Context(), id); err != nil {
+		if errors.Is(err, ErrCategoryHasProducts) {
+			c.JSON(http.StatusConflict, types.ErrorResponse{Error: err.Error()})
+			return
+		}
 		types.HandleError(c, err, "category not found")
 		return
 	}
@@ -277,7 +286,10 @@ func (h *Handler) CreateProduct(c *gin.Context) {
 		return
 	}
 	if !p.IsActive {
-		h.store.UpdateProduct(c.Request.Context(), p.ID, map[string]any{"is_active": false}, nil, nil)
+		if err := h.store.UpdateProduct(c.Request.Context(), p.ID, map[string]any{"is_active": false}, nil, nil); err != nil {
+			types.HandleError(c, err, "product not found")
+			return
+		}
 	}
 	created, err := h.store.FindProduct(c.Request.Context(), p.ID)
 	if err != nil {

@@ -10,7 +10,8 @@ type CreateCategoryDto struct {
 type UpdateCategoryDto struct {
 	Name     *string `json:"name" binding:"omitempty,max=100"`
 	Slug     *string `json:"slug" binding:"omitempty,max=120"`
-	ParentID *uint   `json:"parent_id" binding:"omitempty,min=1"`
+	ParentID *uint   `json:"parent_id" binding:"omitempty,min=1,excluded_with=MakeRoot"`
+	MakeRoot bool    `json:"make_root"`
 	MediaID  *uint   `json:"media_id" binding:"omitempty,min=1"`
 }
 

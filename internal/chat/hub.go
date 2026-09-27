@@ -118,7 +118,9 @@ func (s *Service) SupportReply(ctx context.Context, roomID, supportID uint, text
 		return ChatMessage{}, errors.New("room is closed")
 	}
 	if room.SupportID == nil || room.Status == RoomOpen {
-		s.db.WithContext(ctx).Model(&ChatRoom{}).Where("id = ?", roomID).Updates(map[string]any{"support_id": supportID, "status": RoomInProgress})
+		if err := s.db.WithContext(ctx).Model(&ChatRoom{}).Where("id = ?", roomID).Updates(map[string]any{"support_id": supportID, "status": RoomInProgress}).Error; err != nil {
+			return ChatMessage{}, err
+		}
 	}
 	msg := ChatMessage{RoomID: roomID, SenderRole: SenderSupport, SenderID: &supportID, Message: text}
 	return msg, s.Post(ctx, &msg)
@@ -134,7 +136,7 @@ func (s *Service) BotMessage(ctx context.Context, userID uint, text, msgType str
 }
 
 func (s *Service) UserMessages(ctx context.Context, userID uint, offset, limit int) ([]ChatMessage, int64, error) {
-	q := s.db.WithContext(ctx).Model(&ChatMessage{}).Where("room_id IN (?)", s.db.Model(&ChatRoom{}).Select("id").Where("user_id = ?", userID))
+	q := s.db.WithContext(ctx).Model(&ChatMessage{}).Where("room_id IN (?)", s.db.WithContext(ctx).Model(&ChatRoom{}).Select("id").Where("user_id = ?", userID))
 	return paginate(q, offset, limit)
 }
 

@@ -1232,6 +1232,8 @@ definitions:
     type: object
   internal_product.UpdateCategoryDto:
     properties:
+      make_root:
+        type: boolean
       media_id:
         minimum: 1
         type: integer
@@ -1776,6 +1778,15 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
       security:
       - BearerAuth: []
       summary: System statistics
@@ -2139,8 +2150,9 @@ paths:
       - Cart
   /api/cart/checkout:
     post:
-      description: Converts the cart into a pending order, issues a system pre-invoice
-        and sends invoice/pre-invoice bot messages
+      description: Converts the cart into a pending order, reserves stock (outbound
+        inventory movement), issues a system pre-invoice and sends invoice/pre-invoice
+        bot messages
       produces:
       - application/json
       responses:
@@ -2164,6 +2176,15 @@ paths:
               type: object
         "401":
           description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2382,7 +2403,8 @@ paths:
       - Categories
   /api/categories/{id}:
     delete:
-      description: Soft-deletes the category; direct children become root categories
+      description: Soft-deletes the category; direct children become root categories.
+        Fails with 409 while products still belong to it.
       parameters:
       - description: Category ID
         in: path
@@ -2403,6 +2425,15 @@ paths:
               type: object
         "404":
           description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2449,6 +2480,8 @@ paths:
     patch:
       consumes:
       - application/json
+      description: Set make_root=true to detach the category from its parent (cannot
+        be combined with parent_id)
       parameters:
       - description: Category ID
         in: path
@@ -3309,7 +3342,8 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Uploads an image, video or document to MinIO and stores its metadata
+      description: Uploads an image, video or document to MinIO and stores its metadata.
+        The MIME type is detected from the file content, not the client header.
       parameters:
       - description: Media file
         in: formData

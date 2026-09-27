@@ -12,7 +12,6 @@ type Store interface {
 	FindByMobile(ctx context.Context, mobile string) (StaffUser, error)
 	List(ctx context.Context, role string, offset, limit int) ([]StaffUser, int64, error)
 	Update(ctx context.Context, id uint, fields map[string]any) error
-	ExistsRole(ctx context.Context, role string) (bool, error)
 }
 
 type store struct {
@@ -58,10 +57,4 @@ func (s *store) Update(ctx context.Context, id uint, fields map[string]any) erro
 		return gorm.ErrRecordNotFound
 	}
 	return nil
-}
-
-func (s *store) ExistsRole(ctx context.Context, role string) (bool, error) {
-	var count int64
-	err := s.db.WithContext(ctx).Model(&StaffUser{}).Where("role = ?", role).Count(&count).Error
-	return count > 0, err
 }

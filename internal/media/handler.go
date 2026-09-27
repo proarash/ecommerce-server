@@ -3,6 +3,7 @@ package media
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,7 @@ func detectType(mime string) string {
 
 // Upload godoc
 // @Summary Upload media
-// @Description Uploads an image, video or document to MinIO and stores its metadata
+// @Description Uploads an image, video or document to MinIO and stores its metadata. The MIME type is detected from the file content, not the client header.
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
@@ -71,9 +72,19 @@ func (h *Handler) Upload(c *gin.Context) {
 	}
 	defer f.Close()
 
-	mime := fh.Header.Get("Content-Type")
-	if mime == "" {
-		mime = "application/octet-stream"
+	head := make([]byte, 512)
+	n, err := io.ReadFull(f, head)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
+		return
+	}
+	mime := http.DetectContentType(head[:n])
+	if i := strings.IndexByte(mime, ';'); i >= 0 {
+		mime = strings.TrimSpace(mime[:i])
 	}
 	mediaType := detectType(mime)
 	object := fmt.Sprintf("%s/%d%s", mediaType, time.Now().UnixNano(), strings.ToLower(filepath.Ext(fh.Filename)))

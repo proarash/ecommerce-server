@@ -233,7 +233,10 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 		return
 	}
 	if dto.IsActive != nil && !*dto.IsActive {
-		h.store.UpdateBanner(c.Request.Context(), b.ID, map[string]any{"is_active": false})
+		if err := h.store.UpdateBanner(c.Request.Context(), b.ID, map[string]any{"is_active": false}); err != nil {
+			types.HandleError(c, err, "banner not found")
+			return
+		}
 	}
 	created, err := h.store.FindBanner(c.Request.Context(), b.ID)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/proarash/ecommerce-server/internal/middleware"
+	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/types"
 	"github.com/proarash/ecommerce-server/pkg/token"
 )
@@ -74,7 +75,7 @@ func (h *Handler) ServeWS(c *gin.Context) {
 			go h.service.OnRoomCreated(context.Background(), room)
 		}
 		client.roomID = room.ID
-	case p.Role == "support" || p.Role == "admin":
+	case p.UserType == token.UserTypeStaff && (p.Role == staff.RoleSupport || p.Role == staff.RoleAdmin):
 		client.isSupport = true
 	default:
 		c.JSON(http.StatusForbidden, types.ErrorResponse{Error: "forbidden"})

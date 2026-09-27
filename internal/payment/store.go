@@ -10,7 +10,7 @@ type Store interface {
 	Create(ctx context.Context, t *PaymentTransaction) error
 	FindByTrackID(ctx context.Context, trackID int64) (PaymentTransaction, error)
 	FindUserTransaction(ctx context.Context, trackID int64, userID uint) (PaymentTransaction, error)
-	Save(ctx context.Context, t *PaymentTransaction) error
+	Settle(ctx context.Context, t *PaymentTransaction) (bool, error)
 }
 
 type store struct {
@@ -33,6 +33,15 @@ func (s *store) FindUserTransaction(ctx context.Context, trackID int64, userID u
 	return gorm.G[PaymentTransaction](s.db).Where("track_id = ? AND user_id = ?", trackID, userID).First(ctx)
 }
 
-func (s *store) Save(ctx context.Context, t *PaymentTransaction) error {
-	return s.db.WithContext(ctx).Save(t).Error
+func (s *store) Settle(ctx context.Context, t *PaymentTransaction) (bool, error) {
+	res := s.db.WithContext(ctx).Model(&PaymentTransaction{}).
+		Where("id = ? AND status = ?", t.ID, StatusPending).
+		Updates(map[string]any{
+			"status":      t.Status,
+			"result":      t.Result,
+			"ref_number":  t.RefNumber,
+			"card_number": t.CardNumber,
+			"paid_at":     t.PaidAt,
+		})
+	return res.RowsAffected == 1, res.Error
 }

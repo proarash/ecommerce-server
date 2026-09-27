@@ -38,7 +38,3 @@ go.work.sum
 *.log
 tmp/
 bin
-# Local dev runners (copies of dev.example.*)
-/dev.sh
-/dev.bat
-/dev.ps1
