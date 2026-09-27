@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -12,38 +14,122 @@ import (
 	"gorm.io/gorm"
 )
 
-const tokenTTL = 24 * time.Hour
-
 var (
 	ErrInvalidCredentials = errors.New("invalid mobile or password")
 	ErrInactive           = errors.New("account is disabled")
 	ErrMobileTaken        = errors.New("mobile already registered")
+	ErrSessionExpired     = errors.New("session expired")
 )
 
 type AuthRepo interface {
-	Login(ctx context.Context, dto LoginDto) (TokenResponse, error)
+	LoginStaff(ctx context.Context, dto LoginDto) (TokenResponse, error)
+	LoginCustomer(ctx context.Context, dto LoginDto) (TokenResponse, error)
 	Register(ctx context.Context, dto RegisterDto) (TokenResponse, error)
+	Refresh(ctx context.Context, expired *token.AuthPayload) (*token.AuthPayload, string, error)
+	Revoke(ctx context.Context, p *token.AuthPayload) error
+	Impersonate(ctx context.Context, adminID, userID uint) (TokenResponse, error)
 }
 
 type authRepo struct {
+	db     *gorm.DB
 	staff  staff.Store
 	users  user.Store
 	secret string
 }
 
-func NewAuthRepo(staffStore staff.Store, userStore user.Store, secret string) AuthRepo {
-	return &authRepo{staff: staffStore, users: userStore, secret: secret}
+func NewAuthRepo(db *gorm.DB, staffStore staff.Store, userStore user.Store, secret string) AuthRepo {
+	return &authRepo{db: db, staff: staffStore, users: userStore, secret: secret}
 }
 
-func (r *authRepo) issue(id uint, mobile, role, userType string) (TokenResponse, error) {
-	t, err := token.GenerateJwt(&token.AuthPayload{UserID: id, Mobile: mobile, Role: role, UserType: userType}, r.secret, tokenTTL)
+func ownerColumn(userType string) string {
+	if userType == token.UserTypeStaff {
+		return "staff_id"
+	}
+	return "user_id"
+}
+
+func newSessionToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
+func (r *authRepo) accessToken(id uint, mobile, role, userType, session string) (*token.AuthPayload, string, error) {
+	p := &token.AuthPayload{UserID: id, Mobile: mobile, Role: role, UserType: userType}
+	p.ID = session
+	t, err := token.GenerateJwt(p, r.secret, token.AccessTTL)
+	return p, t, err
+}
+
+func (r *authRepo) issue(ctx context.Context, id uint, mobile, role, userType string) (TokenResponse, error) {
+	session, err := newSessionToken()
 	if err != nil {
 		return TokenResponse{}, err
 	}
-	return TokenResponse{AccessToken: t, UserID: id, Role: role, UserType: userType}, nil
+	rt := RefreshToken{Token: session, ExpiresAt: time.Now().Add(token.RefreshTTL)}
+	if userType == token.UserTypeStaff {
+		rt.StaffID = &id
+	} else {
+		rt.UserID = &id
+	}
+	err = r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Unscoped().Where(ownerColumn(userType)+" = ?", id).Delete(&RefreshToken{}).Error; err != nil {
+			return err
+		}
+		return tx.Create(&rt).Error
+	})
+	if err != nil {
+		return TokenResponse{}, err
+	}
+	_, access, err := r.accessToken(id, mobile, role, userType, session)
+	if err != nil {
+		return TokenResponse{}, err
+	}
+	return TokenResponse{AccessToken: access, UserID: id, Role: role, UserType: userType}, nil
 }
 
-func (r *authRepo) loginStaff(ctx context.Context, dto LoginDto) (TokenResponse, error) {
+func (r *authRepo) Refresh(ctx context.Context, expired *token.AuthPayload) (*token.AuthPayload, string, error) {
+	var rt RefreshToken
+	err := r.db.WithContext(ctx).Where(ownerColumn(expired.UserType)+" = ? AND token = ?", expired.UserID, expired.ID).First(&rt).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, "", ErrSessionExpired
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	if time.Now().After(rt.ExpiresAt) {
+		r.db.WithContext(ctx).Unscoped().Delete(&rt)
+		return nil, "", ErrSessionExpired
+	}
+	var mobile, role string
+	var active bool
+	if expired.UserType == token.UserTypeStaff {
+		s, err := r.staff.FindByID(ctx, expired.UserID)
+		if err != nil {
+			return nil, "", ErrSessionExpired
+		}
+		mobile, role, active = s.Mobile, s.Role, s.Status
+	} else {
+		u, err := r.users.FindByID(ctx, expired.UserID)
+		if err != nil {
+			return nil, "", ErrSessionExpired
+		}
+		mobile, role, active = u.Mobile, token.RoleUser, u.Status
+	}
+	if !active {
+		r.db.WithContext(ctx).Unscoped().Delete(&rt)
+		return nil, "", ErrInactive
+	}
+	return r.accessToken(expired.UserID, mobile, role, expired.UserType, rt.Token)
+}
+
+func (r *authRepo) Revoke(ctx context.Context, p *token.AuthPayload) error {
+	return r.db.WithContext(ctx).Unscoped().Where(ownerColumn(p.UserType)+" = ? AND token = ?", p.UserID, p.ID).Delete(&RefreshToken{}).Error
+}
+
+func (r *authRepo) LoginStaff(ctx context.Context, dto LoginDto) (TokenResponse, error) {
 	s, err := r.staff.FindByMobile(ctx, dto.Mobile)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,10 +143,10 @@ func (r *authRepo) loginStaff(ctx context.Context, dto LoginDto) (TokenResponse,
 	if !s.Status {
 		return TokenResponse{}, ErrInactive
 	}
-	return r.issue(s.ID, s.Mobile, s.Role, token.UserTypeStaff)
+	return r.issue(ctx, s.ID, s.Mobile, s.Role, token.UserTypeStaff)
 }
 
-func (r *authRepo) loginCustomer(ctx context.Context, dto LoginDto) (TokenResponse, error) {
+func (r *authRepo) LoginCustomer(ctx context.Context, dto LoginDto) (TokenResponse, error) {
 	u, err := r.users.FindByMobile(ctx, dto.Mobile)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -74,21 +160,7 @@ func (r *authRepo) loginCustomer(ctx context.Context, dto LoginDto) (TokenRespon
 	if !u.Status {
 		return TokenResponse{}, ErrInactive
 	}
-	return r.issue(u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
-}
-
-func (r *authRepo) Login(ctx context.Context, dto LoginDto) (TokenResponse, error) {
-	switch dto.UserType {
-	case token.UserTypeStaff:
-		return r.loginStaff(ctx, dto)
-	case token.UserTypeCustomer:
-		return r.loginCustomer(ctx, dto)
-	}
-	res, err := r.loginStaff(ctx, dto)
-	if errors.Is(err, ErrInvalidCredentials) {
-		return r.loginCustomer(ctx, dto)
-	}
-	return res, err
+	return r.issue(ctx, u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
 }
 
 func (r *authRepo) Register(ctx context.Context, dto RegisterDto) (TokenResponse, error) {
@@ -108,5 +180,18 @@ func (r *authRepo) Register(ctx context.Context, dto RegisterDto) (TokenResponse
 		}
 		return TokenResponse{}, err
 	}
-	return r.issue(u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
+	return r.issue(ctx, u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
+}
+
+func (r *authRepo) Impersonate(ctx context.Context, adminID, userID uint) (TokenResponse, error) {
+	u, err := r.users.FindByID(ctx, userID)
+	if err != nil {
+		return TokenResponse{}, err
+	}
+	p := &token.AuthPayload{UserID: u.ID, Mobile: u.Mobile, Role: token.RoleUser, UserType: token.UserTypeCustomer, ImpersonatorID: &adminID}
+	access, err := token.GenerateJwt(p, r.secret, token.AccessTTL)
+	if err != nil {
+		return TokenResponse{}, err
+	}
+	return TokenResponse{AccessToken: access, UserID: u.ID, Role: token.RoleUser, UserType: token.UserTypeCustomer}, nil
 }

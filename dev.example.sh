@@ -19,7 +19,7 @@ export MINIO_BUCKET='ecommerce'
 export MINIO_USE_SSL='false'
 export MINIO_PUBLIC_URL=''
 export ZIBAL_MERCHANT='zibal'
-export ZIBAL_CALLBACK_URL='http://localhost:4000/api/payment/callback'
+export ZIBAL_CALLBACK_URL='http://localhost:4000/payment/callback'
 export CLIENT_PAYMENT_REDIRECT_URL='http://localhost:3000/payment/result'
 export CORS_ORIGINS='http://localhost:3000'
 

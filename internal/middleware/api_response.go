@@ -24,7 +24,7 @@ func (w responseWriter) WriteString(s string) (int, error) {
 	return w.body.WriteString(s)
 }
 
-var skipPrefixes = []string{"/ws", "/swagger", "/api/payment/callback"}
+var skipPrefixes = []string{"/ws", "/swagger", "/payment/callback"}
 
 func ApiResponseMiddleware(c *gin.Context) {
 	for _, p := range skipPrefixes {

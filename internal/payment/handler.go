@@ -55,13 +55,14 @@ func trackParam(c *gin.Context) (int64, bool) {
 // @Description Requests a Zibal trackId for a pending/failed order and returns the gateway redirect URL. On success the paid amount is credited to the customer wallet and the order price is then debited from it.
 // @Tags Payment
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/payment/checkout/{orderId} [post]
+// @Router /payment/checkout/{orderId} [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
 	if !ok {
@@ -98,13 +99,14 @@ func (h *Handler) Checkout(c *gin.Context) {
 // @Tags Payment
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body WalletChargeDto true "Charge amount"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/payment/wallet/charge [post]
+// @Router /payment/wallet/charge [post]
 func (h *Handler) ChargeWallet(c *gin.Context) {
 	var dto WalletChargeDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -132,13 +134,14 @@ func (h *Handler) ChargeWallet(c *gin.Context) {
 // @Description Debits the order total from the customer wallet balance and marks the order as paid
 // @Tags Payment
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=WalletPayResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/payment/checkout/{orderId}/wallet [post]
+// @Router /payment/checkout/{orderId}/wallet [post]
 func (h *Handler) PayWithWallet(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
 	if !ok {
@@ -248,7 +251,7 @@ func (h *Handler) settle(ctx context.Context, tx PaymentTransaction) error {
 // @Success 302 "Redirect to client payment result page"
 // @Failure 400 {object} types.ErrorResponse
 // @Failure 404 {object} types.ErrorResponse
-// @Router /api/payment/callback [get]
+// @Router /payment/callback [get]
 func (h *Handler) Callback(c *gin.Context) {
 	var q CallbackQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -322,12 +325,13 @@ func (h *Handler) Callback(c *gin.Context) {
 // @Summary Payment transaction status
 // @Tags Payment
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=PaymentTransaction}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/payment/status/{trackId} [get]
+// @Router /payment/status/{trackId} [get]
 func (h *Handler) Status(c *gin.Context) {
 	trackID, ok := trackParam(c)
 	if !ok {
@@ -346,13 +350,14 @@ func (h *Handler) Status(c *gin.Context) {
 // @Description Queries Zibal /v1/inquiry for the track ID and returns it with the local transaction record
 // @Tags Payment
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=InquiryResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/payment/inquiry/{trackId} [post]
+// @Router /payment/inquiry/{trackId} [post]
 func (h *Handler) Inquiry(c *gin.Context) {
 	trackID, ok := trackParam(c)
 	if !ok {

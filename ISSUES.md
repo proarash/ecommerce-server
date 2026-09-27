@@ -14,7 +14,7 @@ These come from `CLAUDE.md` and override convenience:
 2. **No new third-party Go packages.** Only the libraries in `plan.md` §1 (already in `go.mod`) plus the Go standard library.
 3. **Keep the `plan.md` §2 structure and architecture.** When a fix needs an endpoint, env var, model field or file that `plan.md` does not list, update `plan.md` in the same change. Each issue says what to add. If you can ask the user, confirm new endpoints before building them.
 4. **Fetch official docs with `curl` before using a package API.** Section 5 lists the relevant URLs.
-5. **Full Swagger annotations on every new or changed handler:** `@Summary`, `@Tags`, `@Accept`, `@Produce`, `@Param`, `@Success`, `@Failure`, `@Security BearerAuth` when authenticated, and `@Router`. Document JSON responses as `types.ApiResponse{data=...}`. The exception is routes skipped by `ApiResponseMiddleware` (`/ws`, `/swagger`, `/api/payment/callback`), which return unwrapped bodies.
+5. **Full Swagger annotations on every new or changed handler:** `@Summary`, `@Tags`, `@Accept`, `@Produce`, `@Param`, `@Success`, `@Failure`, `@Security BearerAuth` when authenticated, and `@Router`. Document JSON responses as `types.ApiResponse{data=...}`. The exception is routes skipped by `ApiResponseMiddleware` (`/ws`, `/swagger`, `/payment/callback`), which return unwrapped bodies.
 6. **Regenerate Swagger docs** with `make swag`, which runs `swag init -g cmd/main.go -o ./docs --parseInternal --parseDependency --parseDepth 2`. Never hand-edit `docs/`.
 7. **New env vars** go into `internal/config/env.go`, all three `dev.example.*` scripts and `docker-compose.yml`. Do not edit the gitignored local copies `dev.sh`, `dev.bat` and `dev.ps1`.
 
@@ -46,14 +46,14 @@ Work through the checklist in order. H1–H4 share one target design, described 
 - [ ] **M5** Telegram bot token and JWTs leak into logs
 - [ ] **M6** Soft delete plus full unique indexes block reuse of titles, SKUs, slugs and keys
 - [ ] **M7** Checkout can deadlock on stock row locks
-- [ ] **M8** `PATCH /api/cms/content` wipes fields that were omitted
+- [ ] **M8** `PATCH /cms/content` wipes fields that were omitted
 - [ ] **M9** `docker-compose.yml` cannot run the app
 - [ ] **M10** 500 responses leak internal error details
 
 ### P3: Low
 - [ ] **L1** `internal/types` is not in the plan structure (decision)
 - [ ] **L2** Sync `plan.md` with justified model deviations
-- [ ] **L3** `GET /api/inventory` omits products without a stock row
+- [ ] **L3** `GET /inventory` omits products without a stock row
 - [ ] **L4** Inactive products and banners: public leak and staff blind spot
 - [ ] **L5** Unknown media IDs are silently dropped
 - [ ] **L6** WebSocket upgrader accepts any Origin
@@ -100,7 +100,7 @@ Work through the checklist in order. H1–H4 share one target design, described 
 **Where:** `cmd/bootstrap.go:69-70`, `internal/seed/seed.go:50-65` (`seedAdmin`).
 
 **Problem:**
-- `seed.Run` is commented out, and nothing else can create an admin: `POST /api/admin/staff` rejects role `admin` and itself requires an admin. As a result every `/api/admin/*` route (staff management, notification CRUD, stats) is unreachable.
+- `seed.Run` is commented out, and nothing else can create an admin: `POST /admin/staff` rejects role `admin` and itself requires an admin. As a result every `/admin/*` route (staff management, notification CRUD, stats) is unreachable.
 - `seedAdmin` silently skips when `ADMIN_MOBILE` or `ADMIN_PASSWORD` is empty.
 - `seedAdmin` never checks the values against the login DTO (`auth.LoginDto`: mobile `numeric,len=11`, password `min=6,max=72`). An admin seeded with other values can never log in.
 
@@ -113,7 +113,7 @@ Work through the checklist in order. H1–H4 share one target design, described 
    - otherwise, log a clear warning.
 
 **Acceptance:**
-- The first boot with valid `ADMIN_*` values creates exactly one admin, who can log in via `POST /api/auth/login`.
+- The first boot with valid `ADMIN_*` values creates exactly one admin, who can log in via `POST /auth/staff/login`.
 - Restarting does not create duplicates.
 - A non-production boot seeds:
   - 2 storekeepers, 3 accountants, 2 marketers and 5 support agents (`DefaultAvatarID` 1–5);
@@ -129,7 +129,7 @@ Work through the checklist in order. H1–H4 share one target design, described 
 **Where:** `cmd/bootstrap.go:4, 18, 89, 107-108, 113`.
 
 **Problem:** The media route group, the MinIO client and the handler registration are all commented out.
-- `POST /api/media/upload` and `GET /api/media/:id` return 404, yet Swagger still documents them.
+- `POST /media/upload` and `GET /media/:id` return 404, yet Swagger still documents them.
 - No media ID can ever be created for products, categories, blogs, banners, site content or staff avatars.
 
 **Plan:** §7, and §11 "Media Management (roles: admin, storekeeper, marketer, support)".
@@ -173,7 +173,7 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
 
 **Problem:**
 - When `success != 1`, the handler never contacts Zibal. It copies `status` from the query string into the transaction, settles it, marks the order failed and sends "payment failed".
-- `GET /api/payment/callback` is public, so anyone holding a trackId can call `?trackId=<id>&success=0` before the customer pays.
+- `GET /payment/callback` is public, so anyone holding a trackId can call `?trackId=<id>&success=0` before the customer pays.
 - When Zibal's real redirect then arrives, the `tx.Status != StatusPending` check (line 142) returns early. The payment is never verified and the order never becomes paid.
 - `PaymentTransaction.Status` must only ever come from Zibal API responses, never from the URL.
 
@@ -238,11 +238,11 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
 **Problem:**
 - When `Verify` returns an error, `success` stays false and lines 168-170 copy the query `status` into the payment and settle it.
 - The order is marked failed even though the customer may have paid; Zibal then reverses the money.
-- A stuck payment cannot be repaired, because `POST /api/payment/inquiry/:trackId` only reads.
+- A stuck payment cannot be repaired, because `POST /payment/inquiry/:trackId` only reads.
 
 **Fix:**
 1. Covered by H1 step 5: transport or unknown errors leave the payment pending.
-2. Make `POST /api/payment/inquiry/:trackId` (accountant and admin) reconcile when the local payment is still -1. Call `/v1/inquiry`, then act on the gateway status:
+2. Make `POST /payment/inquiry/:trackId` (accountant and admin) reconcile when the local payment is still -1. Call `/v1/inquiry`, then act on the gateway status:
    - 2 (paid, unverified): run the H1 flow (verify and settle).
    - 1 (paid, verified): settle as success after the same amount check. Running the H1 flow also works, because verify returns 201.
    - A final failure status (3 and above): settle as failed and call `MarkFailedTx`.
@@ -312,7 +312,7 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
    - call `inventory.RestockTx` for every `OrderItem`, with reason `order #<id> cancelled`.
 
    `finance` importing `inventory` creates no import cycle. Add a `CancelOrder(ctx, ...)` wrapper that runs `CancelOrderTx` in a transaction and then notifies the customer through `SendAutomatedMessage`. Add a constant such as `MsgOrderCancelled`, mapped to chat type `text` in `chatType` and to notification type `order` in `notificationType`.
-3. **Customer endpoint** `POST /api/user/orders/:id/cancel`:
+3. **Customer endpoint** `POST /user/orders/:id/cancel`:
    - customer group, own orders only;
    - allowed from `pending` or `failed`;
    - registered in `finance.Handler.RegisterRoutes`, with full Swagger;
@@ -342,7 +342,7 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
 - The statuses `processing`, `delivered` and `cancelled` exist (plan §4.5), and reports and stats count them, but no code path ever sets them.
 - Paid orders can never be fulfilled or cancelled.
 
-**Fix:** Add `PATCH /api/admin/orders/:id/status` in the admin group.
+**Fix:** Add `PATCH /admin/orders/:id/status` in the admin group.
 - **Body:** `{"status": "processing" | "delivered" | "cancelled"}`, validated with `oneof`, with Swagger `enums`.
 - **Allowed transitions:**
   - `paid → processing`
@@ -357,7 +357,7 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
 **Acceptance:**
 - The listed transitions work, and every other transition returns 400.
 - Cancelling a paid order restores stock.
-- Delivered orders appear in `GET /api/finance/reports`.
+- Delivered orders appear in `GET /finance/reports`.
 
 ---
 
@@ -369,7 +369,7 @@ grep -rnE '^\s*//' --include=*.go cmd internal pkg | grep -vE '//\s*@|godoc$'
 
 **Problem:**
 - `Status` is checked only at login.
-- `PATCH /api/admin/staff/:id/status` with `false` leaves the staff member fully authorized for up to 24 h (`tokenTTL`). Customers behave the same way.
+- `PATCH /admin/staff/:id/status` with `false` leaves the staff member fully authorized for up to 24 h (`tokenTTL`). Customers behave the same way.
 - Role guards use the role stored in the token, never the current one.
 
 **Fix:** `middleware` cannot import `staff` or `user`, because both already import `middleware`. Inject a checker instead:
@@ -421,7 +421,7 @@ This covers `/ws` as well, because it uses the same middleware.
 
 **Problem:**
 - Every order or payment bot message creates an `open` room for the customer.
-- `GET /api/support/chat/rooms` and the admin `open_chats` stat then include rooms where the customer never wrote anything.
+- `GET /support/chat/rooms` and the admin `open_chats` stat then include rooms where the customer never wrote anything.
 
 **Fix:** In `Service.Rooms` and in the `Stats` count, include only rooms that contain at least one user message:
 ```sql
@@ -526,7 +526,7 @@ Keep creating the room itself, because plan §5.1 requires bot messages to go in
 
 ---
 
-### M8: `PATCH /api/cms/content` wipes fields that were omitted
+### M8: `PATCH /cms/content` wipes fields that were omitted
 
 **Where:** `internal/cms/dto.go:43-48` (`SiteContentItemDto`), `internal/cms/store.go:145-159` (`UpsertContents`).
 
@@ -617,7 +617,7 @@ Moving it into `middleware` would touch every handler and annotation for no func
 
 ---
 
-### L3: `GET /api/inventory` omits products without a stock row
+### L3: `GET /inventory` omits products without a stock row
 
 **Where:** `internal/inventory/store.go:29-38` (`List`).
 
@@ -638,15 +638,15 @@ Moving it into `middleware` would touch every handler and annotation for no func
 **Where:** `internal/product/store.go:178-180` (`FindProduct`), `internal/product/handler.go:226-259`, `internal/cms/store.go:114-116` (`ActiveBanners`), `internal/cms/handler.go:39-51`.
 
 **Problem:**
-- Public `GET /api/products/:id` returns inactive products, while `GET /api/products` hides them.
+- Public `GET /products/:id` returns inactive products, while `GET /products` hides them.
 - Staff have no endpoint that lists inactive products or inactive banners. Once something is deactivated, a storekeeper or marketer can find it only by remembering its ID.
 
 **Fix:**
 1. Add `middleware.OptionalAuth(secret, check)`, using the same checker as M1. It parses a token when one is present and never aborts. Use it on the public product and CMS GET routes, for example by passing `api.Group("", optionalAuth)` as the public group to `product.RegisterRoutes` and `cms.RegisterRoutes`.
-2. For public callers, `GET /api/products/:id` returns 404 for inactive products.
+2. For public callers, `GET /products/:id` returns 404 for inactive products.
 3. With `?include_inactive=true`:
    - a storekeeper or admin token makes product list and get include inactive products;
-   - a marketer or admin token makes `GET /api/cms/content` include inactive banners.
+   - a marketer or admin token makes `GET /cms/content` include inactive banners.
 4. Document the query parameter in Swagger.
 
 **Acceptance:**
@@ -761,7 +761,7 @@ Moving it into `middleware` would touch every handler and annotation for no func
 **Fix:**
 1. Add a partial unique index on `ChatRoom.UserID`: `uniqueIndex:idx_chat_rooms_active_user,where:status <> 'closed' AND deleted_at IS NULL`. Keep the plain index as well.
 2. In `EnsureRoom`, re-select the active room when the insert hits `gorm.ErrDuplicatedKey`.
-3. Reopening a closed room while another room is active will then return 409 through `HandleError`. Document that on `PATCH /api/support/chat/rooms/:id/status`.
+3. Reopening a closed room while another room is active will then return 409 through `HandleError`. Document that on `PATCH /support/chat/rooms/:id/status`.
 
 **Acceptance:** Concurrent `EnsureRoom` calls for one user return the same room.
 
@@ -785,7 +785,7 @@ Moving it into `middleware` would touch every handler and annotation for no func
 
 **Problem:**
 - `int64(order.TotalAmount)` truncates instead of rounding.
-- The mobile sent to Zibal comes from the JWT, which is stale after `PATCH /api/user/profile` changes the mobile.
+- The mobile sent to Zibal comes from the JWT, which is stale after `PATCH /user/profile` changes the mobile.
 
 **Fix:**
 1. Use `int64(math.Round(order.TotalAmount))`.
@@ -859,7 +859,7 @@ Fetch with `curl`, read, and only then write code.
 - [ ] `make swag` has been run. Swagger UI at `http://localhost:4000/swagger/index.html` lists every route, including the new ones, and no longer lists routes that don't exist.
 - [ ] The comment check from B4 prints nothing.
 - [ ] `plan.md` is updated for:
-  - new routes: `POST /api/user/orders/:id/cancel`, `PATCH /api/admin/orders/:id/status`;
+  - new routes: `POST /user/orders/:id/cancel`, `PATCH /admin/orders/:id/status`;
   - new env vars: `ORDER_EXPIRY_MINUTES`, `CLIENT_PREINVOICE_URL`;
   - the `include_inactive` query parameter (L4);
   - the `failed` order status and the `NotificationRead` model (L2);
@@ -874,7 +874,7 @@ These need PostgreSQL, MinIO and the Zibal sandbox (merchant `zibal`), most easi
 1. **Fresh boot:** tables are created, the admin is seeded and can log in, and sample data exists outside production (B1, B2).
 2. **Media upload:** as storekeeper, upload a PNG (201) and an HTML file (415), then attach the PNG to a product (B3, M4, L5).
 3. **Happy-path payment:** customer adds to cart, checks out (stock decreases, pre-invoice issued, bot messages sent), pays in the sandbox, and is redirected to `?inv=inv-<id>`. The order is `paid` and the pre-invoice is `paid` (H1).
-4. **Forged callback:** call `GET /api/payment/callback?trackId=<id>&success=0` before paying, then pay. The order still ends up `paid` (H1).
+4. **Forged callback:** call `GET /payment/callback?trackId=<id>&success=0` before paying, then pay. The order still ends up `paid` (H1).
 5. **Double payment:** create two trackIds for one order and pay both. The order is paid once, there is one paid pre-invoice, and the second payment is not verified (H4).
 6. **Failed payment, then cancel or expiry:** stock stays reserved after the failure; a customer cancel or the expiry job restores it with an inbound log (H5).
 7. **Order lifecycle:** admin moves the order `paid → processing → delivered`, then cancels another paid order and its stock is restored (H6).

@@ -33,13 +33,14 @@ func (h *Handler) RegisterRoutes(admin gin.IRouter) {
 // @Tags Admin
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body CreateStaffDto true "Staff user"
 // @Success 201 {object} types.ApiResponse{data=staff.StaffUser}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/staff [post]
+// @Router /admin/staff [post]
 func (h *Handler) CreateStaff(c *gin.Context) {
 	var dto CreateStaffDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -63,13 +64,14 @@ func (h *Handler) CreateStaff(c *gin.Context) {
 // @Summary List staff users
 // @Tags Admin
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param role query string false "Role" Enums(admin, storekeeper, accountant, marketer, support)
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]staff.StaffUser}}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/staff [get]
+// @Router /admin/staff [get]
 func (h *Handler) ListStaff(c *gin.Context) {
 	var q StaffQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -89,13 +91,14 @@ func (h *Handler) ListStaff(c *gin.Context) {
 // @Tags Admin
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Staff ID"
 // @Param body body UpdateStaffStatusDto true "Status"
 // @Success 200 {object} types.ApiResponse{data=staff.StaffUser}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/staff/{id}/status [patch]
+// @Router /admin/staff/{id}/status [patch]
 func (h *Handler) UpdateStaffStatus(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -126,11 +129,12 @@ func (h *Handler) UpdateStaffStatus(c *gin.Context) {
 // @Summary System statistics
 // @Tags Admin
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Success 200 {object} types.ApiResponse{data=StatsResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 500 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/stats [get]
+// @Router /admin/stats [get]
 func (h *Handler) Stats(c *gin.Context) {
 	db := h.db.WithContext(c.Request.Context())
 	var s StatsResponse

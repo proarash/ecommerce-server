@@ -37,7 +37,7 @@ func getEnv(key, fallback string) string {
 
 func splitList(v string) []string {
 	var out []string
-	for _, p := range strings.Split(v, ",") {
+	for p := range strings.SplitSeq(v, ",") {
 		if p = strings.TrimSpace(p); p != "" {
 			out = append(out, p)
 		}
@@ -61,7 +61,7 @@ func GetEnvConfig() *EnvConfig {
 		MinioUseSSL:         os.Getenv("MINIO_USE_SSL"),
 		MinioPublicURL:      os.Getenv("MINIO_PUBLIC_URL"),
 		ZibalMerchant:       getEnv("ZIBAL_MERCHANT", "zibal"),
-		ZibalCallbackURL:    getEnv("ZIBAL_CALLBACK_URL", "http://localhost:4000/api/payment/callback"),
+		ZibalCallbackURL:    getEnv("ZIBAL_CALLBACK_URL", "http://localhost:4000/payment/callback"),
 		ClientPaymentURL:    getEnv("CLIENT_PAYMENT_REDIRECT_URL", "http://localhost:3000/payment/result"),
 		AdminName:           getEnv("ADMIN_NAME", "Admin"),
 		AdminMobile:         os.Getenv("ADMIN_MOBILE"),

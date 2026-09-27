@@ -26,11 +26,12 @@ func (h *Handler) RegisterRoutes(protected gin.IRouter) {
 // @Summary Get current staff profile
 // @Tags Staff
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Success 200 {object} types.ApiResponse{data=StaffUser}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/staff/me [get]
+// @Router /staff/me [get]
 func (h *Handler) Me(c *gin.Context) {
 	u, err := h.store.FindByID(c.Request.Context(), middleware.GetAuth(c).UserID)
 	if err != nil {
@@ -46,12 +47,13 @@ func (h *Handler) Me(c *gin.Context) {
 // @Tags Staff
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body UpdateProfileDto true "Profile fields"
 // @Success 200 {object} types.ApiResponse{data=StaffUser}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/staff/me [patch]
+// @Router /staff/me [patch]
 func (h *Handler) UpdateMe(c *gin.Context) {
 	var dto UpdateProfileDto
 	if err := c.ShouldBindJSON(&dto); err != nil {

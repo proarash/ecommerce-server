@@ -17,7 +17,7 @@ $env:MINIO_BUCKET = 'ecommerce'
 $env:MINIO_USE_SSL = 'false'
 $env:MINIO_PUBLIC_URL = ''
 $env:ZIBAL_MERCHANT = 'zibal'
-$env:ZIBAL_CALLBACK_URL = 'http://localhost:4000/api/payment/callback'
+$env:ZIBAL_CALLBACK_URL = 'http://localhost:4000/payment/callback'
 $env:CLIENT_PAYMENT_REDIRECT_URL = 'http://localhost:3000/payment/result'
 $env:CORS_ORIGINS = 'http://localhost:3000'
 

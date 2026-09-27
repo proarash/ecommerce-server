@@ -48,6 +48,7 @@ ecommerce-server/
 │   │   └── user.go            # User customer model (separated from staff)
 │   ├── auth/                  # Unified authentication (staff & user login, registration, token issuance)
 │   │   ├── dto.go
+│   │   ├── model.go           # RefreshToken (server-side session, belongs to StaffUser or User)
 │   │   ├── http.go
 │   │   └── store.go
 │   ├── media/                 # MinIO client & media management (Image, Video)
@@ -353,6 +354,10 @@ ecommerce-server/
   }
   ```
 - Generated upon successful login for both `staff_users` and regular customer `users`.
+- Access token: HS256 JWT, 2h expiry, delivered only as an httpOnly, SameSite=Strict cookie (`Secure` in production); never returned in JSON bodies. Its `jti` claim holds the server-side session token.
+- Cookies (path `/`, max-age 90d so an expired JWT is still sent): `staff_access_token` / `user_access_token`.
+- Refresh tokens are never sent to the client. They live in the `refresh_tokens` table (`internal/auth/model.go`): random `token`, nullable unique `staff_id` (FK `staff_users`) / `user_id` (FK `users`) with ON DELETE CASCADE, `expires_at` = login + 90d. Each login hard-deletes the owner's previous row and inserts a new one (one session per account and user type).
+- Auth middleware validates the access cookie; if the JWT is expired but its signature is valid, it looks up the `refresh_tokens` row by owner + `jti`, re-loads the account (current role, active status), issues a new 2h access token bound to the same session and sets it as the httpOnly cookie. Missing/expired session or disabled account: 401 and the cookie is cleared. Fully automatic, no refresh endpoint.
 - Auth middleware parses and validates the token from the `Authorization: Bearer <token>` header, placing `user_id` and `role` into Gin context (`c.Set("user_id", ...)` and `c.Set("role", ...)`).
 
 ### 6.2 Role Guard Middleware
@@ -378,25 +383,25 @@ ecommerce-server/
 ## 8. Internal Inventory Management (`internal/inventory`)
 - Local stock tracking in PostgreSQL with atomic DB transactions.
 - Endpoints:
-  - `GET /api/inventory`: Current stock levels for all products.
-  - `POST /api/inventory/inbound`: Storekeeper intake with product ID, quantity, and supplier note.
-  - `POST /api/inventory/outbound`: Storekeeper dispatch or reduction with reason.
-  - `GET /api/inventory/logs/:productId`: Audit history of all movements.
+  - `GET /inventory`: Current stock levels for all products.
+  - `POST /inventory/inbound`: Storekeeper intake with product ID, quantity, and supplier note.
+  - `POST /inventory/outbound`: Storekeeper dispatch or reduction with reason.
+  - `GET /inventory/logs/:productId`: Audit history of all movements.
 
 ---
 
 ## 9. Zibal IPG Payment Gateway Integration (`internal/payment`)
 - **Base URL**: `https://gateway.zibal.ir`
 - **Merchant**: `ZIBAL_MERCHANT` (use `"zibal"` for sandbox).
-- **Callback URL**: `ZIBAL_CALLBACK_URL` or server endpoint (e.g. `https://api.domain.com/api/payment/callback`).
+- **Callback URL**: `ZIBAL_CALLBACK_URL` or server endpoint (e.g. `https://api.domain.com/payment/callback`).
 - **Client Redirect URL**:
   - After processing the payment callback on the server, the backend redirects the customer's browser to the frontend client URL with a query parameter containing the formatted order identifier:
     - Format: `?inv=inv-<ORDER-ID>` (e.g. `https://client.domain.com/payment/result?inv=inv-1234`).
-    - With this query parameter, the client frontend extracts the order ID directly to fetch the latest order status and receipt details from the backend (`GET /api/user/orders/:id` or `GET /api/payment/status/:trackId`).
+    - With this query parameter, the client frontend extracts the order ID directly to fetch the latest order status and receipt details from the backend (`GET /user/orders/:id` or `GET /payment/status/:trackId`).
 - **Workflow**:
-  1. `POST /api/payment/checkout/:orderId`: Calls Zibal `/v1/request`, creates `PaymentTransaction` with status `-1` (Pending), returns `trackId` and redirect URL.
+  1. `POST /payment/checkout/:orderId`: Calls Zibal `/v1/request`, creates `PaymentTransaction` with status `-1` (Pending), returns `trackId` and redirect URL.
   2. Customer completes payment on Zibal gateway.
-  3. Gateway redirects customer back to backend callback: `GET /api/payment/callback`.
+  3. Gateway redirects customer back to backend callback: `GET /payment/callback`.
   4. Server calls Zibal `/v1/verify`:
      - If verified: marks order as `paid`, marks transaction as successful, creates/updates `PreInvoice`, calls `SendAutomatedMessage` with `payment_success`.
      - If failed: marks order as failed, calls `SendAutomatedMessage` with `payment_failed`.
@@ -419,70 +424,74 @@ ecommerce-server/
 ## 11. API Route Structure
 
 ### Public / Auth
-- `POST /api/auth/login`: Staff & Customer login with mobile/password
-- `POST /api/auth/register`: Customer registration
-- `GET /api/payment/callback`: Zibal payment callback endpoint (processes verification and redirects client to frontend with query param `?inv=inv-<ORDER-ID>`)
-- `GET /api/cms/content`: Static site settings & banners
-- `GET /api/cms/blogs` & `GET /api/cms/blogs/:slug`
-- `GET /api/products` & `GET /api/products/:id`
-- `GET /api/categories` & `GET /api/categories/:id`
-- `GET /api/attributes` & `GET /api/attributes/:id`
+- `POST /auth/staff/login`: Staff login with mobile/password (sets `staff_access_token` cookie, replaces the stored staff refresh token)
+- `POST /auth/user/login`: Customer login with mobile/password (sets `user_access_token` cookie, replaces the stored customer refresh token)
+- `GET /auth/logout?user_type=staff|customer`: Deletes the stored refresh token and clears the access cookie (both sessions when omitted)
+- Protected endpoints accept optional `?user_type=staff|customer` query param to select which session cookie authenticates the request
+- `POST /auth/register`: Customer registration
+- `GET /payment/callback`: Zibal payment callback endpoint (processes verification and redirects client to frontend with query param `?inv=inv-<ORDER-ID>`)
+- `GET /cms/content`: Static site settings & banners
+- `GET /cms/blogs` & `GET /cms/blogs/:slug`
+- `GET /products` & `GET /products/:id`
+- `GET /categories` & `GET /categories/:id`
+- `GET /attributes` & `GET /attributes/:id`
 
 ### User / Customer Area (`role: user`)
-- `GET /api/user/profile`, `PATCH /api/user/profile`: Personal profile (mobile, name, address, coordinates, telegram chat id; no avatar)
-- `GET /api/cart`: Get current user cart and items
-- `POST /api/cart/items`: Add product item to cart
-- `PATCH /api/cart/items/:id`: Update item quantity
-- `DELETE /api/cart/items/:id`: Remove item from cart
-- `POST /api/cart/checkout`: Convert cart into pending `Order`
-- `GET /api/user/orders`, `GET /api/user/orders/:id`
-- `GET /api/user/preinvoices`
-- `POST /api/payment/checkout/:orderId`: Initiate Zibal checkout session
-- `GET /api/payment/status/:trackId`: Transaction status inquiry
+- `GET /user/profile`, `PATCH /user/profile`: Personal profile (mobile, name, address, coordinates, telegram chat id; no avatar)
+- `GET /cart`: Get current user cart and items
+- `POST /cart/items`: Add product item to cart
+- `PATCH /cart/items/:id`: Update item quantity
+- `DELETE /cart/items/:id`: Remove item from cart
+- `POST /cart/checkout`: Convert cart into pending `Order`
+- `GET /user/orders`, `GET /user/orders/:id`
+- `GET /user/preinvoices`
+- `POST /payment/checkout/:orderId`: Initiate Zibal checkout session
+- `GET /payment/status/:trackId`: Transaction status inquiry
 - `WS /ws/chat`: Real-time WebSocket support connection
-- `GET /api/user/chat/messages`: Inbox chat history (including automated bot messages)
-- `GET /api/user/notifications`: In-app notification list
+- `GET /user/chat/messages`: Inbox chat history (including automated bot messages)
+- `GET /user/notifications`: In-app notification list
 
 ### Storekeeper Area (`roles: storekeeper, admin`)
-- `POST /api/products`, `PATCH /api/products/:id`, `DELETE /api/products/:id`: Unique title product management
-- `POST /api/categories`, `PATCH /api/categories/:id`, `DELETE /api/categories/:id`: Category management with parent-child nesting
-- `POST /api/attributes`, `PATCH /api/attributes/:id`, `DELETE /api/attributes/:id`: Standalone product attribute management
-- `POST /api/products/:id/attributes`: Assign attributes to a product
-- `DELETE /api/products/:id/attributes/:attributeId`: Unassign attribute from a product
-- `GET /api/inventory`: Current product stock list
-- `POST /api/inventory/inbound`: Stock intake
-- `POST /api/inventory/outbound`: Stock dispatch
-- `GET /api/inventory/logs/:productId`: Stock audit movement logs
+- `POST /products`, `PATCH /products/:id`, `DELETE /products/:id`: Unique title product management
+- `POST /categories`, `PATCH /categories/:id`, `DELETE /categories/:id`: Category management with parent-child nesting
+- `POST /attributes`, `PATCH /attributes/:id`, `DELETE /attributes/:id`: Standalone product attribute management
+- `POST /products/:id/attributes`: Assign attributes to a product
+- `DELETE /products/:id/attributes/:attributeId`: Unassign attribute from a product
+- `GET /inventory`: Current product stock list
+- `POST /inventory/inbound`: Stock intake
+- `POST /inventory/outbound`: Stock dispatch
+- `GET /inventory/logs/:productId`: Stock audit movement logs
 
 ### Media Management (`roles: admin, storekeeper, marketer, support`)
-- `POST /api/media/upload`: MinIO media upload endpoint for image/video assets; returns Media ID and URL
-- `GET /api/media/:id`: Retrieve media metadata
+- `POST /media/upload`: MinIO media upload endpoint for image/video assets; returns Media ID and URL
+- `GET /media/:id`: Retrieve media metadata
 
 ### Accountant Area (`roles: accountant, admin`)
-- `GET /api/finance/reports?period=daily|weekly|monthly|annually`: Financial reporting
-- `POST /api/finance/preinvoices`: Manual pre-invoice creation
-- `GET /api/finance/preinvoices`: List pre-invoices
-- `POST /api/payment/inquiry/:trackId`: Manual gateway transaction check
+- `GET /finance/reports?period=daily|weekly|monthly|annually`: Financial reporting
+- `POST /finance/preinvoices`: Manual pre-invoice creation
+- `GET /finance/preinvoices`: List pre-invoices
+- `POST /payment/inquiry/:trackId`: Manual gateway transaction check
 
 ### Marketer Area (`roles: marketer, admin`)
-- `POST|PATCH|DELETE /api/cms/blogs/:id`: Blogs with multiple media attachments and SEO tags
-- `POST|PATCH|DELETE /api/cms/banners/:id`: Banners with linked media and alt names
-- `PATCH /api/cms/content`: Site content (titles, links, footer text, media logos)
+- `POST|PATCH|DELETE /cms/blogs/:id`: Blogs with multiple media attachments and SEO tags
+- `POST|PATCH|DELETE /cms/banners/:id`: Banners with linked media and alt names
+- `PATCH /cms/content`: Site content (titles, links, footer text, media logos)
 
 ### Support Area (`roles: support, admin`)
-- `GET /api/support/orders`: Read-only customer order view
-- `GET /api/support/preinvoices`: Read-only customer pre-invoice view
-- `WS /ws/chat` & `GET /api/support/chat/rooms`: Live support agent console
+- `GET /support/orders`: Read-only customer order view
+- `GET /support/preinvoices`: Read-only customer pre-invoice view
+- `WS /ws/chat` & `GET /support/chat/rooms`: Live support agent console
 
 ### Admin Management Area (`role: admin`)
-- `POST /api/admin/staff`: Create staff users (`storekeeper`, `accountant`, `marketer`, `support`); supports assigning `AvatarMediaID` or `DefaultAvatarID` (enum integer 1 to 5 for frontend preset avatars); prevents creating duplicate `admin` users
-- `GET /api/admin/staff`, `PATCH /api/admin/staff/:id/status`
+- `POST /admin/staff`: Create staff users (`storekeeper`, `accountant`, `marketer`, `support`); supports assigning `AvatarMediaID` or `DefaultAvatarID` (enum integer 1 to 5 for frontend preset avatars); prevents creating duplicate `admin` users
+- `GET /admin/staff`, `PATCH /admin/staff/:id/status`
+- `POST /admin/users/:id/impersonate`: Admin logs in as a customer without mobile/password; issues only a 2h customer access token (no stored refresh token, not refreshable) with `impersonator_id` claim, set as the `user_access_token` httpOnly cookie
 - **Notification CRUD**:
-  - `POST /api/admin/notifications`: Create and dispatch notification
-  - `GET /api/admin/notifications`: List all dispatched notifications
-  - `GET /api/admin/notifications/:id`: Get notification details
-  - `PATCH /api/admin/notifications/:id`: Update notification
-  - `DELETE /api/admin/notifications/:id`: Delete notification
+  - `POST /admin/notifications`: Create and dispatch notification
+  - `GET /admin/notifications`: List all dispatched notifications
+  - `GET /admin/notifications/:id`: Get notification details
+  - `PATCH /admin/notifications/:id`: Update notification
+  - `DELETE /admin/notifications/:id`: Delete notification
 
 ---
 

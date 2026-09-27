@@ -337,11 +337,6 @@ definitions:
         maxLength: 72
         minLength: 6
         type: string
-      user_type:
-        enum:
-        - staff
-        - customer
-        type: string
     required:
     - mobile
     - password
@@ -366,8 +361,6 @@ definitions:
     type: object
   internal_auth.TokenResponse:
     properties:
-      access_token:
-        type: string
       role:
         type: string
       user_id:
@@ -1669,9 +1662,17 @@ info:
   title: E-Commerce Server API
   version: "1.0"
 paths:
-  /api/admin/notifications:
+  /admin/notifications:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Filter by user ID
         in: query
         name: user_id
@@ -1725,6 +1726,14 @@ paths:
       description: Stores the notification and dispatches it via Telegram when channel
         is telegram or both. Omit user_id to broadcast.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Notification
         in: body
         name: body
@@ -1766,9 +1775,17 @@ paths:
       summary: Create and dispatch notification
       tags:
       - Admin Notifications
-  /api/admin/notifications/{id}:
+  /admin/notifications/{id}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1802,6 +1819,14 @@ paths:
       - Admin Notifications
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1837,6 +1862,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1883,9 +1916,17 @@ paths:
       summary: Update notification
       tags:
       - Admin Notifications
-  /api/admin/staff:
+  /admin/staff:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Role
         enum:
         - admin
@@ -1946,6 +1987,14 @@ paths:
         another admin is not allowed. default_avatar_id is a preset frontend avatar
         index (1..5); avatar_media_id references an uploaded MinIO media asset.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Staff user
         in: body
         name: body
@@ -1996,11 +2045,19 @@ paths:
       summary: Create staff user
       tags:
       - Admin
-  /api/admin/staff/{id}/status:
+  /admin/staff/{id}/status:
     patch:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Staff ID
         in: path
         name: id
@@ -2047,8 +2104,17 @@ paths:
       summary: Enable or disable staff user
       tags:
       - Admin
-  /api/admin/stats:
+  /admin/stats:
     get:
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       produces:
       - application/json
       responses:
@@ -2084,7 +2150,80 @@ paths:
       summary: System statistics
       tags:
       - Admin
-  /api/attributes:
+  /admin/users/{id}/impersonate:
+    post:
+      description: Admin only. Issues a 2h customer access token for the given user
+        without mobile/password and sets it as the user_access_token httpOnly cookie.
+        No refresh token is stored, so the session ends when the access token expires.
+        The token carries impersonator_id with the admin's ID.
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
+      - description: Customer user ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Login as customer
+      tags:
+      - Admin
+  /attributes:
     get:
       parameters:
       - description: Search in key, title or name
@@ -2138,6 +2277,14 @@ paths:
       description: Creates a standalone attribute that can later be assigned to any
         product. key must be unique.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Attribute
         in: body
         name: body
@@ -2188,10 +2335,18 @@ paths:
       summary: Create attribute
       tags:
       - Attributes
-  /api/attributes/{id}:
+  /attributes/{id}:
     delete:
       description: Soft-deletes the attribute and unassigns it from all products
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Attribute ID
         in: path
         name: id
@@ -2258,6 +2413,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Attribute ID
         in: path
         name: id
@@ -2313,12 +2476,94 @@ paths:
       summary: Update attribute
       tags:
       - Attributes
-  /api/auth/login:
+  /auth/logout:
+    get:
+      description: Deletes the server side refresh token and clears the access cookie
+        for the given user_type, or for both sessions when user_type is omitted.
+      parameters:
+      - description: Session to clear
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Logout
+      tags:
+      - Auth
+  /auth/register:
     post:
       consumes:
       - application/json
-      description: Staff and customer login with mobile/password. user_type is optional;
-        when omitted staff accounts are checked first.
+      description: Registers a customer and sets the user_access_token httpOnly cookie.
+      parameters:
+      - description: Registration data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.RegisterDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Customer registration
+      tags:
+      - Auth
+  /auth/staff/login:
+    post:
+      consumes:
+      - application/json
+      description: Staff login with mobile/password. Sets the staff_access_token httpOnly
+        cookie; the refresh token is stored server side and replaces any previous
+        staff session.
       parameters:
       - description: Credentials
         in: body
@@ -2365,25 +2610,28 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
-      summary: Login
+      summary: Staff login
       tags:
       - Auth
-  /api/auth/register:
+  /auth/user/login:
     post:
       consumes:
       - application/json
+      description: Customer login with mobile/password. Sets the user_access_token
+        httpOnly cookie; the refresh token is stored server side and replaces any
+        previous customer session.
       parameters:
-      - description: Registration data
+      - description: Credentials
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_auth.RegisterDto'
+          $ref: '#/definitions/internal_auth.LoginDto'
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2400,8 +2648,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
-        "409":
-          description: Conflict
+        "401":
+          description: Unauthorized
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2409,11 +2657,29 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
-      summary: Customer registration
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
+              type: object
+      summary: Customer login
       tags:
       - Auth
-  /api/cart:
+  /cart:
     get:
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       produces:
       - application/json
       responses:
@@ -2440,7 +2706,7 @@ paths:
       summary: Get current cart
       tags:
       - Cart
-  /api/cart/checkout:
+  /cart/checkout:
     post:
       consumes:
       - application/json
@@ -2448,6 +2714,14 @@ paths:
         discount code, issues a system pre-invoice and sends invoice/pre-invoice bot
         messages
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Optional discount code
         in: body
         name: body
@@ -2497,12 +2771,20 @@ paths:
       summary: Checkout cart
       tags:
       - Cart
-  /api/cart/items:
+  /cart/items:
     post:
       consumes:
       - application/json
       description: Adds the product or increases its quantity if already present
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Item
         in: body
         name: body
@@ -2544,9 +2826,17 @@ paths:
       summary: Add product to cart
       tags:
       - Cart
-  /api/cart/items/{id}:
+  /cart/items/{id}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Cart item ID
         in: path
         name: id
@@ -2582,6 +2872,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Cart item ID
         in: path
         name: id
@@ -2628,7 +2926,7 @@ paths:
       summary: Update cart item quantity
       tags:
       - Cart
-  /api/categories:
+  /categories:
     get:
       produces:
       - application/json
@@ -2651,6 +2949,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Category
         in: body
         name: body
@@ -2701,11 +3007,19 @@ paths:
       summary: Create category
       tags:
       - Categories
-  /api/categories/{id}:
+  /categories/{id}:
     delete:
       description: Soft-deletes the category; direct children become root categories.
         Fails with 409 while products still belong to it.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Category ID
         in: path
         name: id
@@ -2783,6 +3097,14 @@ paths:
       description: Set make_root=true to detach the category from its parent (cannot
         be combined with parent_id)
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Category ID
         in: path
         name: id
@@ -2838,11 +3160,19 @@ paths:
       summary: Update category
       tags:
       - Categories
-  /api/cms/banners:
+  /cms/banners:
     post:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Banner
         in: body
         name: body
@@ -2875,9 +3205,17 @@ paths:
       summary: Create banner
       tags:
       - CMS
-  /api/cms/banners/{id}:
+  /cms/banners/{id}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Banner ID
         in: path
         name: id
@@ -2913,6 +3251,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Banner ID
         in: path
         name: id
@@ -2959,7 +3305,7 @@ paths:
       summary: Update banner
       tags:
       - CMS
-  /api/cms/blogs:
+  /cms/blogs:
     get:
       parameters:
       - description: Title search
@@ -3011,6 +3357,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Blog post
         in: body
         name: body
@@ -3052,10 +3406,18 @@ paths:
       summary: Create blog post
       tags:
       - CMS
-  /api/cms/blogs/{id}:
+  /cms/blogs/{id}:
     delete:
       description: The path segment is the blog post ID
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Blog ID
         in: path
         name: id
@@ -3093,6 +3455,14 @@ paths:
       description: The path segment is the blog post ID. media_ids, when provided,
         replaces the attached media.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Blog ID
         in: path
         name: id
@@ -3139,7 +3509,7 @@ paths:
       summary: Update blog post
       tags:
       - CMS
-  /api/cms/blogs/{slug}:
+  /cms/blogs/{slug}:
     get:
       parameters:
       - description: Blog slug
@@ -3171,7 +3541,7 @@ paths:
       summary: Get blog post by slug
       tags:
       - CMS
-  /api/cms/content:
+  /cms/content:
     get:
       produces:
       - application/json
@@ -3194,6 +3564,14 @@ paths:
       description: Upserts site content entries by key (H1 titles, footer links, descriptions,
         logos)
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Content items
         in: body
         name: body
@@ -3235,10 +3613,18 @@ paths:
       summary: Update site content
       tags:
       - CMS
-  /api/discounts:
+  /discounts:
     get:
       description: Available to admin, accountant, marketer and support (read-only)
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Code contains
         in: query
         name: code
@@ -3318,6 +3704,14 @@ paths:
         and is only allowed for percent type (e.g. 30% up to 50000). When owner_mobile
         is set only the customer with that mobile can use the code.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Discount
         in: body
         name: body
@@ -3368,9 +3762,17 @@ paths:
       summary: Generate discount code
       tags:
       - Discounts
-  /api/discounts/{id}:
+  /discounts/{id}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3423,6 +3825,14 @@ paths:
     get:
       description: Available to admin, accountant, marketer and support (read-only)
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3478,6 +3888,14 @@ paths:
       description: Updates a discount (admin, accountant, marketer). Send max_price
         0 to remove the cap and owner_mobile "" to make the code public.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3533,9 +3951,17 @@ paths:
       summary: Update discount code
       tags:
       - Discounts
-  /api/finance/preinvoices:
+  /finance/preinvoices:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Status
         enum:
         - issued
@@ -3597,6 +4023,14 @@ paths:
       description: Issues a pre-invoice for an order (amount defaults to the order
         total) and notifies the customer
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Pre-invoice
         in: body
         name: body
@@ -3638,10 +4072,18 @@ paths:
       summary: Create manual pre-invoice
       tags:
       - Finance
-  /api/finance/reports:
+  /finance/reports:
     get:
       description: Paid, processing and delivered orders aggregated per period bucket
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - default: daily
         description: Bucket size
         enum:
@@ -3695,9 +4137,17 @@ paths:
       summary: Sales report
       tags:
       - Finance
-  /api/inventory:
+  /inventory:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - default: 1
         description: Page
         in: query
@@ -3741,11 +4191,19 @@ paths:
       summary: Current stock levels
       tags:
       - Inventory
-  /api/inventory/inbound:
+  /inventory/inbound:
     post:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Inbound movement
         in: body
         name: body
@@ -3787,9 +4245,17 @@ paths:
       summary: Stock intake
       tags:
       - Inventory
-  /api/inventory/logs/{productId}:
+  /inventory/logs/{productId}:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product ID
         in: path
         name: productId
@@ -3838,11 +4304,19 @@ paths:
       summary: Stock movement audit logs
       tags:
       - Inventory
-  /api/inventory/outbound:
+  /inventory/outbound:
     post:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Outbound movement
         in: body
         name: body
@@ -3893,9 +4367,17 @@ paths:
       summary: Stock dispatch or reduction
       tags:
       - Inventory
-  /api/media/{id}:
+  /media/{id}:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Media ID
         in: path
         name: id
@@ -3936,12 +4418,21 @@ paths:
       summary: Get media metadata
       tags:
       - Media
-  /api/media/upload:
+  /media/upload:
     post:
       consumes:
       - multipart/form-data
-      description: Uploads an image, video or document to MinIO and stores its metadata
+      description: Uploads an image, video or document to MinIO and stores its metadata.
+        The MIME type is detected from the file content, not the client header.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Media file
         in: formData
         name: file
@@ -4000,7 +4491,7 @@ paths:
       summary: Upload media
       tags:
       - Media
-  /api/payment/callback:
+  /payment/callback:
     get:
       description: Called by the Zibal gateway. Verifies the payment and credits the
         paid amount to the customer wallet. For orders the order price is then debited
@@ -4039,12 +4530,20 @@ paths:
       summary: Zibal payment callback
       tags:
       - Payment
-  /api/payment/checkout/{orderId}:
+  /payment/checkout/{orderId}:
     post:
       description: Requests a Zibal trackId for a pending/failed order and returns
         the gateway redirect URL. On success the paid amount is credited to the customer
         wallet and the order price is then debited from it.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Order ID
         in: path
         name: orderId
@@ -4094,11 +4593,19 @@ paths:
       summary: Start Zibal payment for an order
       tags:
       - Payment
-  /api/payment/checkout/{orderId}/wallet:
+  /payment/checkout/{orderId}/wallet:
     post:
       description: Debits the order total from the customer wallet balance and marks
         the order as paid
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Order ID
         in: path
         name: orderId
@@ -4148,11 +4655,19 @@ paths:
       summary: Pay order from wallet
       tags:
       - Payment
-  /api/payment/inquiry/{trackId}:
+  /payment/inquiry/{trackId}:
     post:
       description: Queries Zibal /v1/inquiry for the track ID and returns it with
         the local transaction record
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Zibal track ID
         in: path
         name: trackId
@@ -4202,9 +4717,17 @@ paths:
       summary: Manual gateway transaction inquiry
       tags:
       - Payment
-  /api/payment/status/{trackId}:
+  /payment/status/{trackId}:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Zibal track ID
         in: path
         name: trackId
@@ -4245,7 +4768,7 @@ paths:
       summary: Payment transaction status
       tags:
       - Payment
-  /api/payment/wallet/charge:
+  /payment/wallet/charge:
     post:
       consumes:
       - application/json
@@ -4253,6 +4776,14 @@ paths:
         verified payment the wallet is credited automatically and the callback redirects
         to the client app with ?wallet=wlt-<TRACK-ID>
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Charge amount
         in: body
         name: body
@@ -4303,7 +4834,7 @@ paths:
       summary: Charge wallet via Zibal
       tags:
       - Payment
-  /api/products:
+  /products:
     get:
       parameters:
       - description: Category ID
@@ -4361,6 +4892,14 @@ paths:
       description: Product title and SKU must be unique. media_ids attaches uploaded
         images/videos. attribute_ids assigns existing attributes.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product
         in: body
         name: body
@@ -4411,9 +4950,17 @@ paths:
       summary: Create product
       tags:
       - Products
-  /api/products/{id}:
+  /products/{id}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product ID
         in: path
         name: id
@@ -4482,6 +5029,14 @@ paths:
       description: media_ids and attribute_ids, when provided, replace the product
         media set and attribute set
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product ID
         in: path
         name: id
@@ -4537,13 +5092,21 @@ paths:
       summary: Update product
       tags:
       - Products
-  /api/products/{id}/attributes:
+  /products/{id}/attributes:
     post:
       consumes:
       - application/json
       description: Adds existing attributes to the product; already assigned attributes
         are kept
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product ID
         in: path
         name: id
@@ -4590,9 +5153,17 @@ paths:
       summary: Assign attributes to product
       tags:
       - Attributes
-  /api/products/{id}/attributes/{attributeId}:
+  /products/{id}/attributes/{attributeId}:
     delete:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Product ID
         in: path
         name: id
@@ -4638,8 +5209,17 @@ paths:
       summary: Unassign attribute from product
       tags:
       - Attributes
-  /api/staff/me:
+  /staff/me:
     get:
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       produces:
       - application/json
       responses:
@@ -4681,6 +5261,14 @@ paths:
       description: default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id
         references an uploaded MinIO media asset
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Profile fields
         in: body
         name: body
@@ -4722,9 +5310,17 @@ paths:
       summary: Update current staff profile
       tags:
       - Staff
-  /api/support/chat/rooms:
+  /support/chat/rooms:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Room status
         enum:
         - open
@@ -4785,9 +5381,17 @@ paths:
       summary: List support chat rooms
       tags:
       - Support
-  /api/support/chat/rooms/{id}/messages:
+  /support/chat/rooms/{id}/messages:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Room ID
         in: path
         name: id
@@ -4849,6 +5453,14 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Room ID
         in: path
         name: id
@@ -4895,11 +5507,19 @@ paths:
       summary: Reply to a chat room as support
       tags:
       - Support
-  /api/support/chat/rooms/{id}/status:
+  /support/chat/rooms/{id}/status:
     patch:
       consumes:
       - application/json
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Room ID
         in: path
         name: id
@@ -4946,9 +5566,17 @@ paths:
       summary: Update chat room status
       tags:
       - Support
-  /api/support/orders:
+  /support/orders:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Status
         in: query
         name: status
@@ -5000,9 +5628,17 @@ paths:
       summary: Read-only customer orders
       tags:
       - Support
-  /api/support/preinvoices:
+  /support/preinvoices:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Status
         in: query
         name: status
@@ -5054,10 +5690,18 @@ paths:
       summary: Read-only customer pre-invoices
       tags:
       - Support
-  /api/user/chat/messages:
+  /user/chat/messages:
     get:
       description: Chat history of the current customer including automated bot messages
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - default: 1
         description: Page
         in: query
@@ -5107,6 +5751,14 @@ paths:
       description: REST fallback for sending a message to support; opens a room if
         none is active
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Message
         in: body
         name: body
@@ -5148,13 +5800,21 @@ paths:
       summary: Send chat message as customer
       tags:
       - Chat
-  /api/user/discounts/check:
+  /user/discounts/check:
     post:
       consumes:
       - application/json
       description: Validates a discount code for the current customer against an amount
         and returns the discount and payable amount without redeeming it
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Code and amount
         in: body
         name: body
@@ -5196,10 +5856,18 @@ paths:
       summary: Check discount code
       tags:
       - User
-  /api/user/notifications:
+  /user/notifications:
     get:
       description: Personal and broadcast in-app notifications
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - default: 1
         description: Page
         in: query
@@ -5243,9 +5911,17 @@ paths:
       summary: Customer in-app notifications
       tags:
       - User
-  /api/user/notifications/{id}/read:
+  /user/notifications/{id}/read:
     patch:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Notification ID
         in: path
         name: id
@@ -5277,9 +5953,17 @@ paths:
       summary: Mark notification as read
       tags:
       - User
-  /api/user/orders:
+  /user/orders:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Status
         in: query
         name: status
@@ -5327,9 +6011,17 @@ paths:
       summary: Customer orders
       tags:
       - User
-  /api/user/orders/{id}:
+  /user/orders/{id}:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Order ID
         in: path
         name: id
@@ -5361,9 +6053,17 @@ paths:
       summary: Customer order details
       tags:
       - User
-  /api/user/preinvoices:
+  /user/preinvoices:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - default: 1
         description: Page
         in: query
@@ -5407,8 +6107,17 @@ paths:
       summary: Customer pre-invoices
       tags:
       - User
-  /api/user/profile:
+  /user/profile:
     get:
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       produces:
       - application/json
       responses:
@@ -5450,6 +6159,14 @@ paths:
       description: Updates name, mobile, address, coordinates and telegram chat id
         (customers have no avatar)
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Profile fields
         in: body
         name: body
@@ -5500,9 +6217,18 @@ paths:
       summary: Update customer profile
       tags:
       - User
-  /api/wallet:
+  /wallet:
     get:
       description: Returns the wallet of the authenticated user or staff member
+      parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       produces:
       - application/json
       responses:
@@ -5538,9 +6264,17 @@ paths:
       summary: Get my wallet
       tags:
       - Wallet
-  /api/wallet/transactions:
+  /wallet/transactions:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Type
         enum:
         - credit
@@ -5617,9 +6351,17 @@ paths:
       summary: List my wallet transactions
       tags:
       - Wallet
-  /api/wallets:
+  /wallets:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Owner type
         enum:
         - user
@@ -5683,9 +6425,17 @@ paths:
       summary: List wallets
       tags:
       - Wallet Management
-  /api/wallets/{id}:
+  /wallets/{id}:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -5735,7 +6485,7 @@ paths:
       summary: Get wallet
       tags:
       - Wallet Management
-  /api/wallets/{id}/adjust:
+  /wallets/{id}/adjust:
     post:
       consumes:
       - application/json
@@ -5743,6 +6493,14 @@ paths:
         are locked and cannot be modified by anyone, and staff cannot change their
         own wallet.
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -5798,9 +6556,17 @@ paths:
       summary: Change wallet amount
       tags:
       - Wallet Management
-  /api/wallets/{id}/transactions:
+  /wallets/{id}/transactions:
     get:
       parameters:
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
+        in: query
+        name: user_type
+        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -5875,13 +6641,18 @@ paths:
       - Wallet Management
   /ws/chat:
     get:
-      description: Upgrades to WebSocket. Pass the JWT as ?token= query, Authorization
-        header or access_token cookie. Customers send {"message":"..."}; support agents
-        send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
+      description: Upgrades to WebSocket. Authenticates via the staff_access_token
+        or user_access_token httpOnly cookie (select with ?user_type=). Customers
+        send {"message":"..."}; support agents send {"room_id":1,"message":"..."}.
+        Server pushes ChatMessage JSON frames.
       parameters:
-      - description: JWT access token
+      - description: Session to authenticate with; selects the staff or customer auth
+          cookie
+        enum:
+        - staff
+        - customer
         in: query
-        name: token
+        name: user_type
         type: string
       responses:
         "101":

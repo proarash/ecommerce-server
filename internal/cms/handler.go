@@ -35,7 +35,7 @@ func (h *Handler) RegisterRoutes(public gin.IRouter, marketer gin.IRouter) {
 // @Tags CMS
 // @Produce json
 // @Success 200 {object} types.ApiResponse{data=ContentResponse}
-// @Router /api/cms/content [get]
+// @Router /cms/content [get]
 func (h *Handler) GetContent(c *gin.Context) {
 	contents, err := h.store.ListContents(c.Request.Context())
 	if err != nil {
@@ -56,12 +56,13 @@ func (h *Handler) GetContent(c *gin.Context) {
 // @Tags CMS
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body UpdateSiteContentDto true "Content items"
 // @Success 200 {object} types.ApiResponse{data=ContentResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/content [patch]
+// @Router /cms/content [patch]
 func (h *Handler) UpdateContent(c *gin.Context) {
 	var dto UpdateSiteContentDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -84,7 +85,7 @@ func (h *Handler) UpdateContent(c *gin.Context) {
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]BlogPost}}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/blogs [get]
+// @Router /cms/blogs [get]
 func (h *Handler) ListBlogs(c *gin.Context) {
 	var q BlogQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -106,7 +107,7 @@ func (h *Handler) ListBlogs(c *gin.Context) {
 // @Param slug path string true "Blog slug"
 // @Success 200 {object} types.ApiResponse{data=BlogPost}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/blogs/{slug} [get]
+// @Router /cms/blogs/{slug} [get]
 func (h *Handler) GetBlog(c *gin.Context) {
 	b, err := h.store.FindBlogBySlug(c.Request.Context(), c.Param("slug"))
 	if err != nil {
@@ -121,12 +122,13 @@ func (h *Handler) GetBlog(c *gin.Context) {
 // @Tags CMS
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body CreateBlogDto true "Blog post"
 // @Success 201 {object} types.ApiResponse{data=BlogPost}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/blogs [post]
+// @Router /cms/blogs [post]
 func (h *Handler) CreateBlog(c *gin.Context) {
 	var dto CreateBlogDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -147,13 +149,14 @@ func (h *Handler) CreateBlog(c *gin.Context) {
 // @Tags CMS
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Blog ID"
 // @Param body body UpdateBlogDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=BlogPost}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/blogs/{id} [patch]
+// @Router /cms/blogs/{id} [patch]
 func (h *Handler) UpdateBlog(c *gin.Context) {
 	id, ok := types.ParamID(c, "slug")
 	if !ok {
@@ -194,11 +197,12 @@ func (h *Handler) UpdateBlog(c *gin.Context) {
 // @Description The path segment is the blog post ID
 // @Tags CMS
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Blog ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/blogs/{id} [delete]
+// @Router /cms/blogs/{id} [delete]
 func (h *Handler) DeleteBlog(c *gin.Context) {
 	id, ok := types.ParamID(c, "slug")
 	if !ok {
@@ -216,11 +220,12 @@ func (h *Handler) DeleteBlog(c *gin.Context) {
 // @Tags CMS
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body CreateBannerDto true "Banner"
 // @Success 201 {object} types.ApiResponse{data=Banner}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/banners [post]
+// @Router /cms/banners [post]
 func (h *Handler) CreateBanner(c *gin.Context) {
 	var dto CreateBannerDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -251,13 +256,14 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 // @Tags CMS
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Banner ID"
 // @Param body body UpdateBannerDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Banner}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/banners/{id} [patch]
+// @Router /cms/banners/{id} [patch]
 func (h *Handler) UpdateBanner(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -305,11 +311,12 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 // @Summary Delete banner
 // @Tags CMS
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Banner ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/cms/banners/{id} [delete]
+// @Router /cms/banners/{id} [delete]
 func (h *Handler) DeleteBanner(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {

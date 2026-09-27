@@ -53,10 +53,10 @@ func (h *Handler) RegisterRoutes(ws gin.IRouter, customer gin.IRouter, support g
 
 // ServeWS godoc
 // @Summary Real-time support chat WebSocket
-// @Description Upgrades to WebSocket. Pass the JWT as ?token= query, Authorization header or access_token cookie. Customers send {"message":"..."}; support agents send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
+// @Description Upgrades to WebSocket. Authenticates via the staff_access_token or user_access_token httpOnly cookie (select with ?user_type=). Customers send {"message":"..."}; support agents send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
 // @Tags Chat
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
-// @Param token query string false "JWT access token"
 // @Success 101 {object} ChatMessage
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
@@ -97,12 +97,13 @@ func (h *Handler) ServeWS(c *gin.Context) {
 // @Description Chat history of the current customer including automated bot messages
 // @Tags Chat
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/user/chat/messages [get]
+// @Router /user/chat/messages [get]
 func (h *Handler) UserMessages(c *gin.Context) {
 	var q types.Pagination
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -123,12 +124,13 @@ func (h *Handler) UserMessages(c *gin.Context) {
 // @Tags Chat
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/user/chat/messages [post]
+// @Router /user/chat/messages [post]
 func (h *Handler) UserSend(c *gin.Context) {
 	var dto SendMessageDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -156,6 +158,7 @@ func (h *Handler) UserSend(c *gin.Context) {
 // @Summary List support chat rooms
 // @Tags Support
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param status query string false "Room status" Enums(open, in_progress, closed)
 // @Param page query int false "Page" default(1)
@@ -163,7 +166,7 @@ func (h *Handler) UserSend(c *gin.Context) {
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatRoom}}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/support/chat/rooms [get]
+// @Router /support/chat/rooms [get]
 func (h *Handler) Rooms(c *gin.Context) {
 	var q RoomsQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -182,6 +185,7 @@ func (h *Handler) Rooms(c *gin.Context) {
 // @Summary List messages of a chat room
 // @Tags Support
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param page query int false "Page" default(1)
@@ -189,7 +193,7 @@ func (h *Handler) Rooms(c *gin.Context) {
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/support/chat/rooms/{id}/messages [get]
+// @Router /support/chat/rooms/{id}/messages [get]
 func (h *Handler) RoomMessages(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -213,13 +217,14 @@ func (h *Handler) RoomMessages(c *gin.Context) {
 // @Tags Support
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/support/chat/rooms/{id}/messages [post]
+// @Router /support/chat/rooms/{id}/messages [post]
 func (h *Handler) SupportSend(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -243,13 +248,14 @@ func (h *Handler) SupportSend(c *gin.Context) {
 // @Tags Support
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param body body RoomStatusDto true "Status"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/support/chat/rooms/{id}/status [patch]
+// @Router /support/chat/rooms/{id}/status [patch]
 func (h *Handler) UpdateRoomStatus(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {

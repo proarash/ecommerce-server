@@ -18,7 +18,7 @@ func RequireRoles(roles ...string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, types.ErrorResponse{Error: "unauthorized"})
 			return
 		}
-		if (p.UserType == token.UserTypeStaff && p.Role == RoleAdmin) || slices.Contains(roles, p.Role) {
+		if p.UserType == token.UserTypeStaff && (p.Role == RoleAdmin || slices.Contains(roles, p.Role)) {
 			c.Next()
 			return
 		}

@@ -34,12 +34,13 @@ func (h *Handler) RegisterRoutes(admin gin.IRouter, customer gin.IRouter) {
 // @Tags Admin Notifications
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param body body CreateNotificationDto true "Notification"
 // @Success 201 {object} types.ApiResponse{data=Notification}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/notifications [post]
+// @Router /admin/notifications [post]
 func (h *Handler) Create(c *gin.Context) {
 	var dto CreateNotificationDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -58,13 +59,14 @@ func (h *Handler) Create(c *gin.Context) {
 // @Summary List notifications
 // @Tags Admin Notifications
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param user_id query int false "Filter by user ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Notification}}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/notifications [get]
+// @Router /admin/notifications [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -83,11 +85,12 @@ func (h *Handler) List(c *gin.Context) {
 // @Summary Get notification
 // @Tags Admin Notifications
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=Notification}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/notifications/{id} [get]
+// @Router /admin/notifications/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -106,13 +109,14 @@ func (h *Handler) Get(c *gin.Context) {
 // @Tags Admin Notifications
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Notification ID"
 // @Param body body UpdateNotificationDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Notification}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/notifications/{id} [patch]
+// @Router /admin/notifications/{id} [patch]
 func (h *Handler) Update(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -152,11 +156,12 @@ func (h *Handler) Update(c *gin.Context) {
 // @Summary Delete notification
 // @Tags Admin Notifications
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/admin/notifications/{id} [delete]
+// @Router /admin/notifications/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -174,12 +179,13 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Description Personal and broadcast in-app notifications
 // @Tags User
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Notification}}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/user/notifications [get]
+// @Router /user/notifications [get]
 func (h *Handler) UserList(c *gin.Context) {
 	var q types.Pagination
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -198,11 +204,12 @@ func (h *Handler) UserList(c *gin.Context) {
 // @Summary Mark notification as read
 // @Tags User
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/user/notifications/{id}/read [patch]
+// @Router /user/notifications/{id}/read [patch]
 func (h *Handler) MarkRead(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {

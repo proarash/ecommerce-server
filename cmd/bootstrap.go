@@ -64,6 +64,7 @@ func Bootstrap(envConfig *config.EnvConfig) {
 		&chat.ChatMessage{},
 		&notification.Notification{},
 		&discount.Discount{},
+		&auth.RefreshToken{},
 	); err != nil {
 		panic(err)
 	}
@@ -84,8 +85,12 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	router.Use(middleware.Cors(envConfig.CorsOrigins), middleware.ApiResponseMiddleware)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	authMW := middleware.Auth(envConfig.JwtSecret)
-	api := router.Group("/api")
+	cookies := middleware.CookieWriter{Domain: envConfig.Domain, Secure: envConfig.Env == "production"}
+	staffStore := staff.NewStore(db)
+	userStore := user.NewStore(db)
+	authRepo := auth.NewAuthRepo(db, staffStore, userStore, envConfig.JwtSecret)
+	authMW := middleware.Auth(envConfig.JwtSecret, cookies, authRepo)
+	api := router.Group("")
 	protected := api.Group("", authMW)
 	customer := api.Group("", authMW, middleware.RequireCustomer())
 	storekeeper := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper))
@@ -98,8 +103,6 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(staff.RoleAdmin))
 	ws := router.Group("/ws", authMW)
 
-	staffStore := staff.NewStore(db)
-	userStore := user.NewStore(db)
 
 	hub := chat.NewHub()
 	chatService := chat.NewService(db, hub)
@@ -114,7 +117,7 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	// TODO: MinIO disabled for now
 	// mediaClient := media.NewClient(context.Background(), envConfig)
 
-	auth.NewAuthHandler(auth.NewAuthRepo(staffStore, userStore, envConfig.JwtSecret), envConfig.Domain, envConfig.Env == "production").RegisterRoutes(api)
+	auth.NewAuthHandler(authRepo, cookies, envConfig.JwtSecret).RegisterRoutes(api, adminGroup)
 	user.NewHandler(user.NewService(userStore)).RegisterRoutes(customer)
 	staff.NewHandler(staffStore).RegisterRoutes(protected)
 	// media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)

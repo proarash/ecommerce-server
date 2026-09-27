@@ -3,7 +3,6 @@ package auth
 type LoginDto struct {
 	Mobile   string `json:"mobile" binding:"required,numeric,len=11" example:"09120000000"`
 	Password string `json:"password" binding:"required,min=6,max=72" example:"secret123"`
-	UserType string `json:"user_type" binding:"omitempty,oneof=staff customer" enums:"staff,customer"`
 }
 
 type RegisterDto struct {
@@ -13,7 +12,7 @@ type RegisterDto struct {
 }
 
 type TokenResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"-"`
 	UserID      uint   `json:"user_id"`
 	Role        string `json:"role"`
 	UserType    string `json:"user_type" enums:"staff,customer"`

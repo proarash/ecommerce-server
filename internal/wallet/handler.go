@@ -66,11 +66,12 @@ func (h *Handler) listTransactions(c *gin.Context, walletID uint) {
 // @Description Returns the wallet of the authenticated user or staff member
 // @Tags Wallet
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Success 200 {object} types.ApiResponse{data=Wallet}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallet [get]
+// @Router /wallet [get]
 func (h *Handler) Mine(c *gin.Context) {
 	ownerType, ownerID := OwnerOf(middleware.GetAuth(c))
 	w, err := h.store.FindByOwner(c.Request.Context(), ownerType, ownerID)
@@ -85,6 +86,7 @@ func (h *Handler) Mine(c *gin.Context) {
 // @Summary List my wallet transactions
 // @Tags Wallet
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param type query string false "Type" Enums(credit, debit)
 // @Param source query string false "Source" Enums(gateway, purchase, manual)
@@ -94,7 +96,7 @@ func (h *Handler) Mine(c *gin.Context) {
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallet/transactions [get]
+// @Router /wallet/transactions [get]
 func (h *Handler) MyTransactions(c *gin.Context) {
 	ownerType, ownerID := OwnerOf(middleware.GetAuth(c))
 	w, err := h.store.FindByOwner(c.Request.Context(), ownerType, ownerID)
@@ -109,6 +111,7 @@ func (h *Handler) MyTransactions(c *gin.Context) {
 // @Summary List wallets
 // @Tags Wallet Management
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param owner_type query string false "Owner type" Enums(user, staff)
 // @Param owner_id query int false "Owner ID"
@@ -117,7 +120,7 @@ func (h *Handler) MyTransactions(c *gin.Context) {
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Wallet}}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallets [get]
+// @Router /wallets [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
@@ -136,13 +139,14 @@ func (h *Handler) List(c *gin.Context) {
 // @Summary Get wallet
 // @Tags Wallet Management
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Wallet ID"
 // @Success 200 {object} types.ApiResponse{data=Wallet}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallets/{id} [get]
+// @Router /wallets/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -160,6 +164,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Summary List wallet transactions
 // @Tags Wallet Management
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Wallet ID"
 // @Param type query string false "Type" Enums(credit, debit)
@@ -169,7 +174,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]WalletTransaction}}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallets/{id}/transactions [get]
+// @Router /wallets/{id}/transactions [get]
 func (h *Handler) Transactions(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
@@ -184,6 +189,7 @@ func (h *Handler) Transactions(c *gin.Context) {
 // @Tags Wallet Management
 // @Accept json
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Wallet ID"
 // @Param body body AdjustDto true "Adjustment"
@@ -191,7 +197,7 @@ func (h *Handler) Transactions(c *gin.Context) {
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/wallets/{id}/adjust [post]
+// @Router /wallets/{id}/adjust [post]
 func (h *Handler) Adjust(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/admin/notifications": {
+        "/admin/notifications": {
             "get": {
                 "security": [
                     {
@@ -30,6 +30,16 @@ const docTemplate = `{
                 ],
                 "summary": "List notifications",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Filter by user ID",
@@ -124,6 +134,16 @@ const docTemplate = `{
                 "summary": "Create and dispatch notification",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Notification",
                         "name": "body",
                         "in": "body",
@@ -191,7 +211,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/admin/notifications/{id}": {
+        "/admin/notifications/{id}": {
             "get": {
                 "security": [
                     {
@@ -206,6 +226,16 @@ const docTemplate = `{
                 ],
                 "summary": "Get notification",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -267,6 +297,16 @@ const docTemplate = `{
                 ],
                 "summary": "Delete notification",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -331,6 +371,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update notification",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -406,7 +456,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/admin/staff": {
+        "/admin/staff": {
             "get": {
                 "security": [
                     {
@@ -421,6 +471,16 @@ const docTemplate = `{
                 ],
                 "summary": "List staff users",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "admin",
@@ -522,6 +582,16 @@ const docTemplate = `{
                 "summary": "Create staff user",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Staff user",
                         "name": "body",
                         "in": "body",
@@ -607,7 +677,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/admin/staff/{id}/status": {
+        "/admin/staff/{id}/status": {
             "patch": {
                 "security": [
                     {
@@ -625,6 +695,16 @@ const docTemplate = `{
                 ],
                 "summary": "Enable or disable staff user",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Staff ID",
@@ -700,7 +780,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/admin/stats": {
+        "/admin/stats": {
             "get": {
                 "security": [
                     {
@@ -714,6 +794,18 @@ const docTemplate = `{
                     "Admin"
                 ],
                 "summary": "System statistics",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -772,7 +864,135 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/attributes": {
+        "/admin/users/{id}/impersonate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin only. Issues a 2h customer access token for the given user without mobile/password and sets it as the user_access_token httpOnly cookie. No refresh token is stored, so the session ends when the access token expires. The token carries impersonator_id with the admin's ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Login as customer",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Customer user ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_auth.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/attributes": {
             "get": {
                 "produces": [
                     "application/json"
@@ -876,6 +1096,16 @@ const docTemplate = `{
                 "summary": "Create attribute",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Attribute",
                         "name": "body",
                         "in": "body",
@@ -961,7 +1191,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/attributes/{id}": {
+        "/attributes/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -1034,6 +1264,16 @@ const docTemplate = `{
                 "summary": "Delete attribute",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Attribute ID",
                         "name": "id",
@@ -1097,6 +1337,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update attribute",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Attribute ID",
@@ -1190,9 +1440,71 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/login": {
+        "/auth/logout": {
+            "get": {
+                "description": "Deletes the server side refresh token and clears the access cookie for the given user_type, or for both sessions when user_type is omitted.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to clear",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
             "post": {
-                "description": "Staff and customer login with mobile/password. user_type is optional; when omitted staff accounts are checked first.",
+                "description": "Registers a customer and sets the user_access_token httpOnly cookie.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1202,7 +1514,89 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login",
+                "summary": "Customer registration",
+                "parameters": [
+                    {
+                        "description": "Registration data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_auth.RegisterDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_auth.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/staff/login": {
+            "post": {
+                "description": "Staff login with mobile/password. Sets the staff_access_token httpOnly cookie; the refresh token is stored server side and replaces any previous staff session.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Staff login",
                 "parameters": [
                     {
                         "description": "Credentials",
@@ -1290,8 +1684,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/auth/register": {
+        "/auth/user/login": {
             "post": {
+                "description": "Customer login with mobile/password. Sets the user_access_token httpOnly cookie; the refresh token is stored server side and replaces any previous customer session.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1301,21 +1696,21 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Customer registration",
+                "summary": "Customer login",
                 "parameters": [
                     {
-                        "description": "Registration data",
+                        "description": "Credentials",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_auth.RegisterDto"
+                            "$ref": "#/definitions/internal_auth.LoginDto"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1350,8 +1745,26 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "allOf": [
                                 {
@@ -1371,7 +1784,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cart": {
+        "/cart": {
             "get": {
                 "security": [
                     {
@@ -1385,6 +1798,18 @@ const docTemplate = `{
                     "Cart"
                 ],
                 "summary": "Get current cart",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1425,7 +1850,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cart/checkout": {
+        "/cart/checkout": {
             "post": {
                 "security": [
                     {
@@ -1444,6 +1869,16 @@ const docTemplate = `{
                 ],
                 "summary": "Checkout cart",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Optional discount code",
                         "name": "body",
@@ -1529,7 +1964,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cart/items": {
+        "/cart/items": {
             "post": {
                 "security": [
                     {
@@ -1548,6 +1983,16 @@ const docTemplate = `{
                 ],
                 "summary": "Add product to cart",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Item",
                         "name": "body",
@@ -1616,7 +2061,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cart/items/{id}": {
+        "/cart/items/{id}": {
             "delete": {
                 "security": [
                     {
@@ -1631,6 +2076,16 @@ const docTemplate = `{
                 ],
                 "summary": "Remove item from cart",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Cart item ID",
@@ -1695,6 +2150,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update cart item quantity",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Cart item ID",
@@ -1770,7 +2235,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/categories": {
+        "/categories": {
             "get": {
                 "produces": [
                     "application/json"
@@ -1820,6 +2285,16 @@ const docTemplate = `{
                 ],
                 "summary": "Create category",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Category",
                         "name": "body",
@@ -1906,7 +2381,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/categories/{id}": {
+        "/categories/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -1978,6 +2453,16 @@ const docTemplate = `{
                 ],
                 "summary": "Delete category",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Category ID",
@@ -2061,6 +2546,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update category",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Category ID",
@@ -2154,7 +2649,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/banners": {
+        "/cms/banners": {
             "post": {
                 "security": [
                     {
@@ -2172,6 +2667,16 @@ const docTemplate = `{
                 ],
                 "summary": "Create banner",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Banner",
                         "name": "body",
@@ -2222,7 +2727,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/banners/{id}": {
+        "/cms/banners/{id}": {
             "delete": {
                 "security": [
                     {
@@ -2237,6 +2742,16 @@ const docTemplate = `{
                 ],
                 "summary": "Delete banner",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Banner ID",
@@ -2301,6 +2816,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update banner",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Banner ID",
@@ -2376,7 +2901,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/blogs": {
+        "/cms/blogs": {
             "get": {
                 "produces": [
                     "application/json"
@@ -2479,6 +3004,16 @@ const docTemplate = `{
                 "summary": "Create blog post",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Blog post",
                         "name": "body",
                         "in": "body",
@@ -2546,7 +3081,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/blogs/{id}": {
+        "/cms/blogs/{id}": {
             "delete": {
                 "security": [
                     {
@@ -2562,6 +3097,16 @@ const docTemplate = `{
                 ],
                 "summary": "Delete blog post",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Blog ID",
@@ -2627,6 +3172,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update blog post",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Blog ID",
@@ -2702,7 +3257,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/blogs/{slug}": {
+        "/cms/blogs/{slug}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -2760,7 +3315,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/cms/content": {
+        "/cms/content": {
             "get": {
                 "produces": [
                     "application/json"
@@ -2808,6 +3363,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update site content",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Content items",
                         "name": "body",
@@ -2876,7 +3441,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/discounts": {
+        "/discounts": {
             "get": {
                 "security": [
                     {
@@ -2892,6 +3457,16 @@ const docTemplate = `{
                 ],
                 "summary": "List discount codes",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Code contains",
@@ -3026,6 +3601,16 @@ const docTemplate = `{
                 "summary": "Generate discount code",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Discount",
                         "name": "body",
                         "in": "body",
@@ -3111,7 +3696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/discounts/{id}": {
+        "/discounts/{id}": {
             "get": {
                 "security": [
                     {
@@ -3127,6 +3712,16 @@ const docTemplate = `{
                 ],
                 "summary": "Get discount code",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Discount ID",
@@ -3224,6 +3819,16 @@ const docTemplate = `{
                 ],
                 "summary": "Delete discount code",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Discount ID",
@@ -3326,6 +3931,16 @@ const docTemplate = `{
                 "summary": "Update discount code",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Discount ID",
                         "name": "id",
@@ -3418,7 +4033,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/finance/preinvoices": {
+        "/finance/preinvoices": {
             "get": {
                 "security": [
                     {
@@ -3433,6 +4048,16 @@ const docTemplate = `{
                 ],
                 "summary": "List pre-invoices",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "issued",
@@ -3538,6 +4163,16 @@ const docTemplate = `{
                 "summary": "Create manual pre-invoice",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Pre-invoice",
                         "name": "body",
                         "in": "body",
@@ -3605,7 +4240,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/finance/reports": {
+        "/finance/reports": {
             "get": {
                 "security": [
                     {
@@ -3621,6 +4256,16 @@ const docTemplate = `{
                 ],
                 "summary": "Sales report",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "daily",
@@ -3705,7 +4350,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/inventory": {
+        "/inventory": {
             "get": {
                 "security": [
                     {
@@ -3720,6 +4365,16 @@ const docTemplate = `{
                 ],
                 "summary": "Current stock levels",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -3790,7 +4445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/inventory/inbound": {
+        "/inventory/inbound": {
             "post": {
                 "security": [
                     {
@@ -3808,6 +4463,16 @@ const docTemplate = `{
                 ],
                 "summary": "Stock intake",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Inbound movement",
                         "name": "body",
@@ -3876,7 +4541,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/inventory/logs/{productId}": {
+        "/inventory/logs/{productId}": {
             "get": {
                 "security": [
                     {
@@ -3891,6 +4556,16 @@ const docTemplate = `{
                 ],
                 "summary": "Stock movement audit logs",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -3968,7 +4643,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/inventory/outbound": {
+        "/inventory/outbound": {
             "post": {
                 "security": [
                     {
@@ -3986,6 +4661,16 @@ const docTemplate = `{
                 ],
                 "summary": "Stock dispatch or reduction",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Outbound movement",
                         "name": "body",
@@ -4072,14 +4757,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/media/upload": {
+        "/media/upload": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Uploads an image, video or document to MinIO and stores its metadata",
+                "description": "Uploads an image, video or document to MinIO and stores its metadata. The MIME type is detected from the file content, not the client header.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -4091,6 +4776,16 @@ const docTemplate = `{
                 ],
                 "summary": "Upload media",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "file",
                         "description": "Media file",
@@ -4193,7 +4888,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/media/{id}": {
+        "/media/{id}": {
             "get": {
                 "security": [
                     {
@@ -4208,6 +4903,16 @@ const docTemplate = `{
                 ],
                 "summary": "Get media metadata",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Media ID",
@@ -4274,7 +4979,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/callback": {
+        "/payment/callback": {
             "get": {
                 "description": "Called by the Zibal gateway. Verifies the payment and credits the paid amount to the customer wallet. For orders the order price is then debited from the wallet and order/transaction/pre-invoice are updated. Sends bot messages and redirects (302) to the client app with ?inv=inv-\u003cORDER-ID\u003e for orders or ?wallet=wlt-\u003cTRACK-ID\u003e for wallet charges",
                 "tags": [
@@ -4327,7 +5032,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/checkout/{orderId}": {
+        "/payment/checkout/{orderId}": {
             "post": {
                 "security": [
                     {
@@ -4343,6 +5048,16 @@ const docTemplate = `{
                 ],
                 "summary": "Start Zibal payment for an order",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -4427,7 +5142,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/checkout/{orderId}/wallet": {
+        "/payment/checkout/{orderId}/wallet": {
             "post": {
                 "security": [
                     {
@@ -4443,6 +5158,16 @@ const docTemplate = `{
                 ],
                 "summary": "Pay order from wallet",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -4527,7 +5252,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/inquiry/{trackId}": {
+        "/payment/inquiry/{trackId}": {
             "post": {
                 "security": [
                     {
@@ -4543,6 +5268,16 @@ const docTemplate = `{
                 ],
                 "summary": "Manual gateway transaction inquiry",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Zibal track ID",
@@ -4627,7 +5362,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/status/{trackId}": {
+        "/payment/status/{trackId}": {
             "get": {
                 "security": [
                     {
@@ -4642,6 +5377,16 @@ const docTemplate = `{
                 ],
                 "summary": "Payment transaction status",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Zibal track ID",
@@ -4708,7 +5453,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/payment/wallet/charge": {
+        "/payment/wallet/charge": {
             "post": {
                 "security": [
                     {
@@ -4727,6 +5472,16 @@ const docTemplate = `{
                 ],
                 "summary": "Charge wallet via Zibal",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Charge amount",
                         "name": "body",
@@ -4813,7 +5568,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/products": {
+        "/products": {
             "get": {
                 "produces": [
                     "application/json"
@@ -4923,6 +5678,16 @@ const docTemplate = `{
                 "summary": "Create product",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Product",
                         "name": "body",
                         "in": "body",
@@ -5008,7 +5773,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/products/{id}": {
+        "/products/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -5080,6 +5845,16 @@ const docTemplate = `{
                 "summary": "Delete product",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Product ID",
                         "name": "id",
@@ -5144,6 +5919,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update product",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -5237,7 +6022,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/products/{id}/attributes": {
+        "/products/{id}/attributes": {
             "post": {
                 "security": [
                     {
@@ -5256,6 +6041,16 @@ const docTemplate = `{
                 ],
                 "summary": "Assign attributes to product",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -5331,7 +6126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/products/{id}/attributes/{attributeId}": {
+        "/products/{id}/attributes/{attributeId}": {
             "delete": {
                 "security": [
                     {
@@ -5346,6 +6141,16 @@ const docTemplate = `{
                 ],
                 "summary": "Unassign attribute from product",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -5419,7 +6224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/staff/me": {
+        "/staff/me": {
             "get": {
                 "security": [
                     {
@@ -5433,6 +6238,18 @@ const docTemplate = `{
                     "Staff"
                 ],
                 "summary": "Get current staff profile",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5509,6 +6326,16 @@ const docTemplate = `{
                 "summary": "Update current staff profile",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Profile fields",
                         "name": "body",
                         "in": "body",
@@ -5576,7 +6403,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/support/chat/rooms": {
+        "/support/chat/rooms": {
             "get": {
                 "security": [
                     {
@@ -5591,6 +6418,16 @@ const docTemplate = `{
                 ],
                 "summary": "List support chat rooms",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "open",
@@ -5690,7 +6527,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/support/chat/rooms/{id}/messages": {
+        "/support/chat/rooms/{id}/messages": {
             "get": {
                 "security": [
                     {
@@ -5705,6 +6542,16 @@ const docTemplate = `{
                 ],
                 "summary": "List messages of a chat room",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Room ID",
@@ -5817,6 +6664,16 @@ const docTemplate = `{
                 "summary": "Reply to a chat room as support",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Room ID",
                         "name": "id",
@@ -5891,7 +6748,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/support/chat/rooms/{id}/status": {
+        "/support/chat/rooms/{id}/status": {
             "patch": {
                 "security": [
                     {
@@ -5909,6 +6766,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update chat room status",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Room ID",
@@ -5984,7 +6851,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/support/orders": {
+        "/support/orders": {
             "get": {
                 "security": [
                     {
@@ -5999,6 +6866,16 @@ const docTemplate = `{
                 ],
                 "summary": "Read-only customer orders",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -6081,7 +6958,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/support/preinvoices": {
+        "/support/preinvoices": {
             "get": {
                 "security": [
                     {
@@ -6096,6 +6973,16 @@ const docTemplate = `{
                 ],
                 "summary": "Read-only customer pre-invoices",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -6178,7 +7065,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/chat/messages": {
+        "/user/chat/messages": {
             "get": {
                 "security": [
                     {
@@ -6194,6 +7081,16 @@ const docTemplate = `{
                 ],
                 "summary": "Customer chat inbox",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -6282,6 +7179,16 @@ const docTemplate = `{
                 "summary": "Send chat message as customer",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
                         "description": "Message",
                         "name": "body",
                         "in": "body",
@@ -6349,7 +7256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/discounts/check": {
+        "/user/discounts/check": {
             "post": {
                 "security": [
                     {
@@ -6368,6 +7275,16 @@ const docTemplate = `{
                 ],
                 "summary": "Check discount code",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Code and amount",
                         "name": "body",
@@ -6436,7 +7353,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/notifications": {
+        "/user/notifications": {
             "get": {
                 "security": [
                     {
@@ -6452,6 +7369,16 @@ const docTemplate = `{
                 ],
                 "summary": "Customer in-app notifications",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -6522,7 +7449,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/notifications/{id}/read": {
+        "/user/notifications/{id}/read": {
             "patch": {
                 "security": [
                     {
@@ -6537,6 +7464,16 @@ const docTemplate = `{
                 ],
                 "summary": "Mark notification as read",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -6585,7 +7522,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/orders": {
+        "/user/orders": {
             "get": {
                 "security": [
                     {
@@ -6600,6 +7537,16 @@ const docTemplate = `{
                 ],
                 "summary": "Customer orders",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -6676,7 +7623,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/orders/{id}": {
+        "/user/orders/{id}": {
             "get": {
                 "security": [
                     {
@@ -6691,6 +7638,16 @@ const docTemplate = `{
                 ],
                 "summary": "Customer order details",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -6739,7 +7696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/preinvoices": {
+        "/user/preinvoices": {
             "get": {
                 "security": [
                     {
@@ -6754,6 +7711,16 @@ const docTemplate = `{
                 ],
                 "summary": "Customer pre-invoices",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -6824,7 +7791,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/profile": {
+        "/user/profile": {
             "get": {
                 "security": [
                     {
@@ -6838,6 +7805,18 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Get customer profile",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -6913,6 +7892,16 @@ const docTemplate = `{
                 ],
                 "summary": "Update customer profile",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "description": "Profile fields",
                         "name": "body",
@@ -6999,7 +7988,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallet": {
+        "/wallet": {
             "get": {
                 "security": [
                     {
@@ -7014,6 +8003,18 @@ const docTemplate = `{
                     "Wallet"
                 ],
                 "summary": "Get my wallet",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -7072,7 +8073,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallet/transactions": {
+        "/wallet/transactions": {
             "get": {
                 "security": [
                     {
@@ -7087,6 +8088,16 @@ const docTemplate = `{
                 ],
                 "summary": "List my wallet transactions",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "credit",
@@ -7214,7 +8225,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallets": {
+        "/wallets": {
             "get": {
                 "security": [
                     {
@@ -7229,6 +8240,16 @@ const docTemplate = `{
                 ],
                 "summary": "List wallets",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "user",
@@ -7333,7 +8354,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallets/{id}": {
+        "/wallets/{id}": {
             "get": {
                 "security": [
                     {
@@ -7348,6 +8369,16 @@ const docTemplate = `{
                 ],
                 "summary": "Get wallet",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -7432,7 +8463,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallets/{id}/adjust": {
+        "/wallets/{id}/adjust": {
             "post": {
                 "security": [
                     {
@@ -7451,6 +8482,16 @@ const docTemplate = `{
                 ],
                 "summary": "Change wallet amount",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -7544,7 +8585,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/wallets/{id}/transactions": {
+        "/wallets/{id}/transactions": {
             "get": {
                 "security": [
                     {
@@ -7559,6 +8600,16 @@ const docTemplate = `{
                 ],
                 "summary": "List wallet transactions",
                 "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -7682,16 +8733,20 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upgrades to WebSocket. Pass the JWT as ?token= query, Authorization header or access_token cookie. Customers send {\"message\":\"...\"}; support agents send {\"room_id\":1,\"message\":\"...\"}. Server pushes ChatMessage JSON frames.",
+                "description": "Upgrades to WebSocket. Authenticates via the staff_access_token or user_access_token httpOnly cookie (select with ?user_type=). Customers send {\"message\":\"...\"}; support agents send {\"room_id\":1,\"message\":\"...\"}. Server pushes ChatMessage JSON frames.",
                 "tags": [
                     "Chat"
                 ],
                 "summary": "Real-time support chat WebSocket",
                 "parameters": [
                     {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
                         "type": "string",
-                        "description": "JWT access token",
-                        "name": "token",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
                         "in": "query"
                     }
                 ],
@@ -8242,13 +9297,6 @@ const docTemplate = `{
                     "maxLength": 72,
                     "minLength": 6,
                     "example": "secret123"
-                },
-                "user_type": {
-                    "type": "string",
-                    "enum": [
-                        "staff",
-                        "customer"
-                    ]
                 }
             }
         },
@@ -8279,9 +9327,6 @@ const docTemplate = `{
         "internal_auth.TokenResponse": {
             "type": "object",
             "properties": {
-                "access_token": {
-                    "type": "string"
-                },
                 "role": {
                     "type": "string"
                 },

@@ -20,7 +20,7 @@ set "MINIO_BUCKET=ecommerce"
 set "MINIO_USE_SSL=false"
 set "MINIO_PUBLIC_URL="
 set "ZIBAL_MERCHANT=zibal"
-set "ZIBAL_CALLBACK_URL=http://localhost:4000/api/payment/callback"
+set "ZIBAL_CALLBACK_URL=http://localhost:4000/payment/callback"
 set "CLIENT_PAYMENT_REDIRECT_URL=http://localhost:3000/payment/result"
 set "CORS_ORIGINS=http://localhost:3000"
 

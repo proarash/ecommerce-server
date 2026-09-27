@@ -47,6 +47,7 @@ func detectType(mime string) string {
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param file formData file true "Media file"
 // @Success 201 {object} types.ApiResponse{data=UploadResponse}
@@ -54,7 +55,7 @@ func detectType(mime string) string {
 // @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 503 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/media/upload [post]
+// @Router /media/upload [post]
 func (h *Handler) Upload(c *gin.Context) {
 	fh, err := c.FormFile("file")
 	if err != nil {
@@ -111,12 +112,13 @@ func (h *Handler) Upload(c *gin.Context) {
 // @Summary Get media metadata
 // @Tags Media
 // @Produce json
+// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
 // @Security BearerAuth
 // @Param id path int true "Media ID"
 // @Success 200 {object} types.ApiResponse{data=Media}
 // @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Router /api/media/{id} [get]
+// @Router /media/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
 	if !ok {
