@@ -19,13 +19,8 @@ $env:ADMIN_PASSWORD = "change-me-admin-password"
 $env:TELEGRAM_BOT_TOKEN = ""
 $env:TELEGRAM_ADMIN_CHAT_ID = ""
 
-# MinIO / S3 Storage
-$env:MINIO_ENDPOINT = "localhost:9000"
-$env:MINIO_ACCESS_KEY = "minioadmin"
-$env:MINIO_SECRET_KEY = "minioadmin"
-$env:MINIO_BUCKET = "ecommerce"
-$env:MINIO_USE_SSL = "false"
-$env:MINIO_PUBLIC_URL = ""
+# Media Uploads
+$env:UPLOAD_DIR = "uploads"
 
 # Zibal Payment Gateway
 $env:ZIBAL_MERCHANT = "zibal"

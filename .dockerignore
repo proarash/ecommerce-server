@@ -8,3 +8,4 @@ Makefile
 Dockerfile
 docker-compose.yml
 .env
+uploads

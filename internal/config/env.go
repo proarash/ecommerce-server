@@ -13,12 +13,7 @@ type EnvConfig struct {
 	Port                string
 	TelegramBotToken    string
 	TelegramAdminChatID string
-	MinioEndpoint       string
-	MinioAccessKey      string
-	MinioSecretKey      string
-	MinioBucket         string
-	MinioUseSSL         string
-	MinioPublicURL      string
+	UploadDir           string
 	ZibalMerchant       string
 	ZibalCallbackURL    string
 	ClientPaymentURL    string
@@ -54,12 +49,7 @@ func GetEnvConfig() *EnvConfig {
 		Port:                getEnv("PORT", "4000"),
 		TelegramBotToken:    os.Getenv("TELEGRAM_BOT_TOKEN"),
 		TelegramAdminChatID: os.Getenv("TELEGRAM_ADMIN_CHAT_ID"),
-		MinioEndpoint:       os.Getenv("MINIO_ENDPOINT"),
-		MinioAccessKey:      os.Getenv("MINIO_ACCESS_KEY"),
-		MinioSecretKey:      os.Getenv("MINIO_SECRET_KEY"),
-		MinioBucket:         getEnv("MINIO_BUCKET", "ecommerce"),
-		MinioUseSSL:         os.Getenv("MINIO_USE_SSL"),
-		MinioPublicURL:      os.Getenv("MINIO_PUBLIC_URL"),
+		UploadDir:           getEnv("UPLOAD_DIR", "uploads"),
 		ZibalMerchant:       getEnv("ZIBAL_MERCHANT", "zibal"),
 		ZibalCallbackURL:    getEnv("ZIBAL_CALLBACK_URL", "http://localhost:4000/payment/callback"),
 		ClientPaymentURL:    getEnv("CLIENT_PAYMENT_REDIRECT_URL", "http://localhost:3000/payment/result"),

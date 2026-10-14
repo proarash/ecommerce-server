@@ -569,7 +569,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates storekeeper, accountant, marketer or support users. Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded MinIO media asset.",
+                "description": "Creates storekeeper, accountant, marketer or support users. Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2630,6 +2630,133 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/{id}/media": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Remove category image",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_product.Category"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "allOf": [
                                 {
@@ -4764,7 +4891,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Uploads an image, video or document to MinIO and stores its metadata. The MIME type is detected from the file content, not the client header.",
+                "description": "Uploads images (jpeg, png, gif, webp; max 2MB each) and assigns them to the target selected by type: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one). Files are stored as \u003cuuid\u003e.\u003cextension\u003e and served from /media/{file}.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -4774,7 +4901,7 @@ const docTemplate = `{
                 "tags": [
                     "Media"
                 ],
-                "summary": "Upload media",
+                "summary": "Upload images for a product or category",
                 "parameters": [
                     {
                         "enum": [
@@ -4787,9 +4914,27 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "description": "Product ID or Category ID, depending on type",
+                        "name": "pid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "description": "Target type: 1 = product, 2 = category",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "file",
-                        "description": "Media file",
-                        "name": "file",
+                        "description": "Image files; repeat the field for multiple product images, exactly one for a category",
+                        "name": "files",
                         "in": "formData",
                         "required": true
                     }
@@ -4806,7 +4951,10 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_media.UploadResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_media.Media"
+                                            }
                                         }
                                     }
                                 }
@@ -4867,8 +5015,26 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "503": {
-                        "description": "Service Unavailable",
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
                         "schema": {
                             "allOf": [
                                 {
@@ -4888,12 +5054,54 @@ const docTemplate = `{
                 }
             }
         },
-        "/media/{id}": {
+        "/media/{file}": {
             "get": {
+                "description": "Serves an uploaded image by its exact stored file name (\u003cuuid\u003e.\u003cextension\u003e). Any other name returns 404; directory listing is not available.",
+                "produces": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/gif",
+                    "image/webp"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Serve uploaded image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.jpg",
+                        "name": "file",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/media/{id}": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
+                ],
+                "description": "Replaces the image file of an existing media record (jpeg, png, gif, webp; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new \u003cuuid\u003e.\u003cextension\u003e name and the old file is deleted from disk.",
+                "consumes": [
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -4901,7 +5109,158 @@ const docTemplate = `{
                 "tags": [
                     "Media"
                 ],
-                "summary": "Get media metadata",
+                "summary": "Replace media image",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Media ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_media.Media"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permanently deletes the media record and its file from disk, unassigning it from every product and category that uses it.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Delete media",
                 "parameters": [
                     {
                         "enum": [
@@ -4933,7 +5292,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_media.Media"
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse"
                                         }
                                     }
                                 }
@@ -4942,6 +5301,42 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "allOf": [
                                 {
@@ -5665,7 +6060,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Product title and SKU must be unique. media_ids attaches uploaded images/videos. attribute_ids assigns existing attributes.",
+                "description": "Product title and SKU must be unique. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}\u0026type=1.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5907,7 +6302,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "media_ids and attribute_ids, when provided, replace the product media set and attribute set",
+                "description": "attribute_ids, when provided, replaces the product attribute set. Images are managed via the /media endpoints.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6224,6 +6619,281 @@ const docTemplate = `{
                 }
             }
         },
+        "/products/{id}/media/assign": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Assigns already uploaded media to the product so multiple products can share the same image. Already assigned media are kept.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Assign existing media to product",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Media IDs",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.AssignMediaDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_product.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/media/{mediaId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes the media from this product only; the file stays available to other products sharing it.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Unassign media from product",
+                "parameters": [
+                    {
+                        "enum": [
+                            "staff",
+                            "customer"
+                        ],
+                        "type": "string",
+                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
+                        "name": "user_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Media ID",
+                        "name": "mediaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_product.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/staff/me": {
             "get": {
                 "security": [
@@ -6313,7 +6983,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded MinIO media asset",
+                "description": "default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset",
                 "consumes": [
                     "application/json"
                 ],
@@ -8879,11 +9549,8 @@ const docTemplate = `{
         "github_com_proarash_ecommerce-server_internal_media.Media": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "file_name": {
                     "type": "string"
@@ -8900,7 +9567,7 @@ const docTemplate = `{
                 "mime_type": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
                 "url": {
@@ -10311,11 +10978,8 @@ const docTemplate = `{
         "internal_media.Media": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "file_name": {
                     "type": "string"
@@ -10332,30 +10996,7 @@ const docTemplate = `{
                 "mime_type": {
                     "type": "string"
                 },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_media.UploadResponse": {
-            "type": "object",
-            "properties": {
-                "file_name": {
-                    "type": "string"
-                },
-                "file_size": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "media_type": {
-                    "type": "string"
-                },
-                "mime_type": {
+                "updated_at": {
                     "type": "string"
                 },
                 "url": {
@@ -10636,6 +11277,21 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_product.AssignMediaDto": {
+            "type": "object",
+            "required": [
+                "media_ids"
+            ],
+            "properties": {
+                "media_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "internal_product.Attribute": {
             "type": "object",
             "properties": {
@@ -10755,10 +11411,6 @@ const docTemplate = `{
                 "slug"
             ],
             "properties": {
-                "media_id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
                 "name": {
                     "type": "string",
                     "maxLength": 100
@@ -10797,12 +11449,6 @@ const docTemplate = `{
                 },
                 "is_active": {
                     "type": "boolean"
-                },
-                "media_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "price": {
                     "type": "number"
@@ -10890,10 +11536,6 @@ const docTemplate = `{
                 "make_root": {
                     "type": "boolean"
                 },
-                "media_id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
                 "name": {
                     "type": "string",
                     "maxLength": 100
@@ -10926,12 +11568,6 @@ const docTemplate = `{
                 },
                 "is_active": {
                     "type": "boolean"
-                },
-                "media_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "price": {
                     "type": "number"

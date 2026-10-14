@@ -36,10 +36,13 @@ func (h *Handler) RegisterRoutes(public gin.IRouter, storekeeper gin.IRouter) {
 	storekeeper.DELETE("/attributes/:id", h.DeleteAttribute)
 	storekeeper.POST("/products/:id/attributes", h.AttachAttributes)
 	storekeeper.DELETE("/products/:id/attributes/:attributeId", h.DetachAttribute)
+	storekeeper.POST("/products/:id/media/assign", h.AssignProductMedia)
+	storekeeper.DELETE("/products/:id/media/:mediaId", h.DetachProductMedia)
+	storekeeper.DELETE("/categories/:id/media", h.RemoveCategoryMedia)
 }
 
 func (h *Handler) fail(c *gin.Context, err error, notFound string) {
-	if errors.Is(err, ErrAttributeNotFound) {
+	if errors.Is(err, ErrAttributeNotFound) || errors.Is(err, ErrMediaNotFound) {
 		types.BadRequest(c, err)
 		return
 	}
@@ -125,9 +128,9 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 		types.BadRequest(c, err)
 		return
 	}
-	cat := Category{Name: dto.Name, Slug: dto.Slug, ParentID: dto.ParentID, MediaID: dto.MediaID}
+	cat := Category{Name: dto.Name, Slug: dto.Slug, ParentID: dto.ParentID}
 	if err := h.store.CreateCategory(c.Request.Context(), &cat); err != nil {
-		types.HandleError(c, err, "parent or media not found")
+		types.HandleError(c, err, "parent not found")
 		return
 	}
 	c.JSON(http.StatusCreated, cat)
@@ -170,9 +173,6 @@ func (h *Handler) UpdateCategory(c *gin.Context) {
 	}
 	if dto.MakeRoot {
 		fields["parent_id"] = nil
-	}
-	if dto.MediaID != nil {
-		fields["media_id"] = *dto.MediaID
 	}
 	if len(fields) > 0 {
 		if err := h.store.UpdateCategory(c.Request.Context(), id, fields); err != nil {
@@ -263,7 +263,7 @@ func (h *Handler) GetProduct(c *gin.Context) {
 
 // CreateProduct godoc
 // @Summary Create product
-// @Description Product title and SKU must be unique. media_ids attaches uploaded images/videos. attribute_ids assigns existing attributes.
+// @Description Product title and SKU must be unique. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}&type=1.
 // @Tags Products
 // @Accept json
 // @Produce json
@@ -285,12 +285,12 @@ func (h *Handler) CreateProduct(c *gin.Context) {
 	if dto.IsActive != nil {
 		p.IsActive = *dto.IsActive
 	}
-	if err := h.store.CreateProduct(c.Request.Context(), &p, dto.MediaIDs, dto.AttributeIDs); err != nil {
+	if err := h.store.CreateProduct(c.Request.Context(), &p, dto.AttributeIDs); err != nil {
 		h.fail(c, err, "category not found")
 		return
 	}
 	if !p.IsActive {
-		if err := h.store.UpdateProduct(c.Request.Context(), p.ID, map[string]any{"is_active": false}, nil, nil); err != nil {
+		if err := h.store.UpdateProduct(c.Request.Context(), p.ID, map[string]any{"is_active": false}, nil); err != nil {
 			types.HandleError(c, err, "product not found")
 			return
 		}
@@ -305,7 +305,7 @@ func (h *Handler) CreateProduct(c *gin.Context) {
 
 // UpdateProduct godoc
 // @Summary Update product
-// @Description media_ids and attribute_ids, when provided, replace the product media set and attribute set
+// @Description attribute_ids, when provided, replaces the product attribute set. Images are managed via the /media endpoints.
 // @Tags Products
 // @Accept json
 // @Produce json
@@ -347,7 +347,7 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 	if dto.CategoryID != nil {
 		fields["category_id"] = *dto.CategoryID
 	}
-	if err := h.store.UpdateProduct(c.Request.Context(), id, fields, dto.MediaIDs, dto.AttributeIDs); err != nil {
+	if err := h.store.UpdateProduct(c.Request.Context(), id, fields, dto.AttributeIDs); err != nil {
 		h.fail(c, err, "product not found")
 		return
 	}

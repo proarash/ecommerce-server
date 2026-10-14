@@ -19,10 +19,10 @@ type Store interface {
 	FindCategory(ctx context.Context, id uint) (Category, error)
 	UpdateCategory(ctx context.Context, id uint, fields map[string]any) error
 	DeleteCategory(ctx context.Context, id uint) error
-	CreateProduct(ctx context.Context, p *Product, mediaIDs, attributeIDs []uint) error
+	CreateProduct(ctx context.Context, p *Product, attributeIDs []uint) error
 	ListProducts(ctx context.Context, q ProductQuery, onlyActive bool) ([]Product, int64, error)
 	FindProduct(ctx context.Context, id uint) (Product, error)
-	UpdateProduct(ctx context.Context, id uint, fields map[string]any, mediaIDs, attributeIDs *[]uint) error
+	UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributeIDs *[]uint) error
 	DeleteProduct(ctx context.Context, id uint) error
 	CreateAttribute(ctx context.Context, a *Attribute) error
 	ListAttributes(ctx context.Context, q AttributeQuery) ([]Attribute, int64, error)
@@ -31,9 +31,14 @@ type Store interface {
 	DeleteAttribute(ctx context.Context, id uint) error
 	AttachAttributes(ctx context.Context, productID uint, attributeIDs []uint) error
 	DetachAttribute(ctx context.Context, productID, attributeID uint) error
+	AttachMediaIDs(ctx context.Context, productID uint, mediaIDs []uint) error
+	DetachMedia(ctx context.Context, productID, mediaID uint) error
+	SetCategoryMedia(ctx context.Context, categoryID uint, mediaID *uint) error
 }
 
 var ErrAttributeNotFound = errors.New("one or more attributes do not exist")
+
+var ErrMediaNotFound = errors.New("one or more media do not exist")
 
 type store struct {
 	db *gorm.DB
@@ -120,6 +125,13 @@ func loadMedia(tx *gorm.DB, ids []uint) ([]media.Media, error) {
 	if err := tx.Where("id IN ?", ids).Find(&items).Error; err != nil {
 		return nil, err
 	}
+	unique := map[uint]struct{}{}
+	for _, id := range ids {
+		unique[id] = struct{}{}
+	}
+	if len(items) != len(unique) {
+		return nil, ErrMediaNotFound
+	}
 	return items, nil
 }
 
@@ -141,13 +153,9 @@ func loadAttributes(tx *gorm.DB, ids []uint) ([]Attribute, error) {
 	return items, nil
 }
 
-func (s *store) CreateProduct(ctx context.Context, p *Product, mediaIDs, attributeIDs []uint) error {
+func (s *store) CreateProduct(ctx context.Context, p *Product, attributeIDs []uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		items, err := loadMedia(tx, mediaIDs)
-		if err != nil {
-			return err
-		}
-		p.Media = items
+		var err error
 		if p.Attributes, err = loadAttributes(tx, attributeIDs); err != nil {
 			return err
 		}
@@ -179,7 +187,7 @@ func (s *store) FindProduct(ctx context.Context, id uint) (Product, error) {
 	return gorm.G[Product](s.db).Preload("Media", nil).Preload("Attributes", nil).Preload("Category", nil).Where("id = ?", id).First(ctx)
 }
 
-func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]any, mediaIDs, attributeIDs *[]uint) error {
+func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributeIDs *[]uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var p Product
 		if err := tx.First(&p, id).Error; err != nil {
@@ -187,15 +195,6 @@ func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]an
 		}
 		if len(fields) > 0 {
 			if err := tx.Model(&p).Updates(fields).Error; err != nil {
-				return err
-			}
-		}
-		if mediaIDs != nil {
-			items, err := loadMedia(tx, *mediaIDs)
-			if err != nil {
-				return err
-			}
-			if err := tx.Model(&p).Association("Media").Replace(items); err != nil {
 				return err
 			}
 		}
@@ -296,4 +295,43 @@ func (s *store) DetachAttribute(ctx context.Context, productID, attributeID uint
 		}
 		return tx.Model(&p).Association("Attributes").Delete(&a)
 	})
+}
+
+func (s *store) AttachMediaIDs(ctx context.Context, productID uint, mediaIDs []uint) error {
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var p Product
+		if err := tx.First(&p, productID).Error; err != nil {
+			return err
+		}
+		items, err := loadMedia(tx, mediaIDs)
+		if err != nil {
+			return err
+		}
+		return tx.Model(&p).Association("Media").Append(items)
+	})
+}
+
+func (s *store) DetachMedia(ctx context.Context, productID, mediaID uint) error {
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var p Product
+		if err := tx.First(&p, productID).Error; err != nil {
+			return err
+		}
+		var m media.Media
+		if err := tx.First(&m, mediaID).Error; err != nil {
+			return err
+		}
+		return tx.Model(&p).Association("Media").Delete(&m)
+	})
+}
+
+func (s *store) SetCategoryMedia(ctx context.Context, categoryID uint, mediaID *uint) error {
+	res := s.db.WithContext(ctx).Model(&Category{}).Where("id = ?", categoryID).Update("media_id", mediaID)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

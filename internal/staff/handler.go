@@ -43,7 +43,7 @@ func (h *Handler) Me(c *gin.Context) {
 
 // UpdateMe godoc
 // @Summary Update current staff profile
-// @Description default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded MinIO media asset
+// @Description default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset
 // @Tags Staff
 // @Accept json
 // @Produce json

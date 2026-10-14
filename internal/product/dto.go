@@ -4,7 +4,6 @@ type CreateCategoryDto struct {
 	Name     string `json:"name" binding:"required,max=100"`
 	Slug     string `json:"slug" binding:"required,max=120"`
 	ParentID *uint  `json:"parent_id" binding:"omitempty,min=1"`
-	MediaID  *uint  `json:"media_id" binding:"omitempty,min=1"`
 }
 
 type UpdateCategoryDto struct {
@@ -12,7 +11,6 @@ type UpdateCategoryDto struct {
 	Slug     *string `json:"slug" binding:"omitempty,max=120"`
 	ParentID *uint   `json:"parent_id" binding:"omitempty,min=1,excluded_with=MakeRoot"`
 	MakeRoot bool    `json:"make_root"`
-	MediaID  *uint   `json:"media_id" binding:"omitempty,min=1"`
 }
 
 type CreateProductDto struct {
@@ -22,7 +20,6 @@ type CreateProductDto struct {
 	SKU          string  `json:"sku" binding:"required,max=64"`
 	IsActive     *bool   `json:"is_active"`
 	CategoryID   uint    `json:"category_id" binding:"required,min=1"`
-	MediaIDs     []uint  `json:"media_ids"`
 	AttributeIDs []uint  `json:"attribute_ids"`
 }
 
@@ -33,7 +30,6 @@ type UpdateProductDto struct {
 	SKU          *string  `json:"sku" binding:"omitempty,max=64"`
 	IsActive     *bool    `json:"is_active"`
 	CategoryID   *uint    `json:"category_id" binding:"omitempty,min=1"`
-	MediaIDs     *[]uint  `json:"media_ids"`
 	AttributeIDs *[]uint  `json:"attribute_ids"`
 }
 
@@ -74,4 +70,8 @@ type AttributeQuery struct {
 
 type AssignAttributesDto struct {
 	AttributeIDs []uint `json:"attribute_ids" binding:"required,min=1,dive,min=1"`
+}
+
+type AssignMediaDto struct {
+	MediaIDs []uint `json:"media_ids" binding:"required,min=1,dive,min=1"`
 }

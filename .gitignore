@@ -38,3 +38,6 @@ go.work.sum
 *.log
 tmp/
 bin
+
+# Uploaded media
+/uploads/

@@ -29,7 +29,7 @@ func (h *Handler) RegisterRoutes(admin gin.IRouter) {
 
 // CreateStaff godoc
 // @Summary Create staff user
-// @Description Creates storekeeper, accountant, marketer or support users. Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded MinIO media asset.
+// @Description Creates storekeeper, accountant, marketer or support users. Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset.
 // @Tags Admin
 // @Accept json
 // @Produce json

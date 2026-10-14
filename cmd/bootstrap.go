@@ -94,7 +94,6 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	protected := api.Group("", authMW)
 	customer := api.Group("", authMW, middleware.RequireCustomer())
 	storekeeper := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper))
-	// mediaGroup := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper, staff.RoleMarketer, staff.RoleSupport))
 	accountant := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant))
 	marketer := api.Group("", authMW, middleware.RequireRoles(staff.RoleMarketer))
 	support := api.Group("/support", authMW, middleware.RequireRoles(staff.RoleSupport))
@@ -114,13 +113,12 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	financeStore := finance.NewStore(db, notifier)
 	walletStore := wallet.NewStore(db)
 	discountStore := discount.NewStore(db)
-	// TODO: MinIO disabled for now
-	// mediaClient := media.NewClient(context.Background(), envConfig)
+	mediaService := media.NewService(media.NewStore(db), envConfig.UploadDir)
 
 	auth.NewAuthHandler(authRepo, cookies, envConfig.JwtSecret).RegisterRoutes(api, adminGroup)
 	user.NewHandler(user.NewService(userStore)).RegisterRoutes(customer)
 	staff.NewHandler(staffStore).RegisterRoutes(protected)
-	// media.NewHandler(media.NewStore(db), mediaClient).RegisterRoutes(mediaGroup)
+	media.NewHandler(mediaService).RegisterRoutes(api, storekeeper)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
 	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(customer)

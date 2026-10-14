@@ -14,12 +14,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:-}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-localhost:9000}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_BUCKET: ${MINIO_BUCKET:-ecommerce}
-      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/uploads}
       ZIBAL_MERCHANT: ${ZIBAL_MERCHANT:-zibal}
       ZIBAL_CALLBACK_URL: ${ZIBAL_CALLBACK_URL:-http://localhost:4000/payment/callback}
       CLIENT_PAYMENT_REDIRECT_URL: ${CLIENT_PAYMENT_REDIRECT_URL:-http://localhost:3000/payment/result}
@@ -27,6 +22,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
     restart: unless-stopped
 
   db:
@@ -47,3 +44,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:

@@ -1,18 +1,16 @@
 package media
 
-import "gorm.io/gorm"
+import "time"
 
-const (
-	TypeImage    = "image"
-	TypeVideo    = "video"
-	TypeDocument = "document"
-)
+const TypeImage = "image"
 
 type Media struct {
-	gorm.Model
-	URL       string `json:"url"`
-	MediaType string `json:"media_type" gorm:"index"`
-	MimeType  string `json:"mime_type"`
-	FileSize  int64  `json:"file_size"`
-	FileName  string `json:"file_name"`
+	ID        uint      `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	URL       string    `json:"url"`
+	MediaType string    `json:"media_type" gorm:"index"`
+	MimeType  string    `json:"mime_type"`
+	FileSize  int64     `json:"file_size"`
+	FileName  string    `json:"file_name" gorm:"uniqueIndex"`
 }

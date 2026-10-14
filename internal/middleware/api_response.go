@@ -27,6 +27,10 @@ func (w responseWriter) WriteString(s string) (int, error) {
 var skipPrefixes = []string{"/ws", "/swagger", "/payment/callback"}
 
 func ApiResponseMiddleware(c *gin.Context) {
+	if c.Request.Method == http.MethodGet && strings.HasPrefix(c.Request.URL.Path, "/media/") {
+		c.Next()
+		return
+	}
 	for _, p := range skipPrefixes {
 		if strings.HasPrefix(c.Request.URL.Path, p) {
 			c.Next()
