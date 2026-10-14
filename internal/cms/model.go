@@ -21,7 +21,7 @@ type BlogPost struct {
 type Banner struct {
 	gorm.Model
 	Title        string       `json:"title"`
-	MediaID      uint         `json:"media_id"`
+	MediaID      *uint        `json:"media_id"`
 	Media        *media.Media `json:"media,omitempty"`
 	AltName      string       `json:"alt_name"`
 	LinkUrl      string       `json:"link_url"`

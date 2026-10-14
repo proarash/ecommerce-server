@@ -37,6 +37,7 @@ func (h *Handler) RegisterRoutes(admin gin.IRouter) {
 // @Produce json
 // @Param body body CreateUserDto true "User"
 // @Success 201 {object} types.ApiResponse{data=user.User}
+// @Security BearerAuth
 // @Router /admin/users [post]
 func (h *Handler) CreateUser(c *gin.Context) {
 	var dto CreateUserDto
@@ -68,6 +69,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]user.User}}
+// @Security BearerAuth
 // @Router /admin/users [get]
 func (h *Handler) ListUsers(c *gin.Context) {
 	var q user.ListQuery
@@ -89,6 +91,7 @@ func (h *Handler) ListUsers(c *gin.Context) {
 // @Produce json
 // @Param id path int true "User ID"
 // @Success 200 {object} types.ApiResponse{data=user.User}
+// @Security BearerAuth
 // @Router /admin/users/{id} [get]
 func (h *Handler) GetUser(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -133,6 +136,7 @@ func (h *Handler) update(c *gin.Context, id uint, fields map[string]any) {
 // @Param id path int true "User ID"
 // @Param body body UpdateStatusDto true "Status"
 // @Success 200 {object} types.ApiResponse{data=user.User}
+// @Security BearerAuth
 // @Router /admin/users/{id}/status [patch]
 func (h *Handler) UpdateStatus(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -156,6 +160,7 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 // @Param id path int true "User ID"
 // @Param body body UpdateRolesDto true "Roles"
 // @Success 200 {object} types.ApiResponse{data=user.User}
+// @Security BearerAuth
 // @Router /admin/users/{id}/roles [patch]
 func (h *Handler) UpdateRoles(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -176,6 +181,7 @@ func (h *Handler) UpdateRoles(c *gin.Context) {
 // @Tags Admin
 // @Produce json
 // @Success 200 {object} types.ApiResponse{data=StatsResponse}
+// @Security BearerAuth
 // @Router /admin/stats [get]
 func (h *Handler) Stats(c *gin.Context) {
 	db := h.db.WithContext(c.Request.Context())

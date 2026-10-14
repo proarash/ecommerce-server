@@ -65,6 +65,7 @@ func (h *Handler) resolveOwner(ctx context.Context, mobile string) (*uint, error
 // @Produce json
 // @Param body body CreateDiscountDto true "Discount"
 // @Success 201 {object} types.ApiResponse{data=Discount}
+// @Security BearerAuth
 // @Router /discounts [post]
 func (h *Handler) Create(c *gin.Context) {
 	var dto CreateDiscountDto
@@ -113,6 +114,7 @@ func (h *Handler) Create(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Discount}}
+// @Security BearerAuth
 // @Router /discounts [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
@@ -135,6 +137,7 @@ func (h *Handler) List(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Discount ID"
 // @Success 200 {object} types.ApiResponse{data=Discount}
+// @Security BearerAuth
 // @Router /discounts/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -158,6 +161,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Param id path int true "Discount ID"
 // @Param body body UpdateDiscountDto true "Fields to update"
 // @Success 200 {object} types.ApiResponse{data=Discount}
+// @Security BearerAuth
 // @Router /discounts/{id} [patch]
 func (h *Handler) Update(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -231,6 +235,7 @@ func (h *Handler) Update(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Discount ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /discounts/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -252,6 +257,7 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Produce json
 // @Param body body CheckDto true "Code and amount"
 // @Success 200 {object} types.ApiResponse{data=CheckResponse}
+// @Security BearerAuth
 // @Router /user/discounts/check [post]
 func (h *Handler) Check(c *gin.Context) {
 	var dto CheckDto

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/types"
 )
 
@@ -19,9 +20,10 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) RegisterRoutes(public gin.IRouter, storekeeper gin.IRouter) {
+func (h *Handler) RegisterRoutes(public gin.IRouter, storekeeper gin.IRouter, uploader gin.IRouter) {
 	public.GET("/media/:file", h.Serve)
-	storekeeper.POST("/media/upload", h.Upload)
+	uploader.GET("/media", h.List)
+	uploader.POST("/media/upload", h.Upload)
 	storekeeper.PUT("/media/:id", h.Replace)
 	storekeeper.DELETE("/media/:id", h.Delete)
 }
@@ -49,16 +51,43 @@ func formFiles(c *gin.Context, field string) ([]*multipart.FileHeader, bool) {
 	return files, true
 }
 
+// List godoc
+// @Summary List uploaded media
+// @Description Newest first. Use the returned ids with POST /products/{id}/media/assign, banner media_id, and so on.
+// @Tags Media
+// @Produce json
+// @Param page query int false "Page" default(1)
+// @Param limit query int false "Limit" default(20)
+// @Param id query int false "Filter by media ID"
+// @Param mime query string false "Filter by MIME type" Enums(image/webp, image/svg+xml)
+// @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Media}}
+// @Security BearerAuth
+// @Router /media [get]
+func (h *Handler) List(c *gin.Context) {
+	var q ListQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		types.BadRequest(c, err)
+		return
+	}
+	items, total, err := h.service.List(c.Request.Context(), q)
+	if err != nil {
+		types.HandleError(c, err, "not found")
+		return
+	}
+	c.JSON(http.StatusOK, types.PaginatedResponse{Items: items, Total: total, Page: q.Page, Limit: q.Limit})
+}
+
 // Upload godoc
-// @Summary Upload images for a product or category
-// @Description Uploads images (jpeg, png, gif, webp; max 2MB each) and assigns them to the target selected by type: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one). Files are stored as <uuid>.<extension> and served from /media/{file}.
+// @Summary Upload images
+// @Description Uploads images (webp, svg; max 2MB each). Without pid and type the images are only stored and returned, so their ids can be assigned later (e.g. POST /products/{id}/media/assign). With pid and type they are also assigned right away: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one), 3 = banner (exactly one image, replaces the current one). Assigning to products and categories requires the storekeeper role, banners the marketer role. Files are stored as <uuid>.<extension> and served from /media/{file}.
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
-// @Param pid query int true "Product ID or Category ID, depending on type"
-// @Param type query int true "Target type: 1 = product, 2 = category" Enums(1, 2)
-// @Param files formData file true "Image files; repeat the field for multiple product images, exactly one for a category"
+// @Param pid query int false "Product, category or banner ID; required together with type"
+// @Param type query int false "Target type: 1 = product, 2 = category, 3 = banner; omit both to upload without assigning" Enums(1, 2, 3)
+// @Param files formData file true "Image files; repeat the field for multiple product images, exactly one for a category or banner"
 // @Success 201 {object} types.ApiResponse{data=[]Media}
+// @Security BearerAuth
 // @Router /media/upload [post]
 func (h *Handler) Upload(c *gin.Context) {
 	var q UploadQuery
@@ -66,13 +95,26 @@ func (h *Handler) Upload(c *gin.Context) {
 		types.BadRequest(c, err)
 		return
 	}
+	if q.Type != 0 {
+		requiredRole := "storekeeper"
+		if q.Type == TargetBanner {
+			requiredRole = "marketer"
+		}
+		if p := middleware.GetAuth(c); p == nil || !(p.HasRole(middleware.RoleAdmin) || p.HasRole(requiredRole)) {
+			c.AbortWithStatusJSON(http.StatusForbidden, types.ErrorResponse{Error: "forbidden"})
+			return
+		}
+	}
 	files, ok := formFiles(c, "files")
 	if !ok {
 		return
 	}
 	notFound := "product not found"
-	if q.Type == TargetCategory {
+	switch q.Type {
+	case TargetCategory:
 		notFound = "category not found"
+	case TargetBanner:
+		notFound = "banner not found"
 	}
 	items, err := h.service.Upload(c.Request.Context(), q.Type, q.PID, files)
 	if err != nil {
@@ -84,13 +126,14 @@ func (h *Handler) Upload(c *gin.Context) {
 
 // Replace godoc
 // @Summary Replace media image
-// @Description Replaces the image file of an existing media record (jpeg, png, gif, webp; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new <uuid>.<extension> name and the old file is deleted from disk.
+// @Description Replaces the image file of an existing media record (webp, svg; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new <uuid>.<extension> name and the old file is deleted from disk.
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
 // @Param id path int true "Media ID"
 // @Param file formData file true "Image file"
 // @Success 200 {object} types.ApiResponse{data=Media}
+// @Security BearerAuth
 // @Router /media/{id} [put]
 func (h *Handler) Replace(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -120,6 +163,7 @@ func (h *Handler) Replace(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Media ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /media/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -137,8 +181,8 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Summary Serve uploaded image
 // @Description Serves an uploaded image by its exact stored file name (<uuid>.<extension>). Any other name returns 404; directory listing is not available.
 // @Tags Media
-// @Produce image/jpeg,image/png,image/gif,image/webp
-// @Param file path string true "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.jpg"
+// @Produce image/webp,image/svg+xml
+// @Param file path string true "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.webp"
 // @Success 200 {file} binary
 // @Router /media/{file} [get]
 func (h *Handler) Serve(c *gin.Context) {
@@ -148,6 +192,7 @@ func (h *Handler) Serve(c *gin.Context) {
 		return
 	}
 	c.Header("X-Content-Type-Options", "nosniff")
+	c.Header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; sandbox")
 	c.Header("Cache-Control", "public, max-age=31536000, immutable")
 	c.File(path)
 }

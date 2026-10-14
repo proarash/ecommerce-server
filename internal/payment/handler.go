@@ -57,6 +57,7 @@ func trackParam(c *gin.Context) (int64, bool) {
 // @Produce json
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
+// @Security BearerAuth
 // @Router /payment/checkout/{orderId} [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
@@ -96,6 +97,7 @@ func (h *Handler) Checkout(c *gin.Context) {
 // @Produce json
 // @Param body body WalletChargeDto true "Charge amount"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
+// @Security BearerAuth
 // @Router /payment/wallet/charge [post]
 func (h *Handler) ChargeWallet(c *gin.Context) {
 	var dto WalletChargeDto
@@ -126,6 +128,7 @@ func (h *Handler) ChargeWallet(c *gin.Context) {
 // @Produce json
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=WalletPayResponse}
+// @Security BearerAuth
 // @Router /payment/checkout/{orderId}/wallet [post]
 func (h *Handler) PayWithWallet(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
@@ -310,6 +313,7 @@ func (h *Handler) Callback(c *gin.Context) {
 // @Produce json
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=PaymentTransaction}
+// @Security BearerAuth
 // @Router /payment/status/{trackId} [get]
 func (h *Handler) Status(c *gin.Context) {
 	trackID, ok := trackParam(c)
@@ -331,6 +335,7 @@ func (h *Handler) Status(c *gin.Context) {
 // @Produce json
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=InquiryResponse}
+// @Security BearerAuth
 // @Router /payment/inquiry/{trackId} [post]
 func (h *Handler) Inquiry(c *gin.Context) {
 	trackID, ok := trackParam(c)

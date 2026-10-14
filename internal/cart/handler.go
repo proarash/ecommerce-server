@@ -42,6 +42,7 @@ func (h *Handler) fail(c *gin.Context, err error, notFound string) {
 // @Tags Cart
 // @Produce json
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
+// @Security BearerAuth
 // @Router /cart [get]
 func (h *Handler) Get(c *gin.Context) {
 	cart, err := h.store.Get(c.Request.Context(), middleware.GetAuth(c).UserID)
@@ -66,6 +67,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Produce json
 // @Param body body AddItemDto true "Item"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
+// @Security BearerAuth
 // @Router /cart/items [post]
 func (h *Handler) AddItem(c *gin.Context) {
 	var dto AddItemDto
@@ -88,6 +90,7 @@ func (h *Handler) AddItem(c *gin.Context) {
 // @Param id path int true "Cart item ID"
 // @Param body body UpdateItemDto true "Quantity"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
+// @Security BearerAuth
 // @Router /cart/items/{id} [patch]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -112,6 +115,7 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Cart item ID"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
+// @Security BearerAuth
 // @Router /cart/items/{id} [delete]
 func (h *Handler) RemoveItem(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -133,6 +137,7 @@ func (h *Handler) RemoveItem(c *gin.Context) {
 // @Produce json
 // @Param body body CheckoutDto false "Optional discount code"
 // @Success 201 {object} types.ApiResponse{data=finance.Order}
+// @Security BearerAuth
 // @Router /cart/checkout [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	var dto CheckoutDto

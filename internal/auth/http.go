@@ -164,6 +164,7 @@ func (h *authHandler) me(c *gin.Context, p *token.AuthPayload) {
 // @Tags Auth
 // @Produce json
 // @Success 200 {object} types.ApiResponse{data=MeResponse}
+// @Security BearerAuth
 // @Router /me [get]
 func (h *authHandler) Me(c *gin.Context) {
 	h.me(c, middleware.GetAuth(c))
@@ -177,6 +178,7 @@ func (h *authHandler) Me(c *gin.Context) {
 // @Produce json
 // @Param body body user.UpdateProfileDto true "Profile fields"
 // @Success 200 {object} types.ApiResponse{data=MeResponse}
+// @Security BearerAuth
 // @Router /me [patch]
 func (h *authHandler) UpdateMe(c *gin.Context) {
 	var dto user.UpdateProfileDto
@@ -200,6 +202,7 @@ func (h *authHandler) UpdateMe(c *gin.Context) {
 // @Param id path int true "User ID"
 // @Success 200 {object} types.ApiResponse{data=TokenResponse}
 // @Header 200 {string} Set-Cookie "x-access-token for the impersonated user (httpOnly)"
+// @Security BearerAuth
 // @Router /admin/users/{id}/impersonate [post]
 func (h *authHandler) Impersonate(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

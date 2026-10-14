@@ -72,23 +72,6 @@ definitions:
       url:
         type: string
     type: object
-  github_com_proarash_ecommerce-server_internal_product.Attribute:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
-      key:
-        type: string
-      name:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   github_com_proarash_ecommerce-server_internal_product.Category:
     properties:
       createdAt:
@@ -122,7 +105,7 @@ definitions:
     properties:
       attributes:
         items:
-          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Attribute'
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.ProductAttribute'
         type: array
       category:
         $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_product.Category'
@@ -160,6 +143,28 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_product.ProductAttribute:
+    properties:
+      attribute_id:
+        example: 1
+        type: integer
+      data_type:
+        example: text
+        type: string
+      key:
+        example: مدل
+        type: string
+      name:
+        example: مدل
+        type: string
+      values:
+        example:
+        - آیفون ۱۶ پرو
+        - آیفون ۱۶
+        items:
+          type: string
+        type: array
     type: object
   github_com_proarash_ecommerce-server_internal_types.ApiResponse:
     properties:
@@ -674,7 +679,6 @@ definitions:
         type: string
     required:
     - alt_name
-    - media_id
     - title
     type: object
   internal_cms.CreateBlogDto:
@@ -1307,13 +1311,14 @@ definitions:
     type: object
   internal_product.AssignAttributesDto:
     properties:
-      attribute_ids:
+      attributes:
         items:
-          type: integer
+          $ref: '#/definitions/internal_product.AttributeValuesInput'
+        maxItems: 100
         minItems: 1
         type: array
     required:
-    - attribute_ids
+    - attributes
     type: object
   internal_product.AssignMediaDto:
     properties:
@@ -1327,20 +1332,44 @@ definitions:
     type: object
   internal_product.Attribute:
     properties:
-      createdAt:
+      created_at:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
+      data_type:
+        enum:
+        - text
+        - number
+        - boolean
+        example: text
+        type: string
       id:
         type: integer
       key:
+        example: مدل
         type: string
       name:
+        example: مدل
         type: string
-      title:
+      updated_at:
         type: string
-      updatedAt:
-        type: string
+    type: object
+  internal_product.AttributeValuesInput:
+    properties:
+      attribute_id:
+        example: 1
+        minimum: 1
+        type: integer
+      values:
+        example:
+        - قرمز
+        - آبی
+        items:
+          type: string
+        maxItems: 50
+        minItems: 1
+        type: array
+    required:
+    - attribute_id
+    - values
     type: object
   internal_product.Category:
     properties:
@@ -1400,22 +1429,24 @@ definitions:
     type: object
   internal_product.CreateAttributeDto:
     properties:
+      data_type:
+        enum:
+        - text
+        - number
+        - boolean
+        example: text
+        type: string
       key:
-        example: color
+        example: مدل
         maxLength: 100
         type: string
       name:
-        example: Red
-        maxLength: 200
-        type: string
-      title:
-        example: Color
+        example: مدل
         maxLength: 200
         type: string
     required:
     - key
     - name
-    - title
     type: object
   internal_product.CreateCategoryDto:
     properties:
@@ -1445,18 +1476,22 @@ definitions:
     type: object
   internal_product.CreateProductDto:
     properties:
-      attribute_ids:
+      attributes:
         items:
-          type: integer
+          $ref: '#/definitions/internal_product.AttributeValuesInput'
+        maxItems: 100
         type: array
       category_id:
+        example: 13
         minimum: 1
         type: integer
       description:
+        example: پاوربانک ۲۰۰۰۰ میلی‌آمپر با شارژ سریع
         type: string
       is_active:
         type: boolean
       price:
+        example: 3900000
         type: number
       seo_description:
         maxLength: 500
@@ -1467,15 +1502,18 @@ definitions:
         maxItems: 20
         type: array
       seo_title:
+        example: خرید پاوربانک اوریکو K20 | فروشگاه
         maxLength: 200
         type: string
       sku:
+        example: POWER-BANK-001
         maxLength: 64
         type: string
       slug:
         maxLength: 220
         type: string
       title:
+        example: پاوربانک اوریکو K20
         maxLength: 200
         type: string
     required:
@@ -1488,7 +1526,7 @@ definitions:
     properties:
       attributes:
         items:
-          $ref: '#/definitions/internal_product.Attribute'
+          $ref: '#/definitions/internal_product.ProductAttribute'
         type: array
       category:
         $ref: '#/definitions/internal_product.Category'
@@ -1527,15 +1565,41 @@ definitions:
       updatedAt:
         type: string
     type: object
+  internal_product.ProductAttribute:
+    properties:
+      attribute_id:
+        example: 1
+        type: integer
+      data_type:
+        example: text
+        type: string
+      key:
+        example: مدل
+        type: string
+      name:
+        example: مدل
+        type: string
+      values:
+        example:
+        - آیفون ۱۶ پرو
+        - آیفون ۱۶
+        items:
+          type: string
+        type: array
+    type: object
   internal_product.UpdateAttributeDto:
     properties:
+      data_type:
+        enum:
+        - text
+        - number
+        - boolean
+        example: text
+        type: string
       key:
         maxLength: 100
         type: string
       name:
-        maxLength: 200
-        type: string
-      title:
         maxLength: 200
         type: string
     type: object
@@ -1566,9 +1630,10 @@ definitions:
     type: object
   internal_product.UpdateProductDto:
     properties:
-      attribute_ids:
+      attributes:
         items:
-          type: integer
+          $ref: '#/definitions/internal_product.AttributeValuesInput'
+        maxItems: 100
         type: array
       category_id:
         minimum: 1
@@ -1725,6 +1790,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List notifications
       tags:
       - Admin Notifications
@@ -1752,6 +1819,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create and dispatch notification
       tags:
       - Admin Notifications
@@ -1775,6 +1844,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete notification
       tags:
       - Admin Notifications
@@ -1797,6 +1868,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get notification
       tags:
       - Admin Notifications
@@ -1827,6 +1900,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update notification
       tags:
       - Admin Notifications
@@ -1846,6 +1921,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_admin.StatsResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: System statistics
       tags:
       - Admin
@@ -1902,6 +1979,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List users
       tags:
       - Admin
@@ -1931,6 +2010,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create user
       tags:
       - Admin
@@ -1954,6 +2035,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get user
       tags:
       - Admin
@@ -1986,6 +2069,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_auth.TokenResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Login as user
       tags:
       - Admin
@@ -2021,6 +2106,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
+      security:
+      - BearerAuth: []
       summary: Set user roles
       tags:
       - Admin
@@ -2054,13 +2141,15 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
+      security:
+      - BearerAuth: []
       summary: Enable or disable user
       tags:
       - Admin
   /attributes:
     get:
       parameters:
-      - description: Search in key, title or name
+      - description: Search in key or name
         in: query
         name: search
         type: string
@@ -2099,8 +2188,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a standalone attribute that can later be assigned to any
-        product. key must be unique.
+      description: Creates a canonical attribute key (e.g. مدل) that any product can
+        use with its own values. key is normalized (trimmed, lowercased, spaces to
+        dashes) and must be unique; a duplicate returns 409. data_type defaults to
+        text.
       parameters:
       - description: Attribute
         in: body
@@ -2120,12 +2211,15 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Attribute'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create attribute
       tags:
       - Attributes
   /attributes/{id}:
     delete:
-      description: Soft-deletes the attribute and unassigns it from all products
+      description: Deletes the attribute key and every value assigned to it on all
+        products
       parameters:
       - description: Attribute ID
         in: path
@@ -2144,6 +2238,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete attribute
       tags:
       - Attributes
@@ -2196,6 +2292,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Attribute'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update attribute
       tags:
       - Attributes
@@ -2314,6 +2412,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get current cart
       tags:
       - Cart
@@ -2342,6 +2442,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_finance.Order'
               type: object
+      security:
+      - BearerAuth: []
       summary: Checkout cart
       tags:
       - Cart
@@ -2369,6 +2471,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Add product to cart
       tags:
       - Cart
@@ -2392,6 +2496,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Remove item from cart
       tags:
       - Cart
@@ -2422,6 +2528,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update cart item quantity
       tags:
       - Cart
@@ -2466,6 +2574,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create category
       tags:
       - Categories
@@ -2491,6 +2601,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete category
       tags:
       - Categories
@@ -2545,6 +2657,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update category
       tags:
       - Categories
@@ -2568,10 +2682,33 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
+      security:
+      - BearerAuth: []
       summary: Remove category image
       tags:
       - Categories
   /cms/banners:
+    get:
+      description: All banners including inactive ones, ordered by display_order.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_cms.Banner'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List all banners
+      tags:
+      - CMS
     post:
       consumes:
       - application/json
@@ -2594,6 +2731,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.Banner'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create banner
       tags:
       - CMS
@@ -2617,7 +2756,33 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete banner
+      tags:
+      - CMS
+    get:
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_cms.Banner'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get banner
       tags:
       - CMS
     patch:
@@ -2647,6 +2812,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.Banner'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update banner
       tags:
       - CMS
@@ -2711,6 +2878,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.BlogPost'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create blog post
       tags:
       - CMS
@@ -2735,6 +2904,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete blog post
       tags:
       - CMS
@@ -2767,6 +2938,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.BlogPost'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update blog post
       tags:
       - CMS
@@ -2834,6 +3007,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.ContentResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update site content
       tags:
       - CMS
@@ -2889,6 +3064,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List discount codes
       tags:
       - Discounts
@@ -2918,6 +3095,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
+      security:
+      - BearerAuth: []
       summary: Generate discount code
       tags:
       - Discounts
@@ -2941,6 +3120,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete discount code
       tags:
       - Discounts
@@ -2964,6 +3145,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get discount code
       tags:
       - Discounts
@@ -2996,6 +3179,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update discount code
       tags:
       - Discounts
@@ -3043,6 +3228,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List pre-invoices
       tags:
       - Finance
@@ -3070,6 +3257,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.PreInvoice'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create manual pre-invoice
       tags:
       - Finance
@@ -3107,6 +3296,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.ReportResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Sales report
       tags:
       - Finance
@@ -3142,6 +3333,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Current stock levels
       tags:
       - Inventory
@@ -3168,6 +3361,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_inventory.InventoryStock'
               type: object
+      security:
+      - BearerAuth: []
       summary: Stock intake
       tags:
       - Inventory
@@ -3208,6 +3403,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Stock movement audit logs
       tags:
       - Inventory
@@ -3234,6 +3431,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_inventory.InventoryStock'
               type: object
+      security:
+      - BearerAuth: []
       summary: Stock dispatch or reduction
       tags:
       - Inventory
@@ -3254,6 +3453,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_auth.MeResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get current account
       tags:
       - Auth
@@ -3282,24 +3483,74 @@ paths:
                 data:
                   $ref: '#/definitions/internal_auth.MeResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update current account
       tags:
       - Auth
+  /media:
+    get:
+      description: Newest first. Use the returned ids with POST /products/{id}/media/assign,
+        banner media_id, and so on.
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by media ID
+        in: query
+        name: id
+        type: integer
+      - description: Filter by MIME type
+        enum:
+        - image/webp
+        - image/svg+xml
+        in: query
+        name: mime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/internal_media.Media'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List uploaded media
+      tags:
+      - Media
   /media/{file}:
     get:
       description: Serves an uploaded image by its exact stored file name (<uuid>.<extension>).
         Any other name returns 404; directory listing is not available.
       parameters:
-      - description: Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.jpg
+      - description: Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.webp
         in: path
         name: file
         required: true
         type: string
       produces:
-      - image/jpeg
-      - image/png
-      - image/gif
       - image/webp
+      - image/svg+xml
       responses:
         "200":
           description: OK
@@ -3330,16 +3581,18 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete media
       tags:
       - Media
     put:
       consumes:
       - multipart/form-data
-      description: Replaces the image file of an existing media record (jpeg, png,
-        gif, webp; max 2MB). The record keeps its ID and assignments, so every product
-        or category using it shows the new image. The file gets a new <uuid>.<extension>
-        name and the old file is deleted from disk.
+      description: Replaces the image file of an existing media record (webp, svg;
+        max 2MB). The record keeps its ID and assignments, so every product or category
+        using it shows the new image. The file gets a new <uuid>.<extension> name
+        and the old file is deleted from disk.
       parameters:
       - description: Media ID
         in: path
@@ -3363,6 +3616,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_media.Media'
               type: object
+      security:
+      - BearerAuth: []
       summary: Replace media image
       tags:
       - Media
@@ -3370,26 +3625,30 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: 'Uploads images (jpeg, png, gif, webp; max 2MB each) and assigns
-        them to the target selected by type: 1 = product (one or more images, appended),
-        2 = category (exactly one image, replaces the current one). Files are stored
-        as <uuid>.<extension> and served from /media/{file}.'
+      description: 'Uploads images (webp, svg; max 2MB each). Without pid and type
+        the images are only stored and returned, so their ids can be assigned later
+        (e.g. POST /products/{id}/media/assign). With pid and type they are also assigned
+        right away: 1 = product (one or more images, appended), 2 = category (exactly
+        one image, replaces the current one), 3 = banner (exactly one image, replaces
+        the current one). Assigning to products and categories requires the storekeeper
+        role, banners the marketer role. Files are stored as <uuid>.<extension> and
+        served from /media/{file}.'
       parameters:
-      - description: Product ID or Category ID, depending on type
+      - description: Product, category or banner ID; required together with type
         in: query
         name: pid
-        required: true
         type: integer
-      - description: 'Target type: 1 = product, 2 = category'
+      - description: 'Target type: 1 = product, 2 = category, 3 = banner; omit both
+          to upload without assigning'
         enum:
         - 1
         - 2
+        - 3
         in: query
         name: type
-        required: true
         type: integer
       - description: Image files; repeat the field for multiple product images, exactly
-          one for a category
+          one for a category or banner
         in: formData
         name: files
         required: true
@@ -3408,7 +3667,9 @@ paths:
                     $ref: '#/definitions/internal_media.Media'
                   type: array
               type: object
-      summary: Upload images for a product or category
+      security:
+      - BearerAuth: []
+      summary: Upload images
       tags:
       - Media
   /payment/callback:
@@ -3465,6 +3726,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.CheckoutResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Start Zibal payment for an order
       tags:
       - Payment
@@ -3490,6 +3753,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.WalletPayResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Pay order from wallet
       tags:
       - Payment
@@ -3515,6 +3780,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.InquiryResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Manual gateway transaction inquiry
       tags:
       - Payment
@@ -3538,6 +3805,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.PaymentTransaction'
               type: object
+      security:
+      - BearerAuth: []
       summary: Payment transaction status
       tags:
       - Payment
@@ -3567,6 +3836,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.CheckoutResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Charge wallet via Zibal
       tags:
       - Payment
@@ -3616,9 +3887,11 @@ paths:
     post:
       consumes:
       - application/json
-      description: Product title, slug and SKU must be unique. slug defaults to the
-        slugified title. attribute_ids assigns existing attributes. Images are uploaded
-        afterwards via POST /media/upload?pid={id}&type=1.
+      description: 'Product title, slug and SKU must be unique. slug defaults to the
+        slugified title. attributes assigns values to existing attribute keys: each
+        item has attribute_id and one or more values; duplicate values per attribute
+        are ignored. The response groups values per attribute. Images are uploaded
+        afterwards via POST /media/upload?pid={id}&type=1.'
       parameters:
       - description: Product
         in: body
@@ -3638,6 +3911,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
+      security:
+      - BearerAuth: []
       summary: Create product
       tags:
       - Products
@@ -3661,6 +3936,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Delete product
       tags:
       - Products
@@ -3689,8 +3966,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: attribute_ids, when provided, replaces the product attribute set.
-        Images are managed via the /media endpoints.
+      description: attributes, when provided, replaces all attribute values of the
+        product (send an empty array to clear them). Images are managed via the /media
+        endpoints.
       parameters:
       - description: Product ID
         in: path
@@ -3715,6 +3993,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update product
       tags:
       - Products
@@ -3722,15 +4002,15 @@ paths:
     post:
       consumes:
       - application/json
-      description: Adds existing attributes to the product; already assigned attributes
-        are kept
+      description: Adds values for existing attribute keys to the product. Existing
+        values are kept; exact duplicates are ignored.
       parameters:
       - description: Product ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Attribute IDs
+      - description: Attribute values
         in: body
         name: body
         required: true
@@ -3748,11 +4028,15 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-      summary: Assign attributes to product
+      security:
+      - BearerAuth: []
+      summary: Add attribute values to product
       tags:
       - Attributes
   /products/{id}/attributes/{attributeId}:
     delete:
+      description: Removes every value of the attribute from the product, or only
+        the given value when value is set
       parameters:
       - description: Product ID
         in: path
@@ -3764,6 +4048,10 @@ paths:
         name: attributeId
         required: true
         type: integer
+      - description: Remove only this value
+        in: query
+        name: value
+        type: string
       produces:
       - application/json
       responses:
@@ -3776,7 +4064,9 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-      summary: Unassign attribute from product
+      security:
+      - BearerAuth: []
+      summary: Remove attribute values from product
       tags:
       - Attributes
   /products/{id}/media/{mediaId}:
@@ -3806,6 +4096,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
+      security:
+      - BearerAuth: []
       summary: Unassign media from product
       tags:
       - Products
@@ -3839,6 +4131,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
+      security:
+      - BearerAuth: []
       summary: Assign existing media to product
       tags:
       - Products
@@ -3882,6 +4176,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List support chat rooms
       tags:
       - Support
@@ -3922,6 +4218,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List messages of a chat room
       tags:
       - Support
@@ -3952,6 +4250,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_chat.ChatMessage'
               type: object
+      security:
+      - BearerAuth: []
       summary: Reply to a chat room as support
       tags:
       - Support
@@ -3983,6 +4283,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Update chat room status
       tags:
       - Support
@@ -4026,6 +4328,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Read-only customer orders
       tags:
       - Support
@@ -4069,6 +4373,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Read-only customer pre-invoices
       tags:
       - Support
@@ -4105,6 +4411,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Customer chat inbox
       tags:
       - Chat
@@ -4132,6 +4440,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_chat.ChatMessage'
               type: object
+      security:
+      - BearerAuth: []
       summary: Send chat message as customer
       tags:
       - Chat
@@ -4160,6 +4470,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.CheckResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Check discount code
       tags:
       - User
@@ -4196,6 +4508,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Customer in-app notifications
       tags:
       - User
@@ -4219,6 +4533,8 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Mark notification as read
       tags:
       - User
@@ -4258,6 +4574,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Customer orders
       tags:
       - User
@@ -4281,6 +4599,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.Order'
               type: object
+      security:
+      - BearerAuth: []
       summary: Customer order details
       tags:
       - User
@@ -4316,6 +4636,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: Customer pre-invoices
       tags:
       - User
@@ -4334,6 +4656,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.Wallet'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get my wallet
       tags:
       - Wallet
@@ -4384,6 +4708,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List my wallet transactions
       tags:
       - Wallet
@@ -4423,6 +4749,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List wallets
       tags:
       - Wallet Management
@@ -4446,6 +4774,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.Wallet'
               type: object
+      security:
+      - BearerAuth: []
       summary: Get wallet
       tags:
       - Wallet Management
@@ -4480,6 +4810,8 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.AdjustResponse'
               type: object
+      security:
+      - BearerAuth: []
       summary: Change wallet amount
       tags:
       - Wallet Management
@@ -4535,6 +4867,8 @@ paths:
                         type: array
                     type: object
               type: object
+      security:
+      - BearerAuth: []
       summary: List wallet transactions
       tags:
       - Wallet Management
@@ -4557,10 +4891,19 @@ paths:
           description: Switching Protocols
           schema:
             $ref: '#/definitions/internal_chat.ChatMessage'
+      security:
+      - BearerAuth: []
       summary: Real-time support chat WebSocket
       tags:
       - Chat
 schemes:
 - http
 - https
+securityDefinitions:
+  BearerAuth:
+    description: 'Type "Bearer " followed by the refresh_token from POST /auth/login
+      with X-Device-Type: 2.'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

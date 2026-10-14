@@ -57,6 +57,7 @@ func (h *Handler) listPreInvoices(c *gin.Context, q ListQuery) {
 // @Param from query string false "From date (YYYY-MM-DD)"
 // @Param to query string false "To date inclusive (YYYY-MM-DD)"
 // @Success 200 {object} types.ApiResponse{data=ReportResponse}
+// @Security BearerAuth
 // @Router /finance/reports [get]
 func (h *Handler) Reports(c *gin.Context) {
 	var q ReportQuery
@@ -80,6 +81,7 @@ func (h *Handler) Reports(c *gin.Context) {
 // @Produce json
 // @Param body body CreatePreInvoiceDto true "Pre-invoice"
 // @Success 201 {object} types.ApiResponse{data=PreInvoice}
+// @Security BearerAuth
 // @Router /finance/preinvoices [post]
 func (h *Handler) CreatePreInvoice(c *gin.Context) {
 	var dto CreatePreInvoiceDto
@@ -105,6 +107,7 @@ func (h *Handler) CreatePreInvoice(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
+// @Security BearerAuth
 // @Router /finance/preinvoices [get]
 func (h *Handler) ListPreInvoices(c *gin.Context) {
 	var q ListQuery
@@ -123,6 +126,7 @@ func (h *Handler) ListPreInvoices(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Order}}
+// @Security BearerAuth
 // @Router /user/orders [get]
 func (h *Handler) UserOrders(c *gin.Context) {
 	var q ListQuery
@@ -140,6 +144,7 @@ func (h *Handler) UserOrders(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=Order}
+// @Security BearerAuth
 // @Router /user/orders/{id} [get]
 func (h *Handler) UserOrder(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -161,6 +166,7 @@ func (h *Handler) UserOrder(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
+// @Security BearerAuth
 // @Router /user/preinvoices [get]
 func (h *Handler) UserPreInvoices(c *gin.Context) {
 	var q ListQuery
@@ -181,6 +187,7 @@ func (h *Handler) UserPreInvoices(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Order}}
+// @Security BearerAuth
 // @Router /support/orders [get]
 func (h *Handler) SupportOrders(c *gin.Context) {
 	var q ListQuery
@@ -200,6 +207,7 @@ func (h *Handler) SupportOrders(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
+// @Security BearerAuth
 // @Router /support/preinvoices [get]
 func (h *Handler) SupportPreInvoices(c *gin.Context) {
 	var q ListQuery

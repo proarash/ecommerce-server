@@ -24,6 +24,8 @@ func (h *Handler) RegisterRoutes(public gin.IRouter, marketer gin.IRouter) {
 	marketer.POST("/cms/blogs", h.CreateBlog)
 	marketer.PATCH("/cms/blogs/:slug", h.UpdateBlog)
 	marketer.DELETE("/cms/blogs/:slug", h.DeleteBlog)
+	marketer.GET("/cms/banners", h.ListBanners)
+	marketer.GET("/cms/banners/:id", h.GetBanner)
 	marketer.POST("/cms/banners", h.CreateBanner)
 	marketer.PATCH("/cms/banners/:id", h.UpdateBanner)
 	marketer.DELETE("/cms/banners/:id", h.DeleteBanner)
@@ -58,6 +60,7 @@ func (h *Handler) GetContent(c *gin.Context) {
 // @Produce json
 // @Param body body UpdateSiteContentDto true "Content items"
 // @Success 200 {object} types.ApiResponse{data=ContentResponse}
+// @Security BearerAuth
 // @Router /cms/content [patch]
 func (h *Handler) UpdateContent(c *gin.Context) {
 	var dto UpdateSiteContentDto
@@ -118,6 +121,7 @@ func (h *Handler) GetBlog(c *gin.Context) {
 // @Produce json
 // @Param body body CreateBlogDto true "Blog post"
 // @Success 201 {object} types.ApiResponse{data=BlogPost}
+// @Security BearerAuth
 // @Router /cms/blogs [post]
 func (h *Handler) CreateBlog(c *gin.Context) {
 	var dto CreateBlogDto
@@ -142,6 +146,7 @@ func (h *Handler) CreateBlog(c *gin.Context) {
 // @Param id path int true "Blog ID"
 // @Param body body UpdateBlogDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=BlogPost}
+// @Security BearerAuth
 // @Router /cms/blogs/{id} [patch]
 func (h *Handler) UpdateBlog(c *gin.Context) {
 	id, ok := types.ParamID(c, "slug")
@@ -185,6 +190,7 @@ func (h *Handler) UpdateBlog(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Blog ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /cms/blogs/{id} [delete]
 func (h *Handler) DeleteBlog(c *gin.Context) {
 	id, ok := types.ParamID(c, "slug")
@@ -205,6 +211,7 @@ func (h *Handler) DeleteBlog(c *gin.Context) {
 // @Produce json
 // @Param body body CreateBannerDto true "Banner"
 // @Success 201 {object} types.ApiResponse{data=Banner}
+// @Security BearerAuth
 // @Router /cms/banners [post]
 func (h *Handler) CreateBanner(c *gin.Context) {
 	var dto CreateBannerDto
@@ -239,6 +246,7 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 // @Param id path int true "Banner ID"
 // @Param body body UpdateBannerDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Banner}
+// @Security BearerAuth
 // @Router /cms/banners/{id} [patch]
 func (h *Handler) UpdateBanner(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -283,12 +291,51 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 	c.JSON(http.StatusOK, b)
 }
 
+// ListBanners godoc
+// @Summary List all banners
+// @Description All banners including inactive ones, ordered by display_order.
+// @Tags CMS
+// @Produce json
+// @Success 200 {object} types.ApiResponse{data=[]Banner}
+// @Security BearerAuth
+// @Router /cms/banners [get]
+func (h *Handler) ListBanners(c *gin.Context) {
+	items, err := h.store.AllBanners(c.Request.Context())
+	if err != nil {
+		types.HandleError(c, err, "banners not found")
+		return
+	}
+	c.JSON(http.StatusOK, items)
+}
+
+// GetBanner godoc
+// @Summary Get banner
+// @Tags CMS
+// @Produce json
+// @Param id path int true "Banner ID"
+// @Success 200 {object} types.ApiResponse{data=Banner}
+// @Security BearerAuth
+// @Router /cms/banners/{id} [get]
+func (h *Handler) GetBanner(c *gin.Context) {
+	id, ok := types.ParamID(c, "id")
+	if !ok {
+		return
+	}
+	b, err := h.store.FindBanner(c.Request.Context(), id)
+	if err != nil {
+		types.HandleError(c, err, "banner not found")
+		return
+	}
+	c.JSON(http.StatusOK, b)
+}
+
 // DeleteBanner godoc
 // @Summary Delete banner
 // @Tags CMS
 // @Produce json
 // @Param id path int true "Banner ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /cms/banners/{id} [delete]
 func (h *Handler) DeleteBanner(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

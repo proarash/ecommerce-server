@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/admin/notifications": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -83,6 +88,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Stores the notification and dispatches it via Telegram when channel is telegram or both. Omit user_id to broadcast.",
                 "consumes": [
                     "application/json"
@@ -129,6 +139,11 @@ const docTemplate = `{
         },
         "/admin/notifications/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -167,6 +182,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -205,6 +225,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -257,6 +282,11 @@ const docTemplate = `{
         },
         "/admin/stats": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "users counts accounts that only have the user role; staff counts accounts with any other role.",
                 "produces": [
                     "application/json"
@@ -289,6 +319,11 @@ const docTemplate = `{
         },
         "/admin/users": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Lists all users. Filter by a role the user has, or set staff=true to list every user with at least one role besides \"user\".",
                 "produces": [
                     "application/json"
@@ -376,6 +411,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a user with the given roles (any of user, storekeeper, accountant, marketer, support; the user role is always included). Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset.",
                 "consumes": [
                     "application/json"
@@ -422,6 +462,11 @@ const docTemplate = `{
         },
         "/admin/users/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -462,6 +507,11 @@ const docTemplate = `{
         },
         "/admin/users/{id}/impersonate": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Admin only. Returns a 24h access token for the given user as the httpOnly x-access-token cookie (replacing the admin session cookie in this browser), without mobile/password. No session is stored, so it is not renewed and ends when it expires. The token carries impersonator_id with the admin's ID.",
                 "produces": [
                     "application/json"
@@ -509,6 +559,11 @@ const docTemplate = `{
         },
         "/admin/users/{id}/roles": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Replaces the roles of a user with the given list (any of user, storekeeper, accountant, marketer, support). The user role is always kept. The admin role cannot be granted or removed. The user's current token keeps the old roles until it is renewed.",
                 "consumes": [
                     "application/json"
@@ -562,6 +617,11 @@ const docTemplate = `{
         },
         "/admin/users/{id}/status": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Disabled users cannot log in or refresh their token. Admin accounts and your own account cannot be changed.",
                 "consumes": [
                     "application/json"
@@ -625,7 +685,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search in key, title or name",
+                        "description": "Search in key or name",
                         "name": "search",
                         "in": "query"
                     },
@@ -681,7 +741,12 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a standalone attribute that can later be assigned to any product. key must be unique.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a canonical attribute key (e.g. مدل) that any product can use with its own values. key is normalized (trimmed, lowercased, spaces to dashes) and must be unique; a duplicate returns 409. data_type defaults to text.",
                 "consumes": [
                     "application/json"
                 ],
@@ -765,7 +830,12 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Soft-deletes the attribute and unassigns it from all products",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes the attribute key and every value assigned to it on all products",
                 "produces": [
                     "application/json"
                 ],
@@ -804,6 +874,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1012,6 +1087,11 @@ const docTemplate = `{
         },
         "/cart": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1043,6 +1123,11 @@ const docTemplate = `{
         },
         "/cart/checkout": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Converts the cart into a pending order, optionally redeeming a discount code, issues a system pre-invoice and sends invoice/pre-invoice bot messages",
                 "consumes": [
                     "application/json"
@@ -1088,6 +1173,11 @@ const docTemplate = `{
         },
         "/cart/items": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Adds the product or increases its quantity if already present",
                 "consumes": [
                     "application/json"
@@ -1134,6 +1224,11 @@ const docTemplate = `{
         },
         "/cart/items/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1172,6 +1267,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1256,6 +1356,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1339,6 +1444,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Soft-deletes the category; direct children become root categories. Fails with 409 while products still belong to it.",
                 "produces": [
                     "application/json"
@@ -1378,6 +1488,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Set make_root=true to detach the category from its parent (cannot be combined with parent_id)",
                 "consumes": [
                     "application/json"
@@ -1431,6 +1546,11 @@ const docTemplate = `{
         },
         "/categories/{id}/media": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1470,7 +1590,50 @@ const docTemplate = `{
             }
         },
         "/cms/banners": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "All banners including inactive ones, ordered by display_order.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CMS"
+                ],
+                "summary": "List all banners",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_cms.Banner"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1515,7 +1678,55 @@ const docTemplate = `{
             }
         },
         "/cms/banners/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CMS"
+                ],
+                "summary": "Get banner",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Banner ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_cms.Banner"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1554,6 +1765,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1672,6 +1888,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1717,6 +1938,11 @@ const docTemplate = `{
         },
         "/cms/blogs/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "The path segment is the blog post ID",
                 "produces": [
                     "application/json"
@@ -1756,6 +1982,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "The path segment is the blog post ID. media_ids, when provided, replaces the attached media.",
                 "consumes": [
                     "application/json"
@@ -1878,6 +2109,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Upserts site content entries by key (H1 titles, footer links, descriptions, logos)",
                 "consumes": [
                     "application/json"
@@ -1924,6 +2160,11 @@ const docTemplate = `{
         },
         "/discounts": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Available to admin, accountant, marketer and support (read-only)",
                 "produces": [
                     "application/json"
@@ -2013,6 +2254,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a discount code (admin, accountant, marketer). Omit code to auto-generate an 8 character uppercase code. max_price caps the discount and is only allowed for percent type (e.g. 30% up to 50000). When owner_mobile is set only the customer with that mobile can use the code.",
                 "consumes": [
                     "application/json"
@@ -2059,6 +2305,11 @@ const docTemplate = `{
         },
         "/discounts/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Available to admin, accountant, marketer and support (read-only)",
                 "produces": [
                     "application/json"
@@ -2098,6 +2349,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2136,6 +2392,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Updates a discount (admin, accountant, marketer). Send max_price 0 to remove the cap and owner_mobile \"\" to make the code public.",
                 "consumes": [
                     "application/json"
@@ -2189,6 +2450,11 @@ const docTemplate = `{
         },
         "/finance/preinvoices": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2266,6 +2532,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Issues a pre-invoice for an order (amount defaults to the order total) and notifies the customer",
                 "consumes": [
                     "application/json"
@@ -2312,6 +2583,11 @@ const docTemplate = `{
         },
         "/finance/reports": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Paid, processing and delivered orders aggregated per period bucket",
                 "produces": [
                     "application/json"
@@ -2371,6 +2647,11 @@ const docTemplate = `{
         },
         "/inventory": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2433,6 +2714,11 @@ const docTemplate = `{
         },
         "/inventory/inbound": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2478,6 +2764,11 @@ const docTemplate = `{
         },
         "/inventory/logs/{productId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2547,6 +2838,11 @@ const docTemplate = `{
         },
         "/inventory/outbound": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2592,6 +2888,11 @@ const docTemplate = `{
         },
         "/me": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the logged in user (every account, including admin and staff roles, is a user). roles lists every role the user has (always includes user; admin has all roles).",
                 "produces": [
                     "application/json"
@@ -2622,6 +2923,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Updates the logged in user's own profile: name, mobile, avatar_media_id, default_avatar_id (preset frontend avatar 1..5), telegram_chat_id, address, latitude and longitude. Role and status can only be changed by an admin.",
                 "consumes": [
                     "application/json"
@@ -2666,9 +2972,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/media": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Newest first. Use the returned ids with POST /products/{id}/media/assign, banner media_id, and so on.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "List uploaded media",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by media ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "image/webp",
+                            "image/svg+xml"
+                        ],
+                        "type": "string",
+                        "description": "Filter by MIME type",
+                        "name": "mime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.PaginatedResponse"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "items": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/internal_media.Media"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/media/upload": {
             "post": {
-                "description": "Uploads images (jpeg, png, gif, webp; max 2MB each) and assigns them to the target selected by type: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one). Files are stored as \u003cuuid\u003e.\u003cextension\u003e and served from /media/{file}.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Uploads images (webp, svg; max 2MB each). Without pid and type the images are only stored and returned, so their ids can be assigned later (e.g. POST /products/{id}/media/assign). With pid and type they are also assigned right away: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one), 3 = banner (exactly one image, replaces the current one). Assigning to products and categories requires the storekeeper role, banners the marketer role. Files are stored as \u003cuuid\u003e.\u003cextension\u003e and served from /media/{file}.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2678,29 +3073,28 @@ const docTemplate = `{
                 "tags": [
                     "Media"
                 ],
-                "summary": "Upload images for a product or category",
+                "summary": "Upload images",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Product ID or Category ID, depending on type",
+                        "description": "Product, category or banner ID; required together with type",
                         "name": "pid",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "enum": [
                             1,
-                            2
+                            2,
+                            3
                         ],
                         "type": "integer",
-                        "description": "Target type: 1 = product, 2 = category",
+                        "description": "Target type: 1 = product, 2 = category, 3 = banner; omit both to upload without assigning",
                         "name": "type",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "file",
-                        "description": "Image files; repeat the field for multiple product images, exactly one for a category",
+                        "description": "Image files; repeat the field for multiple product images, exactly one for a category or banner",
                         "name": "files",
                         "in": "formData",
                         "required": true
@@ -2735,10 +3129,8 @@ const docTemplate = `{
             "get": {
                 "description": "Serves an uploaded image by its exact stored file name (\u003cuuid\u003e.\u003cextension\u003e). Any other name returns 404; directory listing is not available.",
                 "produces": [
-                    "image/jpeg",
-                    "image/png",
-                    "image/gif",
-                    "image/webp"
+                    "image/webp",
+                    "image/svg+xml"
                 ],
                 "tags": [
                     "Media"
@@ -2747,7 +3139,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.jpg",
+                        "description": "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.webp",
                         "name": "file",
                         "in": "path",
                         "required": true
@@ -2765,7 +3157,12 @@ const docTemplate = `{
         },
         "/media/{id}": {
             "put": {
-                "description": "Replaces the image file of an existing media record (jpeg, png, gif, webp; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new \u003cuuid\u003e.\u003cextension\u003e name and the old file is deleted from disk.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Replaces the image file of an existing media record (webp, svg; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new \u003cuuid\u003e.\u003cextension\u003e name and the old file is deleted from disk.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2814,6 +3211,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Permanently deletes the media record and its file from disk, unassigning it from every product and category that uses it.",
                 "produces": [
                     "application/json"
@@ -2896,6 +3298,11 @@ const docTemplate = `{
         },
         "/payment/checkout/{orderId}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Requests a Zibal trackId for a pending/failed order and returns the gateway redirect URL. On success the paid amount is credited to the customer wallet and the order price is then debited from it.",
                 "produces": [
                     "application/json"
@@ -2937,6 +3344,11 @@ const docTemplate = `{
         },
         "/payment/checkout/{orderId}/wallet": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Debits the order total from the customer wallet balance and marks the order as paid",
                 "produces": [
                     "application/json"
@@ -2978,6 +3390,11 @@ const docTemplate = `{
         },
         "/payment/inquiry/{trackId}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Queries Zibal /v1/inquiry for the track ID and returns it with the local transaction record",
                 "produces": [
                     "application/json"
@@ -3019,6 +3436,11 @@ const docTemplate = `{
         },
         "/payment/status/{trackId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3059,6 +3481,11 @@ const docTemplate = `{
         },
         "/payment/wallet/charge": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Requests a Zibal trackId to top up the customer wallet. After a verified payment the wallet is credited automatically and the callback redirects to the client app with ?wallet=wlt-\u003cTRACK-ID\u003e",
                 "consumes": [
                     "application/json"
@@ -3177,7 +3604,12 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Product title, slug and SKU must be unique. slug defaults to the slugified title. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}\u0026type=1.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Product title, slug and SKU must be unique. slug defaults to the slugified title. attributes assigns values to existing attribute keys: each item has attribute_id and one or more values; duplicate values per attribute are ignored. The response groups values per attribute. Images are uploaded afterwards via POST /media/upload?pid={id}\u0026type=1.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3261,6 +3693,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3299,7 +3736,12 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "attribute_ids, when provided, replaces the product attribute set. Images are managed via the /media endpoints.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "attributes, when provided, replaces all attribute values of the product (send an empty array to clear them). Images are managed via the /media endpoints.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3352,7 +3794,12 @@ const docTemplate = `{
         },
         "/products/{id}/attributes": {
             "post": {
-                "description": "Adds existing attributes to the product; already assigned attributes are kept",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds values for existing attribute keys to the product. Existing values are kept; exact duplicates are ignored.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3362,7 +3809,7 @@ const docTemplate = `{
                 "tags": [
                     "Attributes"
                 ],
-                "summary": "Assign attributes to product",
+                "summary": "Add attribute values to product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3372,7 +3819,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Attribute IDs",
+                        "description": "Attribute values",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -3405,13 +3852,19 @@ const docTemplate = `{
         },
         "/products/{id}/attributes/{attributeId}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes every value of the attribute from the product, or only the given value when value is set",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Attributes"
                 ],
-                "summary": "Unassign attribute from product",
+                "summary": "Remove attribute values from product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3426,6 +3879,12 @@ const docTemplate = `{
                         "name": "attributeId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Remove only this value",
+                        "name": "value",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -3452,6 +3911,11 @@ const docTemplate = `{
         },
         "/products/{id}/media/assign": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Assigns already uploaded media to the product so multiple products can share the same image. Already assigned media are kept.",
                 "consumes": [
                     "application/json"
@@ -3505,6 +3969,11 @@ const docTemplate = `{
         },
         "/products/{id}/media/{mediaId}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Removes the media from this product only; the file stays available to other products sharing it.",
                 "produces": [
                     "application/json"
@@ -3553,6 +4022,11 @@ const docTemplate = `{
         },
         "/support/chat/rooms": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3626,6 +4100,11 @@ const docTemplate = `{
         },
         "/support/chat/rooms/{id}/messages": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3693,6 +4172,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -3745,6 +4229,11 @@ const docTemplate = `{
         },
         "/support/chat/rooms/{id}/status": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -3797,6 +4286,11 @@ const docTemplate = `{
         },
         "/support/orders": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3871,6 +4365,11 @@ const docTemplate = `{
         },
         "/support/preinvoices": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3945,6 +4444,11 @@ const docTemplate = `{
         },
         "/user/chat/messages": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Chat history of the current customer including automated bot messages",
                 "produces": [
                     "application/json"
@@ -4006,6 +4510,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "REST fallback for sending a message to support; opens a room if none is active",
                 "consumes": [
                     "application/json"
@@ -4052,6 +4561,11 @@ const docTemplate = `{
         },
         "/user/discounts/check": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Validates a discount code for the current customer against an amount and returns the discount and payable amount without redeeming it",
                 "consumes": [
                     "application/json"
@@ -4098,6 +4612,11 @@ const docTemplate = `{
         },
         "/user/notifications": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Personal and broadcast in-app notifications",
                 "produces": [
                     "application/json"
@@ -4161,6 +4680,11 @@ const docTemplate = `{
         },
         "/user/notifications/{id}/read": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4201,6 +4725,11 @@ const docTemplate = `{
         },
         "/user/orders": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4269,6 +4798,11 @@ const docTemplate = `{
         },
         "/user/orders/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4309,6 +4843,11 @@ const docTemplate = `{
         },
         "/user/preinvoices": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4371,6 +4910,11 @@ const docTemplate = `{
         },
         "/wallet": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the wallet of the authenticated user",
                 "produces": [
                     "application/json"
@@ -4403,6 +4947,11 @@ const docTemplate = `{
         },
         "/wallet/transactions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4486,6 +5035,11 @@ const docTemplate = `{
         },
         "/wallets": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4554,6 +5108,11 @@ const docTemplate = `{
         },
         "/wallets/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4594,6 +5153,11 @@ const docTemplate = `{
         },
         "/wallets/{id}/adjust": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Credits or debits a wallet (admin and accountant only). Admin wallets are locked and cannot be modified by anyone, and nobody can change their own wallet.",
                 "consumes": [
                     "application/json"
@@ -4647,6 +5211,11 @@ const docTemplate = `{
         },
         "/wallets/{id}/transactions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4737,6 +5306,11 @@ const docTemplate = `{
         },
         "/ws/chat": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Upgrades to WebSocket. Authenticates with the httpOnly x-access-token cookie (browsers send it automatically), the X-Access-Token request header (app), or the token query parameter (?token=\u003caccess_token\u003e); the roles are taken from the JWT; users with the support or admin role join as agents, everyone else as a customer. Customers send {\"message\":\"...\"}; support agents send {\"room_id\":1,\"message\":\"...\"}. Server pushes ChatMessage JSON frames.",
                 "tags": [
                     "Chat"
@@ -4869,32 +5443,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_proarash_ecommerce-server_internal_product.Attribute": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "github_com_proarash_ecommerce-server_internal_product.Category": {
             "type": "object",
             "properties": {
@@ -4945,7 +5493,7 @@ const docTemplate = `{
                 "attributes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_product.Attribute"
+                        "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_product.ProductAttribute"
                     }
                 },
                 "category": {
@@ -5001,6 +5549,37 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_proarash_ecommerce-server_internal_product.ProductAttribute": {
+            "type": "object",
+            "properties": {
+                "attribute_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data_type": {
+                    "type": "string",
+                    "example": "text"
+                },
+                "key": {
+                    "type": "string",
+                    "example": "مدل"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "مدل"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "آیفون ۱۶ پرو",
+                        "آیفون ۱۶"
+                    ]
                 }
             }
         },
@@ -5717,7 +6296,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "alt_name",
-                "media_id",
                 "title"
             ],
             "properties": {
@@ -6662,14 +7240,15 @@ const docTemplate = `{
         "internal_product.AssignAttributesDto": {
             "type": "object",
             "required": [
-                "attribute_ids"
+                "attributes"
             ],
             "properties": {
-                "attribute_ids": {
+                "attributes": {
                     "type": "array",
+                    "maxItems": 100,
                     "minItems": 1,
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/internal_product.AttributeValuesInput"
                     }
                 }
             }
@@ -6692,26 +7271,57 @@ const docTemplate = `{
         "internal_product.Attribute": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
+                "data_type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "number",
+                        "boolean"
+                    ],
+                    "example": "text"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "key": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "مدل"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "مدل"
                 },
-                "title": {
+                "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_product.AttributeValuesInput": {
+            "type": "object",
+            "required": [
+                "attribute_id",
+                "values"
+            ],
+            "properties": {
+                "attribute_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
                 },
-                "updatedAt": {
-                    "type": "string"
+                "values": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "قرمز",
+                        "آبی"
+                    ]
                 }
             }
         },
@@ -6804,24 +7414,27 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "key",
-                "name",
-                "title"
+                "name"
             ],
             "properties": {
+                "data_type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "number",
+                        "boolean"
+                    ],
+                    "example": "text"
+                },
                 "key": {
                     "type": "string",
                     "maxLength": 100,
-                    "example": "color"
+                    "example": "مدل"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 200,
-                    "example": "Red"
-                },
-                "title": {
-                    "type": "string",
-                    "maxLength": 200,
-                    "example": "Color"
+                    "example": "مدل"
                 }
             }
         },
@@ -6870,24 +7483,28 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
-                "attribute_ids": {
+                "attributes": {
                     "type": "array",
+                    "maxItems": 100,
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/internal_product.AttributeValuesInput"
                     }
                 },
                 "category_id": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "example": 13
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "پاوربانک ۲۰۰۰۰ میلی‌آمپر با شارژ سریع"
                 },
                 "is_active": {
                     "type": "boolean"
                 },
                 "price": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 3900000
                 },
                 "seo_description": {
                     "type": "string",
@@ -6902,11 +7519,13 @@ const docTemplate = `{
                 },
                 "seo_title": {
                     "type": "string",
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "example": "خرید پاوربانک اوریکو K20 | فروشگاه"
                 },
                 "sku": {
                     "type": "string",
-                    "maxLength": 64
+                    "maxLength": 64,
+                    "example": "POWER-BANK-001"
                 },
                 "slug": {
                     "type": "string",
@@ -6914,7 +7533,8 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string",
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "example": "پاوربانک اوریکو K20"
                 }
             }
         },
@@ -6924,7 +7544,7 @@ const docTemplate = `{
                 "attributes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_product.Attribute"
+                        "$ref": "#/definitions/internal_product.ProductAttribute"
                     }
                 },
                 "category": {
@@ -6983,18 +7603,54 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_product.ProductAttribute": {
+            "type": "object",
+            "properties": {
+                "attribute_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data_type": {
+                    "type": "string",
+                    "example": "text"
+                },
+                "key": {
+                    "type": "string",
+                    "example": "مدل"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "مدل"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "آیفون ۱۶ پرو",
+                        "آیفون ۱۶"
+                    ]
+                }
+            }
+        },
         "internal_product.UpdateAttributeDto": {
             "type": "object",
             "properties": {
+                "data_type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "number",
+                        "boolean"
+                    ],
+                    "example": "text"
+                },
                 "key": {
                     "type": "string",
                     "maxLength": 100
                 },
                 "name": {
-                    "type": "string",
-                    "maxLength": 200
-                },
-                "title": {
                     "type": "string",
                     "maxLength": 200
                 }
@@ -7038,10 +7694,11 @@ const docTemplate = `{
         "internal_product.UpdateProductDto": {
             "type": "object",
             "properties": {
-                "attribute_ids": {
+                "attributes": {
                     "type": "array",
+                    "maxItems": 100,
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/internal_product.AttributeValuesInput"
                     }
                 },
                 "category_id": {
@@ -7203,6 +7860,14 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer \" followed by the refresh_token from POST /auth/login with X-Device-Type: 2.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

@@ -56,6 +56,7 @@ func (h *Handler) RegisterRoutes(ws gin.IRouter, customer gin.IRouter, support g
 // @Tags Chat
 // @Param token query string false "Access token, for clients that cannot send the Authorization header"
 // @Success 101 {object} ChatMessage
+// @Security BearerAuth
 // @Router /ws/chat [get]
 func (h *Handler) ServeWS(c *gin.Context) {
 	p := middleware.GetAuth(c)
@@ -93,6 +94,7 @@ func (h *Handler) ServeWS(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
+// @Security BearerAuth
 // @Router /user/chat/messages [get]
 func (h *Handler) UserMessages(c *gin.Context) {
 	var q types.Pagination
@@ -116,6 +118,7 @@ func (h *Handler) UserMessages(c *gin.Context) {
 // @Produce json
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
+// @Security BearerAuth
 // @Router /user/chat/messages [post]
 func (h *Handler) UserSend(c *gin.Context) {
 	var dto SendMessageDto
@@ -148,6 +151,7 @@ func (h *Handler) UserSend(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatRoom}}
+// @Security BearerAuth
 // @Router /support/chat/rooms [get]
 func (h *Handler) Rooms(c *gin.Context) {
 	var q RoomsQuery
@@ -171,6 +175,7 @@ func (h *Handler) Rooms(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
+// @Security BearerAuth
 // @Router /support/chat/rooms/{id}/messages [get]
 func (h *Handler) RoomMessages(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -198,6 +203,7 @@ func (h *Handler) RoomMessages(c *gin.Context) {
 // @Param id path int true "Room ID"
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
+// @Security BearerAuth
 // @Router /support/chat/rooms/{id}/messages [post]
 func (h *Handler) SupportSend(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -225,6 +231,7 @@ func (h *Handler) SupportSend(c *gin.Context) {
 // @Param id path int true "Room ID"
 // @Param body body RoomStatusDto true "Status"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /support/chat/rooms/{id}/status [patch]
 func (h *Handler) UpdateRoomStatus(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

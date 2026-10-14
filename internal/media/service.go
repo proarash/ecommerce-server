@@ -18,19 +18,24 @@ const MaxImageSize = 2 << 20
 
 var (
 	ErrFileTooLarge     = errors.New("file exceeds the 2MB limit")
-	ErrUnsupportedImage = errors.New("only jpeg, png, gif and webp images are allowed")
+	ErrUnsupportedImage = errors.New("only webp and svg images are allowed")
 	ErrInvalidFileName  = errors.New("invalid media file name")
-	ErrSingleImage      = errors.New("a category accepts exactly one image")
+	ErrSingleImage      = errors.New("a category or banner accepts exactly one image")
 )
 
 var imageExtensions = map[string]string{
-	"image/jpeg": ".jpg",
-	"image/png":  ".png",
-	"image/gif":  ".gif",
-	"image/webp": ".webp",
+	"image/webp":    ".webp",
+	"image/svg+xml": ".svg",
 }
 
-var fileNamePattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|gif|webp)$`)
+var fileNamePattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(webp|svg)$`)
+
+func detectImageType(fileName string, data []byte) string {
+	if strings.EqualFold(filepath.Ext(fileName), ".svg") {
+		return "image/svg+xml"
+	}
+	return http.DetectContentType(data)
+}
 
 type Service struct {
 	store Store
@@ -67,7 +72,7 @@ func (s *Service) writeImage(fh *multipart.FileHeader) (storedFile, error) {
 	if len(data) > MaxImageSize {
 		return storedFile{}, ErrFileTooLarge
 	}
-	mime := http.DetectContentType(data)
+	mime := detectImageType(fh.Filename, data)
 	ext, ok := imageExtensions[mime]
 	if !ok {
 		return storedFile{}, ErrUnsupportedImage
@@ -112,12 +117,18 @@ func (s *Service) discard(ctx context.Context, items []Media) {
 	}
 }
 
+func (s *Service) List(ctx context.Context, q ListQuery) ([]Media, int64, error) {
+	return s.store.List(ctx, q)
+}
+
 func (s *Service) Upload(ctx context.Context, target int, targetID uint, files []*multipart.FileHeader) ([]Media, error) {
-	if target == TargetCategory && len(files) != 1 {
+	if target != 0 && target != TargetProduct && len(files) != 1 {
 		return nil, ErrSingleImage
 	}
-	if err := s.store.TargetExists(ctx, target, targetID); err != nil {
-		return nil, err
+	if target != 0 {
+		if err := s.store.TargetExists(ctx, target, targetID); err != nil {
+			return nil, err
+		}
 	}
 	saved := make([]Media, 0, len(files))
 	for _, fh := range files {
@@ -127,6 +138,9 @@ func (s *Service) Upload(ctx context.Context, target int, targetID uint, files [
 			return nil, err
 		}
 		saved = append(saved, m)
+	}
+	if target == 0 {
+		return saved, nil
 	}
 	if err := s.store.AssignToTarget(ctx, target, targetID, saved); err != nil {
 		s.discard(ctx, saved)

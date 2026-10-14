@@ -10,6 +10,10 @@ import (
 // @host localhost:4000
 // @BasePath /
 // @schemes http https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer " followed by the refresh_token from POST /auth/login with X-Device-Type: 2.
 func main() {
 	config := config.GetEnvConfig()
 	Bootstrap(config)

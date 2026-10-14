@@ -36,6 +36,7 @@ func (h *Handler) RegisterRoutes(admin gin.IRouter, customer gin.IRouter) {
 // @Produce json
 // @Param body body CreateNotificationDto true "Notification"
 // @Success 201 {object} types.ApiResponse{data=Notification}
+// @Security BearerAuth
 // @Router /admin/notifications [post]
 func (h *Handler) Create(c *gin.Context) {
 	var dto CreateNotificationDto
@@ -59,6 +60,7 @@ func (h *Handler) Create(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Notification}}
+// @Security BearerAuth
 // @Router /admin/notifications [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
@@ -80,6 +82,7 @@ func (h *Handler) List(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=Notification}
+// @Security BearerAuth
 // @Router /admin/notifications/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -102,6 +105,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Param id path int true "Notification ID"
 // @Param body body UpdateNotificationDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Notification}
+// @Security BearerAuth
 // @Router /admin/notifications/{id} [patch]
 func (h *Handler) Update(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -144,6 +148,7 @@ func (h *Handler) Update(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /admin/notifications/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -165,6 +170,7 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Notification}}
+// @Security BearerAuth
 // @Router /user/notifications [get]
 func (h *Handler) UserList(c *gin.Context) {
 	var q types.Pagination
@@ -186,6 +192,7 @@ func (h *Handler) UserList(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Notification ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /user/notifications/{id}/read [patch]
 func (h *Handler) MarkRead(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

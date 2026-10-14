@@ -16,6 +16,7 @@ type Store interface {
 	UpdateBlog(ctx context.Context, id uint, fields map[string]any, mediaIDs *[]uint) error
 	DeleteBlog(ctx context.Context, id uint) error
 	ActiveBanners(ctx context.Context) ([]Banner, error)
+	AllBanners(ctx context.Context) ([]Banner, error)
 	FindBanner(ctx context.Context, id uint) (Banner, error)
 	CreateBanner(ctx context.Context, b *Banner) error
 	UpdateBanner(ctx context.Context, id uint, fields map[string]any) error
@@ -113,6 +114,10 @@ func (s *store) DeleteBlog(ctx context.Context, id uint) error {
 
 func (s *store) ActiveBanners(ctx context.Context) ([]Banner, error) {
 	return gorm.G[Banner](s.db).Preload("Media", nil).Where("is_active = ?", true).Order("display_order, id").Find(ctx)
+}
+
+func (s *store) AllBanners(ctx context.Context) ([]Banner, error) {
+	return gorm.G[Banner](s.db).Preload("Media", nil).Order("display_order, id").Find(ctx)
 }
 
 func (s *store) FindBanner(ctx context.Context, id uint) (Banner, error) {

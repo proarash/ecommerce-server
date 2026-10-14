@@ -36,6 +36,7 @@ func Migrate(db *gorm.DB) error {
 		&product.Category{},
 		&product.Product{},
 		&product.Attribute{},
+		&product.ProductAttributeValue{},
 		&cart.Cart{},
 		&cart.CartItem{},
 		&finance.Order{},
@@ -96,7 +97,7 @@ func purgeLegacyCatalog(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		products := "(SELECT id FROM products)"
 		steps := []string{
-			"DELETE FROM product_attributes WHERE product_id IN " + products,
+			"DELETE FROM product_attribute_values WHERE product_id IN " + products,
 			"DELETE FROM product_media WHERE product_id IN " + products,
 			"DELETE FROM cart_items WHERE product_id IN " + products,
 			"DELETE FROM order_items WHERE product_id IN " + products,
@@ -117,6 +118,11 @@ func purgeLegacyCatalog(db *gorm.DB) error {
 
 func migrateLegacy(db *gorm.DB) error {
 	m := db.Migrator()
+	if hasLegacyAttributes(db) {
+		if err := migrateAttributeValues(db); err != nil {
+			return err
+		}
+	}
 	if m.HasTable("refresh_tokens") && m.HasColumn("refresh_tokens", "token") {
 		if err := m.DropTable("refresh_tokens"); err != nil {
 			return err

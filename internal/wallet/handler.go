@@ -59,6 +59,7 @@ func (h *Handler) listTransactions(c *gin.Context, walletID uint) {
 // @Tags Wallet
 // @Produce json
 // @Success 200 {object} types.ApiResponse{data=Wallet}
+// @Security BearerAuth
 // @Router /wallet [get]
 func (h *Handler) Mine(c *gin.Context) {
 	ownerID := middleware.GetAuth(c).UserID
@@ -79,6 +80,7 @@ func (h *Handler) Mine(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]WalletTransaction}}
+// @Security BearerAuth
 // @Router /wallet/transactions [get]
 func (h *Handler) MyTransactions(c *gin.Context) {
 	ownerID := middleware.GetAuth(c).UserID
@@ -98,6 +100,7 @@ func (h *Handler) MyTransactions(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Wallet}}
+// @Security BearerAuth
 // @Router /wallets [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
@@ -119,6 +122,7 @@ func (h *Handler) List(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Wallet ID"
 // @Success 200 {object} types.ApiResponse{data=Wallet}
+// @Security BearerAuth
 // @Router /wallets/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -143,6 +147,7 @@ func (h *Handler) Get(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]WalletTransaction}}
+// @Security BearerAuth
 // @Router /wallets/{id}/transactions [get]
 func (h *Handler) Transactions(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -161,6 +166,7 @@ func (h *Handler) Transactions(c *gin.Context) {
 // @Param id path int true "Wallet ID"
 // @Param body body AdjustDto true "Adjustment"
 // @Success 200 {object} types.ApiResponse{data=AdjustResponse}
+// @Security BearerAuth
 // @Router /wallets/{id}/adjust [post]
 func (h *Handler) Adjust(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

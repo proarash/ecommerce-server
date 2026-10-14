@@ -3,10 +3,14 @@ package product
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/proarash/ecommerce-server/internal/types"
+	"gorm.io/gorm"
 )
+
+var ErrInvalidAttributeKey = errors.New("attribute key must contain letters or numbers")
 
 type Handler struct {
 	store Store
@@ -42,8 +46,12 @@ func (h *Handler) RegisterRoutes(public gin.IRouter, storekeeper gin.IRouter) {
 }
 
 func (h *Handler) fail(c *gin.Context, err error, notFound string) {
-	if errors.Is(err, ErrAttributeNotFound) || errors.Is(err, ErrMediaNotFound) {
+	if errors.Is(err, ErrAttributeNotFound) || errors.Is(err, ErrMediaNotFound) || errors.Is(err, ErrInvalidAttributeKey) {
 		types.BadRequest(c, err)
+		return
+	}
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		c.JSON(http.StatusConflict, types.ErrorResponse{Error: "an attribute with this key already exists"})
 		return
 	}
 	types.HandleError(c, err, notFound)
@@ -115,6 +123,7 @@ func (h *Handler) GetCategory(c *gin.Context) {
 // @Produce json
 // @Param body body CreateCategoryDto true "Category"
 // @Success 201 {object} types.ApiResponse{data=Category}
+// @Security BearerAuth
 // @Router /categories [post]
 func (h *Handler) CreateCategory(c *gin.Context) {
 	var dto CreateCategoryDto
@@ -139,6 +148,7 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 // @Param id path int true "Category ID"
 // @Param body body UpdateCategoryDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Category}
+// @Security BearerAuth
 // @Router /categories/{id} [patch]
 func (h *Handler) UpdateCategory(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -192,6 +202,7 @@ func (h *Handler) UpdateCategory(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Category ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /categories/{id} [delete]
 func (h *Handler) DeleteCategory(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -255,12 +266,13 @@ func (h *Handler) GetProduct(c *gin.Context) {
 
 // CreateProduct godoc
 // @Summary Create product
-// @Description Product title, slug and SKU must be unique. slug defaults to the slugified title. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}&type=1.
+// @Description Product title, slug and SKU must be unique. slug defaults to the slugified title. attributes assigns values to existing attribute keys: each item has attribute_id and one or more values; duplicate values per attribute are ignored. The response groups values per attribute. Images are uploaded afterwards via POST /media/upload?pid={id}&type=1.
 // @Tags Products
 // @Accept json
 // @Produce json
 // @Param body body CreateProductDto true "Product"
 // @Success 201 {object} types.ApiResponse{data=Product}
+// @Security BearerAuth
 // @Router /products [post]
 func (h *Handler) CreateProduct(c *gin.Context) {
 	var dto CreateProductDto
@@ -275,7 +287,7 @@ func (h *Handler) CreateProduct(c *gin.Context) {
 	if dto.IsActive != nil {
 		p.IsActive = *dto.IsActive
 	}
-	if err := h.store.CreateProduct(c.Request.Context(), &p, dto.AttributeIDs); err != nil {
+	if err := h.store.CreateProduct(c.Request.Context(), &p, dto.Attributes); err != nil {
 		h.fail(c, err, "category not found")
 		return
 	}
@@ -295,13 +307,14 @@ func (h *Handler) CreateProduct(c *gin.Context) {
 
 // UpdateProduct godoc
 // @Summary Update product
-// @Description attribute_ids, when provided, replaces the product attribute set. Images are managed via the /media endpoints.
+// @Description attributes, when provided, replaces all attribute values of the product (send an empty array to clear them). Images are managed via the /media endpoints.
 // @Tags Products
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
 // @Param body body UpdateProductDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Product}
+// @Security BearerAuth
 // @Router /products/{id} [patch]
 func (h *Handler) UpdateProduct(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -350,7 +363,7 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 	if dto.CategoryID != nil {
 		fields["category_id"] = *dto.CategoryID
 	}
-	if err := h.store.UpdateProduct(c.Request.Context(), id, fields, dto.AttributeIDs); err != nil {
+	if err := h.store.UpdateProduct(c.Request.Context(), id, fields, dto.Attributes); err != nil {
 		h.fail(c, err, "product not found")
 		return
 	}
@@ -363,6 +376,7 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Product ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /products/{id} [delete]
 func (h *Handler) DeleteProduct(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -380,7 +394,7 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 // @Summary List attributes
 // @Tags Attributes
 // @Produce json
-// @Param search query string false "Search in key, title or name"
+// @Param search query string false "Search in key or name"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Attribute}}
@@ -421,12 +435,13 @@ func (h *Handler) GetAttribute(c *gin.Context) {
 
 // CreateAttribute godoc
 // @Summary Create attribute
-// @Description Creates a standalone attribute that can later be assigned to any product. key must be unique.
+// @Description Creates a canonical attribute key (e.g. مدل) that any product can use with its own values. key is normalized (trimmed, lowercased, spaces to dashes) and must be unique; a duplicate returns 409. data_type defaults to text.
 // @Tags Attributes
 // @Accept json
 // @Produce json
 // @Param body body CreateAttributeDto true "Attribute"
 // @Success 201 {object} types.ApiResponse{data=Attribute}
+// @Security BearerAuth
 // @Router /attributes [post]
 func (h *Handler) CreateAttribute(c *gin.Context) {
 	var dto CreateAttributeDto
@@ -434,9 +449,17 @@ func (h *Handler) CreateAttribute(c *gin.Context) {
 		types.BadRequest(c, err)
 		return
 	}
-	a := Attribute{Key: dto.Key, Title: dto.Title, Name: dto.Name}
+	key := Slugify(dto.Key)
+	if key == "" {
+		h.fail(c, ErrInvalidAttributeKey, "")
+		return
+	}
+	a := Attribute{Key: key, Name: strings.TrimSpace(dto.Name), DataType: DataTypeText}
+	if dto.DataType != "" {
+		a.DataType = dto.DataType
+	}
 	if err := h.store.CreateAttribute(c.Request.Context(), &a); err != nil {
-		types.HandleError(c, err, "not found")
+		h.fail(c, err, "not found")
 		return
 	}
 	c.JSON(http.StatusCreated, a)
@@ -450,6 +473,7 @@ func (h *Handler) CreateAttribute(c *gin.Context) {
 // @Param id path int true "Attribute ID"
 // @Param body body UpdateAttributeDto true "Fields"
 // @Success 200 {object} types.ApiResponse{data=Attribute}
+// @Security BearerAuth
 // @Router /attributes/{id} [patch]
 func (h *Handler) UpdateAttribute(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -463,17 +487,22 @@ func (h *Handler) UpdateAttribute(c *gin.Context) {
 	}
 	fields := map[string]any{}
 	if dto.Key != nil {
-		fields["key"] = *dto.Key
-	}
-	if dto.Title != nil {
-		fields["title"] = *dto.Title
+		key := Slugify(*dto.Key)
+		if key == "" {
+			h.fail(c, ErrInvalidAttributeKey, "")
+			return
+		}
+		fields["key"] = key
 	}
 	if dto.Name != nil {
-		fields["name"] = *dto.Name
+		fields["name"] = strings.TrimSpace(*dto.Name)
+	}
+	if dto.DataType != nil {
+		fields["data_type"] = *dto.DataType
 	}
 	if len(fields) > 0 {
 		if err := h.store.UpdateAttribute(c.Request.Context(), id, fields); err != nil {
-			types.HandleError(c, err, "attribute not found")
+			h.fail(c, err, "attribute not found")
 			return
 		}
 	}
@@ -482,11 +511,12 @@ func (h *Handler) UpdateAttribute(c *gin.Context) {
 
 // DeleteAttribute godoc
 // @Summary Delete attribute
-// @Description Soft-deletes the attribute and unassigns it from all products
+// @Description Deletes the attribute key and every value assigned to it on all products
 // @Tags Attributes
 // @Produce json
 // @Param id path int true "Attribute ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
+// @Security BearerAuth
 // @Router /attributes/{id} [delete]
 func (h *Handler) DeleteAttribute(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -501,14 +531,15 @@ func (h *Handler) DeleteAttribute(c *gin.Context) {
 }
 
 // AttachAttributes godoc
-// @Summary Assign attributes to product
-// @Description Adds existing attributes to the product; already assigned attributes are kept
+// @Summary Add attribute values to product
+// @Description Adds values for existing attribute keys to the product. Existing values are kept; exact duplicates are ignored.
 // @Tags Attributes
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
-// @Param body body AssignAttributesDto true "Attribute IDs"
+// @Param body body AssignAttributesDto true "Attribute values"
 // @Success 200 {object} types.ApiResponse{data=Product}
+// @Security BearerAuth
 // @Router /products/{id}/attributes [post]
 func (h *Handler) AttachAttributes(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -520,7 +551,7 @@ func (h *Handler) AttachAttributes(c *gin.Context) {
 		types.BadRequest(c, err)
 		return
 	}
-	if err := h.store.AttachAttributes(c.Request.Context(), id, dto.AttributeIDs); err != nil {
+	if err := h.store.AttachAttributes(c.Request.Context(), id, dto.Attributes); err != nil {
 		h.fail(c, err, "product not found")
 		return
 	}
@@ -528,12 +559,15 @@ func (h *Handler) AttachAttributes(c *gin.Context) {
 }
 
 // DetachAttribute godoc
-// @Summary Unassign attribute from product
+// @Summary Remove attribute values from product
+// @Description Removes every value of the attribute from the product, or only the given value when value is set
 // @Tags Attributes
 // @Produce json
 // @Param id path int true "Product ID"
 // @Param attributeId path int true "Attribute ID"
+// @Param value query string false "Remove only this value"
 // @Success 200 {object} types.ApiResponse{data=Product}
+// @Security BearerAuth
 // @Router /products/{id}/attributes/{attributeId} [delete]
 func (h *Handler) DetachAttribute(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -544,7 +578,12 @@ func (h *Handler) DetachAttribute(c *gin.Context) {
 	if !ok {
 		return
 	}
-	if err := h.store.DetachAttribute(c.Request.Context(), id, attrID); err != nil {
+	var q DetachAttributeQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		types.BadRequest(c, err)
+		return
+	}
+	if err := h.store.DetachAttribute(c.Request.Context(), id, attrID, q.Value); err != nil {
 		types.HandleError(c, err, "product or attribute not found")
 		return
 	}

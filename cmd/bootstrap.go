@@ -64,6 +64,7 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	storekeeper := api.Group("", authMW, middleware.RequireRoles(user.RoleStorekeeper))
 	accountant := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant))
 	marketer := api.Group("", authMW, middleware.RequireRoles(user.RoleMarketer))
+	mediaUploader := api.Group("", authMW, middleware.RequireRoles(user.RoleStorekeeper, user.RoleMarketer))
 	support := api.Group("/support", authMW, middleware.RequireRoles(user.RoleSupport))
 	discountReader := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer, user.RoleSupport))
 	discountManager := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer))
@@ -83,7 +84,7 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	mediaService := media.NewService(media.NewStore(db), envConfig.UploadDir)
 
 	auth.NewAuthHandler(authRepo, user.NewService(userStore), envConfig.JwtSecret, cookies).RegisterRoutes(api, protected, adminGroup)
-	media.NewHandler(mediaService).RegisterRoutes(api, storekeeper)
+	media.NewHandler(mediaService).RegisterRoutes(api, storekeeper, mediaUploader)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
 	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(protected)

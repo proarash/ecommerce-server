@@ -32,6 +32,7 @@ func (h *Handler) RegisterRoutes(storekeeper gin.IRouter) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]InventoryStock}}
+// @Security BearerAuth
 // @Router /inventory [get]
 func (h *Handler) List(c *gin.Context) {
 	var q types.Pagination
@@ -54,6 +55,7 @@ func (h *Handler) List(c *gin.Context) {
 // @Produce json
 // @Param body body InboundDto true "Inbound movement"
 // @Success 200 {object} types.ApiResponse{data=InventoryStock}
+// @Security BearerAuth
 // @Router /inventory/inbound [post]
 func (h *Handler) Inbound(c *gin.Context) {
 	var dto InboundDto
@@ -76,6 +78,7 @@ func (h *Handler) Inbound(c *gin.Context) {
 // @Produce json
 // @Param body body OutboundDto true "Outbound movement"
 // @Success 200 {object} types.ApiResponse{data=InventoryStock}
+// @Security BearerAuth
 // @Router /inventory/outbound [post]
 func (h *Handler) Outbound(c *gin.Context) {
 	var dto OutboundDto
@@ -103,6 +106,7 @@ func (h *Handler) Outbound(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]InventoryLog}}
+// @Security BearerAuth
 // @Router /inventory/logs/{productId} [get]
 func (h *Handler) Logs(c *gin.Context) {
 	id, ok := types.ParamID(c, "productId")

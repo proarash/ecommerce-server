@@ -24,7 +24,7 @@ type UpdateBlogDto struct {
 
 type CreateBannerDto struct {
 	Title        string `json:"title" binding:"required,max=200"`
-	MediaID      uint   `json:"media_id" binding:"required,min=1"`
+	MediaID      *uint  `json:"media_id" binding:"omitempty,min=1"`
 	AltName      string `json:"alt_name" binding:"required,max=200"`
 	LinkUrl      string `json:"link_url" binding:"omitempty,max=500"`
 	DisplayOrder int    `json:"display_order"`

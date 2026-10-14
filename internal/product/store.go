@@ -3,9 +3,12 @@ package product
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/proarash/ecommerce-server/internal/media"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var (
@@ -19,18 +22,18 @@ type Store interface {
 	FindCategory(ctx context.Context, id uint) (Category, error)
 	UpdateCategory(ctx context.Context, id uint, fields map[string]any) error
 	DeleteCategory(ctx context.Context, id uint) error
-	CreateProduct(ctx context.Context, p *Product, attributeIDs []uint) error
+	CreateProduct(ctx context.Context, p *Product, attributes []AttributeValuesInput) error
 	ListProducts(ctx context.Context, q ProductQuery, onlyActive bool) ([]Product, int64, error)
 	FindProduct(ctx context.Context, id uint) (Product, error)
-	UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributeIDs *[]uint) error
+	UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributes *[]AttributeValuesInput) error
 	DeleteProduct(ctx context.Context, id uint) error
 	CreateAttribute(ctx context.Context, a *Attribute) error
 	ListAttributes(ctx context.Context, q AttributeQuery) ([]Attribute, int64, error)
 	FindAttribute(ctx context.Context, id uint) (Attribute, error)
 	UpdateAttribute(ctx context.Context, id uint, fields map[string]any) error
 	DeleteAttribute(ctx context.Context, id uint) error
-	AttachAttributes(ctx context.Context, productID uint, attributeIDs []uint) error
-	DetachAttribute(ctx context.Context, productID, attributeID uint) error
+	AttachAttributes(ctx context.Context, productID uint, attributes []AttributeValuesInput) error
+	DetachAttribute(ctx context.Context, productID, attributeID uint, value string) error
 	AttachMediaIDs(ctx context.Context, productID uint, mediaIDs []uint) error
 	DetachMedia(ctx context.Context, productID, mediaID uint) error
 	SetCategoryMedia(ctx context.Context, categoryID uint, mediaID *uint) error
@@ -135,31 +138,63 @@ func loadMedia(tx *gorm.DB, ids []uint) ([]media.Media, error) {
 	return items, nil
 }
 
-func loadAttributes(tx *gorm.DB, ids []uint) ([]Attribute, error) {
-	var items []Attribute
-	if len(ids) == 0 {
-		return items, nil
+func buildAttributeValues(tx *gorm.DB, productID uint, inputs []AttributeValuesInput) ([]ProductAttributeValue, error) {
+	rows := []ProductAttributeValue{}
+	if len(inputs) == 0 {
+		return rows, nil
 	}
-	if err := tx.Where("id IN ?", ids).Find(&items).Error; err != nil {
+	ids := map[uint]struct{}{}
+	seen := map[string]struct{}{}
+	for _, in := range inputs {
+		ids[in.AttributeID] = struct{}{}
+		for _, raw := range in.Values {
+			value := strings.TrimSpace(raw)
+			key := fmt.Sprintf("%d|%s", in.AttributeID, value)
+			if value == "" {
+				continue
+			}
+			if _, dup := seen[key]; dup {
+				continue
+			}
+			seen[key] = struct{}{}
+			rows = append(rows, ProductAttributeValue{ProductID: productID, AttributeID: in.AttributeID, Value: value})
+		}
+	}
+	list := make([]uint, 0, len(ids))
+	for id := range ids {
+		list = append(list, id)
+	}
+	var found int64
+	if err := tx.Model(&Attribute{}).Where("id IN ?", list).Count(&found).Error; err != nil {
 		return nil, err
 	}
-	unique := map[uint]struct{}{}
-	for _, id := range ids {
-		unique[id] = struct{}{}
-	}
-	if len(items) != len(unique) {
+	if int(found) != len(list) {
 		return nil, ErrAttributeNotFound
 	}
-	return items, nil
+	return rows, nil
 }
 
-func (s *store) CreateProduct(ctx context.Context, p *Product, attributeIDs []uint) error {
+func insertAttributeValues(tx *gorm.DB, rows []ProductAttributeValue) error {
+	if len(rows) == 0 {
+		return nil
+	}
+	return tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&rows).Error
+}
+
+func preloadAttributeValues(tx *gorm.DB) *gorm.DB {
+	return tx.Preload("AttributeValues.Attribute")
+}
+
+func (s *store) CreateProduct(ctx context.Context, p *Product, attributes []AttributeValuesInput) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var err error
-		if p.Attributes, err = loadAttributes(tx, attributeIDs); err != nil {
+		if err := tx.Omit("AttributeValues").Create(p).Error; err != nil {
 			return err
 		}
-		return tx.Create(p).Error
+		rows, err := buildAttributeValues(tx, p.ID, attributes)
+		if err != nil {
+			return err
+		}
+		return insertAttributeValues(tx, rows)
 	})
 }
 
@@ -179,15 +214,17 @@ func (s *store) ListProducts(ctx context.Context, q ProductQuery, onlyActive boo
 		return nil, 0, err
 	}
 	var items []Product
-	err := tx.Preload("Media").Preload("Attributes").Preload("Category").Order("id DESC").Offset((q.Page - 1) * q.Limit).Limit(q.Limit).Find(&items).Error
+	err := preloadAttributeValues(tx).Preload("Media").Preload("Category").Order("id DESC").Offset((q.Page - 1) * q.Limit).Limit(q.Limit).Find(&items).Error
 	return items, total, err
 }
 
 func (s *store) FindProduct(ctx context.Context, id uint) (Product, error) {
-	return gorm.G[Product](s.db).Preload("Media", nil).Preload("Attributes", nil).Preload("Category", nil).Where("id = ?", id).First(ctx)
+	var p Product
+	err := preloadAttributeValues(s.db.WithContext(ctx)).Preload("Media").Preload("Category").First(&p, id).Error
+	return p, err
 }
 
-func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributeIDs *[]uint) error {
+func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]any, attributes *[]AttributeValuesInput) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var p Product
 		if err := tx.First(&p, id).Error; err != nil {
@@ -198,12 +235,15 @@ func (s *store) UpdateProduct(ctx context.Context, id uint, fields map[string]an
 				return err
 			}
 		}
-		if attributeIDs != nil {
-			attrs, err := loadAttributes(tx, *attributeIDs)
+		if attributes != nil {
+			rows, err := buildAttributeValues(tx, p.ID, *attributes)
 			if err != nil {
 				return err
 			}
-			if err := tx.Model(&p).Association("Attributes").Replace(attrs); err != nil {
+			if err := tx.Where("product_id = ?", p.ID).Delete(&ProductAttributeValue{}).Error; err != nil {
+				return err
+			}
+			if err := insertAttributeValues(tx, rows); err != nil {
 				return err
 			}
 		}
@@ -230,14 +270,14 @@ func (s *store) ListAttributes(ctx context.Context, q AttributeQuery) ([]Attribu
 	tx := s.db.WithContext(ctx).Model(&Attribute{})
 	if q.Search != "" {
 		like := "%" + q.Search + "%"
-		tx = tx.Where("key ILIKE ? OR title ILIKE ? OR name ILIKE ?", like, like, like)
+		tx = tx.Where("key ILIKE ? OR name ILIKE ?", like, like)
 	}
 	var total int64
 	if err := tx.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	var items []Attribute
-	err := tx.Order("key, id").Offset((q.Page - 1) * q.Limit).Limit(q.Limit).Find(&items).Error
+	err := tx.Order("name, id").Offset((q.Page - 1) * q.Limit).Limit(q.Limit).Find(&items).Error
 	return items, total, err
 }
 
@@ -258,42 +298,52 @@ func (s *store) UpdateAttribute(ctx context.Context, id uint, fields map[string]
 
 func (s *store) DeleteAttribute(ctx context.Context, id uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var a Attribute
-		if err := tx.First(&a, id).Error; err != nil {
+		if err := tx.Where("attribute_id = ?", id).Delete(&ProductAttributeValue{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Model(&a).Association("Products").Clear(); err != nil {
-			return err
+		res := tx.Delete(&Attribute{}, id)
+		if res.Error != nil {
+			return res.Error
 		}
-		return tx.Delete(&a).Error
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
 	})
 }
 
-func (s *store) AttachAttributes(ctx context.Context, productID uint, attributeIDs []uint) error {
+func (s *store) AttachAttributes(ctx context.Context, productID uint, attributes []AttributeValuesInput) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var p Product
 		if err := tx.First(&p, productID).Error; err != nil {
 			return err
 		}
-		attrs, err := loadAttributes(tx, attributeIDs)
+		rows, err := buildAttributeValues(tx, p.ID, attributes)
 		if err != nil {
 			return err
 		}
-		return tx.Model(&p).Association("Attributes").Append(attrs)
+		return insertAttributeValues(tx, rows)
 	})
 }
 
-func (s *store) DetachAttribute(ctx context.Context, productID, attributeID uint) error {
+func (s *store) DetachAttribute(ctx context.Context, productID, attributeID uint, value string) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var p Product
 		if err := tx.First(&p, productID).Error; err != nil {
 			return err
 		}
-		var a Attribute
-		if err := tx.First(&a, attributeID).Error; err != nil {
-			return err
+		q := tx.Where("product_id = ? AND attribute_id = ?", productID, attributeID)
+		if value = strings.TrimSpace(value); value != "" {
+			q = q.Where("value = ?", value)
 		}
-		return tx.Model(&p).Association("Attributes").Delete(&a)
+		res := q.Delete(&ProductAttributeValue{})
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
 	})
 }
 

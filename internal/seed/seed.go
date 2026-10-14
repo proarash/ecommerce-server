@@ -3,7 +3,6 @@ package seed
 import (
 	"fmt"
 	"log"
-	"math"
 	"strings"
 
 	"github.com/proarash/ecommerce-server/internal/cms"
@@ -20,7 +19,7 @@ import (
 const (
 	samplePassword      = "password123"
 	productsPerCategory = 60
-	adminBalance        = math.MaxFloat64
+	adminBalance        = 10000000000
 	userBalance         = 100000000
 )
 
@@ -135,14 +134,22 @@ func seedCategories(db *gorm.DB) map[string]product.Category {
 	return cats
 }
 
-func seedAttribute(db *gorm.DB, key, title, name string) (product.Attribute, error) {
+func seedAttribute(db *gorm.DB, cache map[string]uint, name string) (uint, error) {
+	key := product.Slugify(name)
+	if id, ok := cache[key]; ok {
+		return id, nil
+	}
 	a := product.Attribute{Key: key}
-	err := db.Where(product.Attribute{Key: key}).Attrs(product.Attribute{Title: title, Name: name}).FirstOrCreate(&a).Error
-	return a, err
+	if err := db.Where(product.Attribute{Key: key}).Attrs(product.Attribute{Name: name, DataType: product.DataTypeText}).FirstOrCreate(&a).Error; err != nil {
+		return 0, err
+	}
+	cache[key] = a.ID
+	return a.ID, nil
 }
 
 func seedProducts(db *gorm.DB, cats map[string]product.Category) {
 	total := 0
+	attrIDs := map[string]uint{}
 	for _, def := range catalog {
 		cat, ok := cats[def.slug]
 		if !ok || count(db, &product.Product{}, "category_id = ?", cat.ID) > 0 {
@@ -152,38 +159,35 @@ func seedProducts(db *gorm.DB, cats map[string]product.Category) {
 		for i := 0; i < productsPerCategory; i++ {
 			item := i % len(def.items)
 			variant := (i / len(def.items)) % len(def.variants)
-			specs := []struct {
-				key, title, name string
-			}{
-				{fmt.Sprintf("%s-item-%d", def.slug, item), def.itemAttr, def.items[item]},
-				{fmt.Sprintf("%s-variant-%d", def.slug, variant), def.variantAttr, def.variants[variant]},
+			specs := []struct{ name, value string }{
+				{def.itemAttr, def.items[item]},
+				{def.variantAttr, def.variants[variant]},
 			}
 			for j, ex := range def.extras {
-				v := (i + j) % len(ex.values)
-				specs = append(specs, struct{ key, title, name string }{fmt.Sprintf("%s-extra-%d-%d", def.slug, j, v), ex.title, ex.values[v]})
+				specs = append(specs, struct{ name, value string }{ex.title, ex.values[(i+j)%len(ex.values)]})
 			}
-			attrs := make([]product.Attribute, 0, len(specs))
-			for _, s := range specs {
-				a, err := seedAttribute(db, s.key, s.title, s.name)
+			values := make([]product.ProductAttributeValue, 0, len(specs))
+			for _, spec := range specs {
+				id, err := seedAttribute(db, attrIDs, spec.name)
 				if err != nil {
 					log.Println("seed: attribute:", err)
 					continue
 				}
-				attrs = append(attrs, a)
+				values = append(values, product.ProductAttributeValue{AttributeID: id, Value: spec.value})
 			}
 			title := strings.TrimSpace(fmt.Sprintf("%s %s %s", def.prefix, def.items[item], def.variants[variant]))
 			products = append(products, product.Product{
-				Title:          title,
-				Slug:           product.Slugify(title),
-				Description:    fmt.Sprintf("%s، از دسته %s، با کیفیت ساخت بالا، ضمانت اصالت و سلامت فیزیکی کالا.", title, def.name),
-				SeoTitle:       fmt.Sprintf("خرید %s | فروشگاه", title),
-				SeoDescription: fmt.Sprintf("خرید %s با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا", title),
-				SeoKeywords:    product.Keywords{def.name, def.items[item], def.variants[variant], title},
-				Price:          float64(def.basePrice + item*def.step + variant*def.step*3),
-				SKU:            fmt.Sprintf("%s-%03d", strings.ToUpper(def.slug), i+1),
-				IsActive:       true,
-				CategoryID:     cat.ID,
-				Attributes:     attrs,
+				Title:           title,
+				Slug:            product.Slugify(title),
+				Description:     fmt.Sprintf("%s، از دسته %s، با کیفیت ساخت بالا، ضمانت اصالت و سلامت فیزیکی کالا.", title, def.name),
+				SeoTitle:        fmt.Sprintf("خرید %s | فروشگاه", title),
+				SeoDescription:  fmt.Sprintf("خرید %s با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا", title),
+				SeoKeywords:     product.Keywords{def.name, def.items[item], def.variants[variant], title},
+				Price:           float64(def.basePrice + item*def.step + variant*def.step*3),
+				SKU:             fmt.Sprintf("%s-%03d", strings.ToUpper(def.slug), i+1),
+				IsActive:        true,
+				CategoryID:      cat.ID,
+				AttributeValues: values,
 			})
 		}
 		if err := db.CreateInBatches(&products, productsPerCategory).Error; err != nil {
@@ -256,7 +260,7 @@ func seedBanners(db *gorm.DB) {
 			log.Println("seed: banner media:", err)
 			return
 		}
-		b := cms.Banner{Title: fmt.Sprintf("Banner %d", i), MediaID: m.ID, AltName: fmt.Sprintf("Promotional banner %d", i), LinkUrl: "/products", DisplayOrder: i, IsActive: true}
+		b := cms.Banner{Title: fmt.Sprintf("Banner %d", i), MediaID: &m.ID, AltName: fmt.Sprintf("Promotional banner %d", i), LinkUrl: "/products", DisplayOrder: i, IsActive: true}
 		if err := db.Create(&b).Error; err != nil {
 			log.Println("seed: banner:", err)
 			return
