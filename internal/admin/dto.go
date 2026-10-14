@@ -1,22 +1,20 @@
 package admin
 
-type CreateStaffDto struct {
-	Name            string `json:"name" binding:"required,min=2,max=100"`
-	Mobile          string `json:"mobile" binding:"required,numeric,len=11" example:"09121112233"`
-	Password        string `json:"password" binding:"required,min=6,max=72"`
-	Role            string `json:"role" binding:"required,oneof=storekeeper accountant marketer support" enums:"storekeeper,accountant,marketer,support"`
-	AvatarMediaID   *uint  `json:"avatar_media_id" binding:"omitempty,min=1"`
-	DefaultAvatarID *int   `json:"default_avatar_id" binding:"omitempty,min=1,max=5" enums:"1,2,3,4,5" example:"1"`
+type CreateUserDto struct {
+	Name            string   `json:"name" binding:"required,min=2,max=100"`
+	Mobile          string   `json:"mobile" binding:"required,numeric,len=11" example:"09121112233"`
+	Password        string   `json:"password" binding:"required,min=6,max=72"`
+	Roles           []string `json:"roles" binding:"omitempty,dive,oneof=user storekeeper accountant marketer support" enums:"user,storekeeper,accountant,marketer,support"`
+	AvatarMediaID   *uint    `json:"avatar_media_id" binding:"omitempty,min=1"`
+	DefaultAvatarID *int     `json:"default_avatar_id" binding:"omitempty,min=1,max=5" enums:"1,2,3,4,5" example:"1"`
 }
 
-type UpdateStaffStatusDto struct {
+type UpdateStatusDto struct {
 	Status *bool `json:"status" binding:"required"`
 }
 
-type StaffQuery struct {
-	Page  int    `form:"page,default=1" binding:"min=1"`
-	Limit int    `form:"limit,default=20" binding:"min=1,max=100"`
-	Role  string `form:"role" binding:"omitempty,oneof=admin storekeeper accountant marketer support"`
+type UpdateRolesDto struct {
+	Roles []string `json:"roles" binding:"required,dive,oneof=user storekeeper accountant marketer support" enums:"user,storekeeper,accountant,marketer,support"`
 }
 
 type StatsResponse struct {

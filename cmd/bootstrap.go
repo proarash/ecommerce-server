@@ -12,6 +12,7 @@ import (
 	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/config"
+	"github.com/proarash/ecommerce-server/internal/database"
 	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
@@ -20,14 +21,10 @@ import (
 	"github.com/proarash/ecommerce-server/internal/notification"
 	"github.com/proarash/ecommerce-server/internal/payment"
 	"github.com/proarash/ecommerce-server/internal/product"
-	"github.com/proarash/ecommerce-server/internal/seed"
-	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/user"
 	"github.com/proarash/ecommerce-server/internal/wallet"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func Bootstrap(envConfig *config.EnvConfig) {
@@ -35,40 +32,13 @@ func Bootstrap(envConfig *config.EnvConfig) {
 		log.Fatal("JWT_SECRET is required")
 	}
 
-	// TODO: remove DisableAutomaticPing once PostgreSQL is available (it lets the server start without a database)
-	db, err := gorm.Open(postgres.Open(envConfig.Dsn), &gorm.Config{TranslateError: true, DisableAutomaticPing: true})
+	db, err := database.Open(envConfig.Dsn)
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(
-		&media.Media{},
-		&wallet.Wallet{},
-		&wallet.WalletTransaction{},
-		&staff.StaffUser{},
-		&user.User{},
-		&product.Category{},
-		&product.Product{},
-		&product.Attribute{},
-		&cart.Cart{},
-		&cart.CartItem{},
-		&finance.Order{},
-		&finance.OrderItem{},
-		&finance.PreInvoice{},
-		&payment.PaymentTransaction{},
-		&inventory.InventoryStock{},
-		&inventory.InventoryLog{},
-		&cms.BlogPost{},
-		&cms.Banner{},
-		&cms.SiteContent{},
-		&chat.ChatRoom{},
-		&chat.ChatMessage{},
-		&notification.Notification{},
-		&discount.Discount{},
-		&auth.RefreshToken{},
-	); err != nil {
+	if err := database.Migrate(db); err != nil {
 		panic(err)
 	}
-	seed.Run(db, envConfig)
 	if err := wallet.NewStore(db).Backfill(context.Background()); err != nil {
 		panic(err)
 	}
@@ -82,26 +52,23 @@ func Bootstrap(envConfig *config.EnvConfig) {
 
 	router := gin.Default()
 	router.SetTrustedProxies([]string{"127.0.0.1"})
-	router.Use(middleware.Cors(envConfig.CorsOrigins), middleware.ApiResponseMiddleware)
+	router.Use(middleware.Cors(envConfig.CorsOrigins, envConfig.Env != "production"), middleware.ApiResponseMiddleware)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	cookies := middleware.CookieWriter{Domain: envConfig.Domain, Secure: envConfig.Env == "production"}
-	staffStore := staff.NewStore(db)
 	userStore := user.NewStore(db)
-	authRepo := auth.NewAuthRepo(db, staffStore, userStore, envConfig.JwtSecret)
-	authMW := middleware.Auth(envConfig.JwtSecret, cookies, authRepo)
+	authRepo := auth.NewAuthRepo(db, userStore, envConfig.JwtSecret)
+	cookies := middleware.CookieWriter{Domain: envConfig.Domain, Secure: envConfig.Env == "production"}
+	authMW := middleware.Auth(envConfig.JwtSecret, authRepo, cookies)
 	api := router.Group("")
 	protected := api.Group("", authMW)
-	customer := api.Group("", authMW, middleware.RequireCustomer())
-	storekeeper := api.Group("", authMW, middleware.RequireRoles(staff.RoleStorekeeper))
-	accountant := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant))
-	marketer := api.Group("", authMW, middleware.RequireRoles(staff.RoleMarketer))
-	support := api.Group("/support", authMW, middleware.RequireRoles(staff.RoleSupport))
-	discountReader := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer, staff.RoleSupport))
-	discountManager := api.Group("", authMW, middleware.RequireRoles(staff.RoleAccountant, staff.RoleMarketer))
-	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(staff.RoleAdmin))
-	ws := router.Group("/ws", authMW)
-
+	storekeeper := api.Group("", authMW, middleware.RequireRoles(user.RoleStorekeeper))
+	accountant := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant))
+	marketer := api.Group("", authMW, middleware.RequireRoles(user.RoleMarketer))
+	support := api.Group("/support", authMW, middleware.RequireRoles(user.RoleSupport))
+	discountReader := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer, user.RoleSupport))
+	discountManager := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer))
+	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(user.RoleAdmin))
+	ws := router.Group("/ws", middleware.AuthWithQueryToken(envConfig.JwtSecret, authRepo, cookies))
 
 	hub := chat.NewHub()
 	chatService := chat.NewService(db, hub)
@@ -115,21 +82,19 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	discountStore := discount.NewStore(db)
 	mediaService := media.NewService(media.NewStore(db), envConfig.UploadDir)
 
-	auth.NewAuthHandler(authRepo, cookies, envConfig.JwtSecret).RegisterRoutes(api, adminGroup)
-	user.NewHandler(user.NewService(userStore)).RegisterRoutes(customer)
-	staff.NewHandler(staffStore).RegisterRoutes(protected)
+	auth.NewAuthHandler(authRepo, user.NewService(userStore), envConfig.JwtSecret, cookies).RegisterRoutes(api, protected, adminGroup)
 	media.NewHandler(mediaService).RegisterRoutes(api, storekeeper)
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
-	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(customer)
-	finance.NewHandler(financeStore).RegisterRoutes(accountant, customer, support)
-	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, walletStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, customer, accountant)
+	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(protected)
+	finance.NewHandler(financeStore).RegisterRoutes(accountant, protected, support)
+	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, walletStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, protected, accountant)
 	cms.NewHandler(cms.NewStore(db)).RegisterRoutes(api, marketer)
-	chat.NewHandler(hub, chatService).RegisterRoutes(ws, customer, support)
-	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, customer)
-	admin.NewHandler(db, staffStore).RegisterRoutes(adminGroup)
+	chat.NewHandler(hub, chatService).RegisterRoutes(ws, protected, support)
+	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, protected)
+	admin.NewHandler(db, userStore).RegisterRoutes(adminGroup)
 	wallet.NewHandler(walletStore).RegisterRoutes(protected, accountant)
-	discount.NewHandler(discountStore, userStore).RegisterRoutes(discountReader, discountManager, customer)
+	discount.NewHandler(discountStore, userStore).RegisterRoutes(discountReader, discountManager, protected)
 
 	log.Println("server listening on :" + envConfig.Port)
 	if err := router.Run(":" + envConfig.Port); err != nil {

@@ -55,13 +55,8 @@ func trackParam(c *gin.Context) (int64, bool) {
 // @Description Requests a Zibal trackId for a pending/failed order and returns the gateway redirect URL. On success the paid amount is credited to the customer wallet and the order price is then debited from it.
 // @Tags Payment
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /payment/checkout/{orderId} [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
@@ -99,13 +94,8 @@ func (h *Handler) Checkout(c *gin.Context) {
 // @Tags Payment
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body WalletChargeDto true "Charge amount"
 // @Success 200 {object} types.ApiResponse{data=CheckoutResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /payment/wallet/charge [post]
 func (h *Handler) ChargeWallet(c *gin.Context) {
 	var dto WalletChargeDto
@@ -134,13 +124,8 @@ func (h *Handler) ChargeWallet(c *gin.Context) {
 // @Description Debits the order total from the customer wallet balance and marks the order as paid
 // @Tags Payment
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param orderId path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=WalletPayResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /payment/checkout/{orderId}/wallet [post]
 func (h *Handler) PayWithWallet(c *gin.Context) {
 	orderID, ok := types.ParamID(c, "orderId")
@@ -156,7 +141,7 @@ func (h *Handler) PayWithWallet(c *gin.Context) {
 		}
 		if order.TotalAmount > 0 {
 			entry := wallet.Entry{Type: wallet.TxDebit, Source: wallet.SourcePurchase, Amount: order.TotalAmount, OrderID: &order.ID, Description: fmt.Sprintf("Order #%d", order.ID)}
-			if _, _, err := h.wallets.ApplyTx(db, wallet.OwnerUser, p.UserID, entry); err != nil {
+			if _, _, err := h.wallets.ApplyTx(db, p.UserID, entry); err != nil {
 				return err
 			}
 		}
@@ -175,7 +160,7 @@ func (h *Handler) PayWithWallet(c *gin.Context) {
 		types.HandleError(c, err, "order not found")
 		return
 	}
-	w, err := h.wallets.FindByOwner(ctx, wallet.OwnerUser, p.UserID)
+	w, err := h.wallets.FindByOwner(ctx, p.UserID)
 	if err != nil {
 		types.HandleError(c, err, "wallet not found")
 		return
@@ -226,14 +211,14 @@ func (h *Handler) settle(ctx context.Context, tx PaymentTransaction) error {
 	return h.wallets.Transaction(ctx, func(db *gorm.DB) error {
 		amount := float64(tx.Amount)
 		credit := wallet.Entry{Type: wallet.TxCredit, Source: wallet.SourceGateway, Amount: amount, OrderID: tx.OrderID, TrackID: &tx.TrackID, Description: tx.Description}
-		if _, _, err := h.wallets.ApplyTx(db, wallet.OwnerUser, tx.UserID, credit); err != nil {
+		if _, _, err := h.wallets.ApplyTx(db, tx.UserID, credit); err != nil {
 			return err
 		}
 		if tx.OrderID == nil {
 			return nil
 		}
 		debit := wallet.Entry{Type: wallet.TxDebit, Source: wallet.SourcePurchase, Amount: amount, OrderID: tx.OrderID, TrackID: &tx.TrackID, Description: tx.Description}
-		if _, _, err := h.wallets.ApplyTx(db, wallet.OwnerUser, tx.UserID, debit); err != nil {
+		if _, _, err := h.wallets.ApplyTx(db, tx.UserID, debit); err != nil {
 			return err
 		}
 		return h.finance.MarkPaidTx(db, *tx.OrderID)
@@ -249,8 +234,6 @@ func (h *Handler) settle(ctx context.Context, tx PaymentTransaction) error {
 // @Param status query int false "Zibal status"
 // @Param orderId query string false "Merchant order ID"
 // @Success 302 "Redirect to client payment result page"
-// @Failure 400 {object} types.ErrorResponse
-// @Failure 404 {object} types.ErrorResponse
 // @Router /payment/callback [get]
 func (h *Handler) Callback(c *gin.Context) {
 	var q CallbackQuery
@@ -325,12 +308,8 @@ func (h *Handler) Callback(c *gin.Context) {
 // @Summary Payment transaction status
 // @Tags Payment
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=PaymentTransaction}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /payment/status/{trackId} [get]
 func (h *Handler) Status(c *gin.Context) {
 	trackID, ok := trackParam(c)
@@ -350,13 +329,8 @@ func (h *Handler) Status(c *gin.Context) {
 // @Description Queries Zibal /v1/inquiry for the track ID and returns it with the local transaction record
 // @Tags Payment
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param trackId path int true "Zibal track ID"
 // @Success 200 {object} types.ApiResponse{data=InquiryResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 502 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /payment/inquiry/{trackId} [post]
 func (h *Handler) Inquiry(c *gin.Context) {
 	trackID, ok := trackParam(c)

@@ -3,18 +3,26 @@ package seed
 import (
 	"fmt"
 	"log"
+	"math"
+	"strings"
 
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/config"
 	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/media"
 	"github.com/proarash/ecommerce-server/internal/product"
-	"github.com/proarash/ecommerce-server/internal/staff"
+	"github.com/proarash/ecommerce-server/internal/user"
+	"github.com/proarash/ecommerce-server/internal/wallet"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-const samplePassword = "password123"
+const (
+	samplePassword      = "password123"
+	productsPerCategory = 60
+	adminBalance        = math.MaxFloat64
+	userBalance         = 100000000
+)
 
 func hash(p string) string {
 	h, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
@@ -37,9 +45,11 @@ func count(db *gorm.DB, model any, where ...any) int64 {
 func Run(db *gorm.DB, cfg *config.EnvConfig) {
 	seedAdmin(db, cfg)
 	if cfg.Env == "production" {
+		seedWallets(db)
 		return
 	}
 	seedStaff(db)
+	seedWallets(db)
 	cats := seedCategories(db)
 	seedProducts(db, cats)
 	seedBlogs(db)
@@ -48,7 +58,7 @@ func Run(db *gorm.DB, cfg *config.EnvConfig) {
 }
 
 func seedAdmin(db *gorm.DB, cfg *config.EnvConfig) {
-	if count(db, &staff.StaffUser{}, "role = ?", staff.RoleAdmin) > 0 {
+	if count(db, &user.User{}, "roles @> ?::jsonb", user.RoleFilter(user.RoleAdmin)) > 0 {
 		return
 	}
 	if cfg.AdminMobile == "" || cfg.AdminPassword == "" {
@@ -56,7 +66,7 @@ func seedAdmin(db *gorm.DB, cfg *config.EnvConfig) {
 		return
 	}
 	avatar := 1
-	admin := staff.StaffUser{Name: cfg.AdminName, Mobile: cfg.AdminMobile, Password: hash(cfg.AdminPassword), Role: staff.RoleAdmin, DefaultAvatarID: &avatar, Status: true}
+	admin := user.User{Name: &cfg.AdminName, Mobile: cfg.AdminMobile, Password: hash(cfg.AdminPassword), Roles: user.NewRoles(user.RoleAdmin), DefaultAvatarID: &avatar, Status: true}
 	if err := db.Create(&admin).Error; err != nil {
 		log.Println("seed: admin:", err)
 		return
@@ -65,30 +75,31 @@ func seedAdmin(db *gorm.DB, cfg *config.EnvConfig) {
 }
 
 func seedStaff(db *gorm.DB) {
-	if count(db, &staff.StaffUser{}, "role <> ?", staff.RoleAdmin) > 0 {
+	if count(db, &user.User{}, "jsonb_array_length(roles) > 1 AND NOT roles @> ?::jsonb", user.RoleFilter(user.RoleAdmin)) > 0 {
 		return
 	}
 	plan := []struct {
 		role  string
 		count int
 	}{
-		{staff.RoleStorekeeper, 2},
-		{staff.RoleAccountant, 3},
-		{staff.RoleMarketer, 2},
-		{staff.RoleSupport, 5},
+		{user.RoleStorekeeper, 2},
+		{user.RoleAccountant, 3},
+		{user.RoleMarketer, 2},
+		{user.RoleSupport, 5},
 	}
 	pw := hash(samplePassword)
-	var users []staff.StaffUser
+	var users []user.User
 	n := 0
 	for _, p := range plan {
 		for i := 1; i <= p.count; i++ {
 			n++
 			avatar := (n-1)%5 + 1
-			users = append(users, staff.StaffUser{
-				Name:            fmt.Sprintf("%s %d", p.role, i),
+			name := fmt.Sprintf("%s %d", p.role, i)
+			users = append(users, user.User{
+				Name:            &name,
 				Mobile:          fmt.Sprintf("0930000%04d", n),
 				Password:        pw,
-				Role:            p.role,
+				Roles:           user.NewRoles(p.role),
 				DefaultAvatarID: &avatar,
 				Status:          true,
 			})
@@ -101,74 +112,102 @@ func seedStaff(db *gorm.DB) {
 	log.Printf("seed: %d staff users created (password %q)", len(users), samplePassword)
 }
 
-func seedCategories(db *gorm.DB) []product.Category {
-	var leaves []product.Category
-	if count(db, &product.Category{}) > 0 {
-		db.Where("parent_id IS NOT NULL").Find(&leaves)
-		return leaves
+func seedWallets(db *gorm.DB) {
+	admins := db.Model(&user.User{}).Select("id").Where("roles @> ?::jsonb", user.RoleFilter(user.RoleAdmin))
+	if err := db.Model(&wallet.Wallet{}).Where("amount = 0 AND owner_id IN (?)", admins).Update("amount", adminBalance).Error; err != nil {
+		log.Println("seed: admin wallet:", err)
 	}
-	tree := []struct {
-		name, slug string
-		children   [][2]string
-	}{
-		{"Electronics", "electronics", [][2]string{{"Mobile Phones", "mobile-phones"}, {"Laptops", "laptops"}}},
-		{"Fashion", "fashion", [][2]string{{"Men", "men"}, {"Women", "women"}}},
+	if err := db.Model(&wallet.Wallet{}).Where("amount = 0 AND owner_id NOT IN (?)", admins).Update("amount", userBalance).Error; err != nil {
+		log.Println("seed: user wallets:", err)
 	}
-	for _, root := range tree {
-		r := product.Category{Name: root.name, Slug: root.slug}
-		if err := db.Create(&r).Error; err != nil {
+}
+
+func seedCategories(db *gorm.DB) map[string]product.Category {
+	cats := make(map[string]product.Category, len(catalog))
+	for _, def := range catalog {
+		c := product.Category{Name: def.name, Slug: def.slug, SeoTitle: fmt.Sprintf("خرید %s | فروشگاه", def.name), SeoDescription: fmt.Sprintf("خرید انواع %s با بهترین قیمت و ضمانت اصالت کالا", def.name), SeoKeywords: product.Keywords{def.name, "خرید " + def.name, "قیمت " + def.name}}
+		if err := db.Where(product.Category{Slug: def.slug}).FirstOrCreate(&c).Error; err != nil {
 			log.Println("seed: category:", err)
 			continue
 		}
-		for _, ch := range root.children {
-			c := product.Category{Name: ch[0], Slug: ch[1], ParentID: &r.ID}
-			if err := db.Create(&c).Error; err != nil {
-				log.Println("seed: category:", err)
-				continue
-			}
-			leaves = append(leaves, c)
-		}
+		cats[def.slug] = c
 	}
-	log.Println("seed: categories created")
-	return leaves
+	return cats
 }
 
-func seedProducts(db *gorm.DB, cats []product.Category) {
-	if len(cats) == 0 || count(db, &product.Product{}) > 0 {
-		return
+func seedAttribute(db *gorm.DB, key, title, name string) (product.Attribute, error) {
+	a := product.Attribute{Key: key}
+	err := db.Where(product.Attribute{Key: key}).Attrs(product.Attribute{Title: title, Name: name}).FirstOrCreate(&a).Error
+	return a, err
+}
+
+func seedProducts(db *gorm.DB, cats map[string]product.Category) {
+	total := 0
+	for _, def := range catalog {
+		cat, ok := cats[def.slug]
+		if !ok || count(db, &product.Product{}, "category_id = ?", cat.ID) > 0 {
+			continue
+		}
+		products := make([]product.Product, 0, productsPerCategory)
+		for i := 0; i < productsPerCategory; i++ {
+			item := i % len(def.items)
+			variant := (i / len(def.items)) % len(def.variants)
+			specs := []struct {
+				key, title, name string
+			}{
+				{fmt.Sprintf("%s-item-%d", def.slug, item), def.itemAttr, def.items[item]},
+				{fmt.Sprintf("%s-variant-%d", def.slug, variant), def.variantAttr, def.variants[variant]},
+			}
+			for j, ex := range def.extras {
+				v := (i + j) % len(ex.values)
+				specs = append(specs, struct{ key, title, name string }{fmt.Sprintf("%s-extra-%d-%d", def.slug, j, v), ex.title, ex.values[v]})
+			}
+			attrs := make([]product.Attribute, 0, len(specs))
+			for _, s := range specs {
+				a, err := seedAttribute(db, s.key, s.title, s.name)
+				if err != nil {
+					log.Println("seed: attribute:", err)
+					continue
+				}
+				attrs = append(attrs, a)
+			}
+			title := strings.TrimSpace(fmt.Sprintf("%s %s %s", def.prefix, def.items[item], def.variants[variant]))
+			products = append(products, product.Product{
+				Title:          title,
+				Slug:           product.Slugify(title),
+				Description:    fmt.Sprintf("%s، از دسته %s، با کیفیت ساخت بالا، ضمانت اصالت و سلامت فیزیکی کالا.", title, def.name),
+				SeoTitle:       fmt.Sprintf("خرید %s | فروشگاه", title),
+				SeoDescription: fmt.Sprintf("خرید %s با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا", title),
+				SeoKeywords:    product.Keywords{def.name, def.items[item], def.variants[variant], title},
+				Price:          float64(def.basePrice + item*def.step + variant*def.step*3),
+				SKU:            fmt.Sprintf("%s-%03d", strings.ToUpper(def.slug), i+1),
+				IsActive:       true,
+				CategoryID:     cat.ID,
+				Attributes:     attrs,
+			})
+		}
+		if err := db.CreateInBatches(&products, productsPerCategory).Error; err != nil {
+			log.Println("seed: products:", err)
+			continue
+		}
+		stocks := make([]inventory.InventoryStock, 0, len(products))
+		for _, p := range products {
+			stocks = append(stocks, inventory.InventoryStock{ProductID: p.ID, Quantity: 50})
+		}
+		if err := db.CreateInBatches(&stocks, productsPerCategory).Error; err != nil {
+			log.Println("seed: stock:", err)
+		}
+		total += len(products)
 	}
-	products := make([]product.Product, 0, 100)
-	for i := 1; i <= 100; i++ {
-		cat := cats[(i-1)%len(cats)]
-		products = append(products, product.Product{
-			Title:       fmt.Sprintf("%s Item %03d", cat.Name, i),
-			Description: fmt.Sprintf("Sample product %d in %s", i, cat.Name),
-			Price:       float64(100000 + i*25000),
-			SKU:         fmt.Sprintf("SKU-%05d", i),
-			IsActive:    true,
-			CategoryID:  cat.ID,
-		})
-	}
-	if err := db.CreateInBatches(&products, 50).Error; err != nil {
-		log.Println("seed: products:", err)
-		return
-	}
-	stocks := make([]inventory.InventoryStock, 0, len(products))
-	for _, p := range products {
-		stocks = append(stocks, inventory.InventoryStock{ProductID: p.ID, Quantity: 50})
-	}
-	if err := db.CreateInBatches(&stocks, 50).Error; err != nil {
-		log.Println("seed: stock:", err)
-	}
-	log.Println("seed: 100 products created")
+	log.Printf("seed: %d products created", total)
 }
 
 func seedBlogs(db *gorm.DB) {
 	if count(db, &cms.BlogPost{}) > 0 {
 		return
 	}
-	var author staff.StaffUser
-	db.Where("role = ?", staff.RoleMarketer).First(&author)
+	var author user.User
+	db.Where("roles @> ?::jsonb", user.RoleFilter(user.RoleMarketer)).First(&author)
 	posts := make([]cms.BlogPost, 0, 30)
 	for i := 1; i <= 30; i++ {
 		posts = append(posts, cms.BlogPost{

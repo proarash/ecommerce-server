@@ -18,11 +18,11 @@ type Store interface {
 	Transaction(ctx context.Context, fn func(tx *gorm.DB) error) error
 	Backfill(ctx context.Context) error
 	FindByID(ctx context.Context, id uint) (Wallet, error)
-	FindByOwner(ctx context.Context, ownerType string, ownerID uint) (Wallet, error)
+	FindByOwner(ctx context.Context, ownerID uint) (Wallet, error)
 	List(ctx context.Context, q ListQuery) ([]Wallet, int64, error)
 	ListTransactions(ctx context.Context, walletID uint, q TransactionQuery) ([]WalletTransaction, int64, error)
 	Adjust(ctx context.Context, id uint, e Entry) (Wallet, WalletTransaction, error)
-	ApplyTx(tx *gorm.DB, ownerType string, ownerID uint, e Entry) (Wallet, WalletTransaction, error)
+	ApplyTx(tx *gorm.DB, ownerID uint, e Entry) (Wallet, WalletTransaction, error)
 }
 
 type store struct {
@@ -39,33 +39,25 @@ func (s *store) Transaction(ctx context.Context, fn func(tx *gorm.DB) error) err
 
 func (s *store) Backfill(ctx context.Context) error {
 	db := s.db.WithContext(ctx)
-	if err := db.Exec(`INSERT INTO wallets (created_at, updated_at, owner_id, owner_type, amount, locked)
-		SELECT NOW(), NOW(), id, ?, 0, false FROM users WHERE deleted_at IS NULL
-		ON CONFLICT (owner_type, owner_id) DO NOTHING`, OwnerUser).Error; err != nil {
+	if err := db.Exec(`INSERT INTO wallets (created_at, updated_at, owner_id, amount, locked)
+		SELECT NOW(), NOW(), id, 0, roles @> '["admin"]'::jsonb FROM users WHERE deleted_at IS NULL
+		ON CONFLICT (owner_id) DO NOTHING`).Error; err != nil {
 		return err
 	}
-	if err := db.Exec(`INSERT INTO wallets (created_at, updated_at, owner_id, owner_type, amount, locked)
-		SELECT NOW(), NOW(), id, ?, 0, role = 'admin' FROM staff_users WHERE deleted_at IS NULL
-		ON CONFLICT (owner_type, owner_id) DO NOTHING`, OwnerStaff).Error; err != nil {
-		return err
-	}
-	return db.Exec(`UPDATE wallets SET locked = true WHERE owner_type = ? AND locked = false
-		AND owner_id IN (SELECT id FROM staff_users WHERE role = 'admin')`, OwnerStaff).Error
+	return db.Exec(`UPDATE wallets SET locked = true WHERE locked = false
+		AND owner_id IN (SELECT id FROM users WHERE roles @> '["admin"]'::jsonb)`).Error
 }
 
 func (s *store) FindByID(ctx context.Context, id uint) (Wallet, error) {
 	return gorm.G[Wallet](s.db).Where("id = ?", id).First(ctx)
 }
 
-func (s *store) FindByOwner(ctx context.Context, ownerType string, ownerID uint) (Wallet, error) {
-	return gorm.G[Wallet](s.db).Where("owner_type = ? AND owner_id = ?", ownerType, ownerID).First(ctx)
+func (s *store) FindByOwner(ctx context.Context, ownerID uint) (Wallet, error) {
+	return gorm.G[Wallet](s.db).Where("owner_id = ?", ownerID).First(ctx)
 }
 
 func (s *store) List(ctx context.Context, q ListQuery) ([]Wallet, int64, error) {
 	tx := s.db.WithContext(ctx).Model(&Wallet{})
-	if q.OwnerType != "" {
-		tx = tx.Where("owner_type = ?", q.OwnerType)
-	}
 	if q.OwnerID != 0 {
 		tx = tx.Where("owner_id = ?", q.OwnerID)
 	}
@@ -106,11 +98,11 @@ func (s *store) Adjust(ctx context.Context, id uint, e Entry) (Wallet, WalletTra
 	return w, t, err
 }
 
-func (s *store) ApplyTx(tx *gorm.DB, ownerType string, ownerID uint, e Entry) (Wallet, WalletTransaction, error) {
-	if err := CreateFor(tx, ownerType, ownerID, false); err != nil {
+func (s *store) ApplyTx(tx *gorm.DB, ownerID uint, e Entry) (Wallet, WalletTransaction, error) {
+	if err := CreateFor(tx, ownerID, false); err != nil {
 		return Wallet{}, WalletTransaction{}, err
 	}
-	return apply(tx, tx.Where("owner_type = ? AND owner_id = ?", ownerType, ownerID), e)
+	return apply(tx, tx.Where("owner_id = ?", ownerID), e)
 }
 
 func apply(tx *gorm.DB, scope *gorm.DB, e Entry) (Wallet, WalletTransaction, error) {

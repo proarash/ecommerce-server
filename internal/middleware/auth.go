@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -10,72 +11,74 @@ import (
 	"github.com/proarash/ecommerce-server/pkg/token"
 )
 
-const authKey = "auth"
+const (
+	authKey           = "auth"
+	AccessTokenHeader = "X-Access-Token"
+)
 
-type Refresher interface {
-	Refresh(ctx context.Context, expired *token.AuthPayload) (*token.AuthPayload, string, error)
+var errUnauthorized = errors.New("invalid or expired token")
+
+type Renewer interface {
+	Renew(ctx context.Context, expired *token.AuthPayload, ip string) (*token.AuthPayload, string, error)
 }
 
-func matches(p *token.AuthPayload, userType string) bool {
-	return p != nil && (userType == "" || p.UserType == userType)
-}
-
-func fromCookie(c *gin.Context, secret, userType string, w CookieWriter, r Refresher) *token.AuthPayload {
-	name, _ := AccessCookie(userType)
-	raw, err := c.Cookie(name)
-	if err != nil || raw == "" {
-		return nil
+func RequestToken(c *gin.Context) string {
+	if v, err := c.Cookie(AccessTokenCookie); err == nil && v != "" {
+		return v
 	}
-	if p, err := token.ParseJwt(raw, secret); err == nil {
-		if matches(p, userType) {
-			return p
-		}
-		return nil
+	if h := c.GetHeader("Authorization"); strings.HasPrefix(h, "Bearer ") {
+		return strings.TrimSpace(strings.TrimPrefix(h, "Bearer "))
+	}
+	return strings.TrimSpace(c.GetHeader(AccessTokenHeader))
+}
+
+func Auth(secret string, r Renewer, w CookieWriter) gin.HandlerFunc {
+	return authenticate(secret, r, w, false)
+}
+
+func AuthWithQueryToken(secret string, r Renewer, w CookieWriter) gin.HandlerFunc {
+	return authenticate(secret, r, w, true)
+}
+
+func resolve(c *gin.Context, raw, secret string, r Renewer, w CookieWriter) (*token.AuthPayload, error) {
+	p, err := token.ParseJwt(raw, secret)
+	if err == nil {
+		return p, nil
+	}
+	if !token.IsExpired(err) {
+		return nil, errUnauthorized
 	}
 	expired, err := token.ParseExpiredJwt(raw, secret)
-	if err != nil || !matches(expired, userType) || expired.ID == "" {
-		return nil
+	if err != nil || expired.Kind != token.KindAccess {
+		return nil, errUnauthorized
 	}
-	p, access, err := r.Refresh(c.Request.Context(), expired)
+	p, access, err := r.Renew(c.Request.Context(), expired, c.ClientIP())
 	if err != nil {
-		w.Clear(c, name)
-		return nil
+		w.Clear(c)
+		return nil, err
 	}
-	w.Set(c, name, access)
-	return p
+	w.Set(c, access)
+	return p, nil
 }
 
-func Auth(secret string, w CookieWriter, r Refresher) gin.HandlerFunc {
+func authenticate(secret string, r Renewer, w CookieWriter, allowQuery bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userType := c.Query("user_type")
-		candidates := userTypes
-		if userType != "" {
-			if _, ok := AccessCookie(userType); !ok {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.ErrorResponse{Error: "invalid user_type"})
-				return
-			}
-			candidates = []string{userType}
+		raw := RequestToken(c)
+		if raw == "" && allowQuery {
+			raw = c.Query("token")
 		}
-		var payload *token.AuthPayload
-		if h := c.GetHeader("Authorization"); strings.HasPrefix(h, "Bearer ") {
-			if p, err := token.ParseJwt(strings.TrimPrefix(h, "Bearer "), secret); err == nil && matches(p, userType) {
-				payload = p
-			}
-		} else {
-			for _, t := range candidates {
-				if payload = fromCookie(c, secret, t, w, r); payload != nil {
-					break
-				}
-			}
+		if raw == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.ErrorResponse{Error: "not authenticated"})
+			return
 		}
-		if payload == nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.ErrorResponse{Error: "unauthorized"})
+		payload, err := resolve(c, raw, secret, r, w)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.ErrorResponse{Error: err.Error()})
 			return
 		}
 		c.Set(authKey, payload)
 		c.Set("user_id", payload.UserID)
-		c.Set("role", payload.Role)
-		c.Set("user_type", payload.UserType)
+		c.Set("roles", payload.Roles)
 		c.Next()
 	}
 }

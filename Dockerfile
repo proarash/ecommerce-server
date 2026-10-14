@@ -8,6 +8,7 @@ RUN go mod download
 
 COPY . .
 RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/server ./cmd
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/seed ./cmd/seed
 
 # ---- run ----
 FROM alpine:3.24
@@ -15,6 +16,7 @@ FROM alpine:3.24
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 COPY --from=builder /out/server /usr/local/bin/server
+COPY --from=builder /out/seed /usr/local/bin/seed
 
 WORKDIR /app
 

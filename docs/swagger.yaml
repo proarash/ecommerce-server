@@ -105,6 +105,14 @@ definitions:
         type: string
       parent_id:
         type: integer
+      seo_description:
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        type: array
+      seo_title:
+        type: string
       slug:
         type: string
       updatedAt:
@@ -136,15 +144,80 @@ definitions:
         type: array
       price:
         type: number
+      seo_description:
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        type: array
+      seo_title:
+        type: string
       sku:
+        type: string
+      slug:
         type: string
       title:
         type: string
       updatedAt:
         type: string
     type: object
-  github_com_proarash_ecommerce-server_internal_staff.StaffUser:
+  github_com_proarash_ecommerce-server_internal_types.ApiResponse:
     properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_proarash_ecommerce-server_internal_types.PaginatedResponse:
+    properties:
+      items: {}
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  github_com_proarash_ecommerce-server_internal_user.UpdateProfileDto:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      avatar_media_id:
+        minimum: 1
+        type: integer
+      default_avatar_id:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        example: 1
+        maximum: 5
+        minimum: 1
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      mobile:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      telegram_chat_id:
+        type: integer
+    type: object
+  github_com_proarash_ecommerce-server_internal_user.User:
+    properties:
+      address:
+        type: string
       avatar_media:
         $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
       avatar_media_id:
@@ -163,55 +236,6 @@ definitions:
         $ref: '#/definitions/gorm.DeletedAt'
       id:
         type: integer
-      mobile:
-        type: string
-      name:
-        type: string
-      role:
-        type: string
-      status:
-        type: boolean
-      updatedAt:
-        type: string
-      wallet:
-        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
-    type: object
-  github_com_proarash_ecommerce-server_internal_types.ApiResponse:
-    properties:
-      data: {}
-      message:
-        type: string
-    type: object
-  github_com_proarash_ecommerce-server_internal_types.ErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  github_com_proarash_ecommerce-server_internal_types.MessageResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  github_com_proarash_ecommerce-server_internal_types.PaginatedResponse:
-    properties:
-      items: {}
-      limit:
-        type: integer
-      page:
-        type: integer
-      total:
-        type: integer
-    type: object
-  github_com_proarash_ecommerce-server_internal_user.User:
-    properties:
-      address:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
       latitude:
         type: number
       longitude:
@@ -220,6 +244,17 @@ definitions:
         type: string
       name:
         type: string
+      roles:
+        items:
+          enum:
+          - user
+          - admin
+          - storekeeper
+          - accountant
+          - marketer
+          - support
+          type: string
+        type: array
       status:
         type: boolean
       telegram_chat_id:
@@ -243,11 +278,6 @@ definitions:
         type: boolean
       owner_id:
         type: integer
-      owner_type:
-        enum:
-        - user
-        - staff
-        type: string
       updatedAt:
         type: string
     type: object
@@ -259,7 +289,7 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
-  internal_admin.CreateStaffDto:
+  internal_admin.CreateUserDto:
     properties:
       avatar_media_id:
         minimum: 1
@@ -286,18 +316,20 @@ definitions:
         maxLength: 72
         minLength: 6
         type: string
-      role:
-        enum:
-        - storekeeper
-        - accountant
-        - marketer
-        - support
-        type: string
+      roles:
+        items:
+          enum:
+          - user
+          - storekeeper
+          - accountant
+          - marketer
+          - support
+          type: string
+        type: array
     required:
     - mobile
     - name
     - password
-    - role
     type: object
   internal_admin.StatsResponse:
     properties:
@@ -318,7 +350,22 @@ definitions:
       users:
         type: integer
     type: object
-  internal_admin.UpdateStaffStatusDto:
+  internal_admin.UpdateRolesDto:
+    properties:
+      roles:
+        items:
+          enum:
+          - user
+          - storekeeper
+          - accountant
+          - marketer
+          - support
+          type: string
+        type: array
+    required:
+    - roles
+    type: object
+  internal_admin.UpdateStatusDto:
     properties:
       status:
         type: boolean
@@ -338,6 +385,24 @@ definitions:
     required:
     - mobile
     - password
+    type: object
+  internal_auth.MeResponse:
+    properties:
+      impersonator_id:
+        type: integer
+      profile:
+        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
+      roles:
+        items:
+          enum:
+          - user
+          - admin
+          - storekeeper
+          - accountant
+          - marketer
+          - support
+          type: string
+        type: array
     type: object
   internal_auth.RegisterDto:
     properties:
@@ -359,15 +424,28 @@ definitions:
     type: object
   internal_auth.TokenResponse:
     properties:
-      role:
+      device_type:
+        enum:
+        - 1
+        - 2
+        type: integer
+      expires_at:
         type: string
+      refresh_token:
+        type: string
+      roles:
+        items:
+          enum:
+          - user
+          - admin
+          - storekeeper
+          - accountant
+          - marketer
+          - support
+          type: string
+        type: array
       user_id:
         type: integer
-      user_type:
-        enum:
-        - staff
-        - customer
-        type: string
     type: object
   internal_cart.AddItemDto:
     properties:
@@ -1280,6 +1358,14 @@ definitions:
         type: string
       parent_id:
         type: integer
+      seo_description:
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        type: array
+      seo_title:
+        type: string
       slug:
         type: string
       updatedAt:
@@ -1301,6 +1387,14 @@ definitions:
         type: string
       parent_id:
         type: integer
+      seo_description:
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        type: array
+      seo_title:
+        type: string
       slug:
         type: string
     type: object
@@ -1331,6 +1425,17 @@ definitions:
       parent_id:
         minimum: 1
         type: integer
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        maxItems: 20
+        type: array
+      seo_title:
+        maxLength: 200
+        type: string
       slug:
         maxLength: 120
         type: string
@@ -1353,8 +1458,22 @@ definitions:
         type: boolean
       price:
         type: number
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        maxItems: 20
+        type: array
+      seo_title:
+        maxLength: 200
+        type: string
       sku:
         maxLength: 64
+        type: string
+      slug:
+        maxLength: 220
         type: string
       title:
         maxLength: 200
@@ -1391,7 +1510,17 @@ definitions:
         type: array
       price:
         type: number
+      seo_description:
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        type: array
+      seo_title:
+        type: string
       sku:
+        type: string
+      slug:
         type: string
       title:
         type: string
@@ -1420,6 +1549,17 @@ definitions:
       parent_id:
         minimum: 1
         type: integer
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        maxItems: 20
+        type: array
+      seo_title:
+        maxLength: 200
+        type: string
       slug:
         maxLength: 120
         type: string
@@ -1439,111 +1579,26 @@ definitions:
         type: boolean
       price:
         type: number
+      seo_description:
+        maxLength: 500
+        type: string
+      seo_keywords:
+        items:
+          type: string
+        maxItems: 20
+        type: array
+      seo_title:
+        maxLength: 200
+        type: string
       sku:
         maxLength: 64
+        type: string
+      slug:
+        maxLength: 220
         type: string
       title:
         maxLength: 200
         type: string
-    type: object
-  internal_staff.StaffUser:
-    properties:
-      avatar_media:
-        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_media.Media'
-      avatar_media_id:
-        type: integer
-      createdAt:
-        type: string
-      default_avatar_id:
-        enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        type: integer
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
-      mobile:
-        type: string
-      name:
-        type: string
-      role:
-        type: string
-      status:
-        type: boolean
-      updatedAt:
-        type: string
-      wallet:
-        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
-    type: object
-  internal_staff.UpdateProfileDto:
-    properties:
-      avatar_media_id:
-        minimum: 1
-        type: integer
-      default_avatar_id:
-        enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        example: 1
-        maximum: 5
-        minimum: 1
-        type: integer
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-    type: object
-  internal_user.UpdateProfileDto:
-    properties:
-      address:
-        maxLength: 500
-        type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
-      mobile:
-        type: string
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-      telegram_chat_id:
-        type: integer
-    type: object
-  internal_user.User:
-    properties:
-      address:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
-      latitude:
-        type: number
-      longitude:
-        type: number
-      mobile:
-        type: string
-      name:
-        type: string
-      status:
-        type: boolean
-      telegram_chat_id:
-        type: integer
-      updatedAt:
-        type: string
-      wallet:
-        $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet'
     type: object
   internal_wallet.AdjustDto:
     properties:
@@ -1584,11 +1639,6 @@ definitions:
         type: boolean
       owner_id:
         type: integer
-      owner_type:
-        enum:
-        - user
-        - staff
-        type: string
       updatedAt:
         type: string
     type: object
@@ -1642,14 +1692,6 @@ paths:
   /admin/notifications:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Filter by user ID
         in: query
         name: user_id
@@ -1683,17 +1725,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List notifications
       tags:
       - Admin Notifications
@@ -1703,14 +1734,6 @@ paths:
       description: Stores the notification and dispatches it via Telegram when channel
         is telegram or both. Omit user_id to broadcast.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Notification
         in: body
         name: body
@@ -1729,40 +1752,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create and dispatch notification
       tags:
       - Admin Notifications
   /admin/notifications/{id}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1780,30 +1775,11 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete notification
       tags:
       - Admin Notifications
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1821,17 +1797,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Get notification
       tags:
       - Admin Notifications
@@ -1839,14 +1804,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Notification ID
         in: path
         name: id
@@ -1870,42 +1827,36 @@ paths:
                 data:
                   $ref: '#/definitions/internal_notification.Notification'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update notification
       tags:
       - Admin Notifications
-  /admin/staff:
+  /admin/stats:
     get:
+      description: users counts accounts that only have the user role; staff counts
+        accounts with any other role.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_admin.StatsResponse'
+              type: object
+      summary: System statistics
+      tags:
+      - Admin
+  /admin/users:
+    get:
+      description: Lists all users. Filter by a role the user has, or set staff=true
+        to list every user with at least one role besides "user".
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Role
         enum:
+        - user
         - admin
         - storekeeper
         - accountant
@@ -1913,6 +1864,14 @@ paths:
         - support
         in: query
         name: role
+        type: string
+      - description: Only users with at least one staff role
+        in: query
+        name: staff
+        type: boolean
+      - description: Search in mobile or name
+        in: query
+        name: search
         type: string
       - default: 1
         description: Page
@@ -1939,45 +1898,27 @@ paths:
                   - properties:
                       items:
                         items:
-                          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+                          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: List staff users
+      summary: List users
       tags:
       - Admin
     post:
       consumes:
       - application/json
-      description: Creates storekeeper, accountant, marketer or support users. Creating
+      description: Creates a user with the given roles (any of user, storekeeper,
+        accountant, marketer, support; the user role is always included). Creating
         another admin is not allowed. default_avatar_id is a preset frontend avatar
         index (1..5); avatar_media_id references an uploaded media asset.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Staff user
+      - description: User
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_admin.CreateStaffDto'
+          $ref: '#/definitions/internal_admin.CreateUserDto'
       produces:
       - application/json
       responses:
@@ -1988,54 +1929,109 @@ paths:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Create staff user
+      summary: Create user
       tags:
       - Admin
-  /admin/staff/{id}/status:
+  /admin/users/{id}:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
+              type: object
+      summary: Get user
+      tags:
+      - Admin
+  /admin/users/{id}/impersonate:
+    post:
+      description: Admin only. Returns a 24h access token for the given user as the
+        httpOnly x-access-token cookie (replacing the admin session cookie in this
+        browser), without mobile/password. No session is stored, so it is not renewed
+        and ends when it expires. The token carries impersonator_id with the admin's
+        ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: x-access-token for the impersonated user (httpOnly)
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+      summary: Login as user
+      tags:
+      - Admin
+  /admin/users/{id}/roles:
     patch:
       consumes:
       - application/json
+      description: Replaces the roles of a user with the given list (any of user,
+        storekeeper, accountant, marketer, support). The user role is always kept.
+        The admin role cannot be granted or removed. The user's current token keeps
+        the old roles until it is renewed.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Staff ID
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Roles
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_admin.UpdateRolesDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
+              type: object
+      summary: Set user roles
+      tags:
+      - Admin
+  /admin/users/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Disabled users cannot log in or refresh their token. Admin accounts
+        and your own account cannot be changed.
+      parameters:
+      - description: User ID
         in: path
         name: id
         required: true
@@ -2045,7 +2041,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_admin.UpdateStaffStatusDto'
+          $ref: '#/definitions/internal_admin.UpdateStatusDto'
       produces:
       - application/json
       responses:
@@ -2056,148 +2052,9 @@ paths:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser'
+                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.User'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Enable or disable staff user
-      tags:
-      - Admin
-  /admin/stats:
-    get:
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_admin.StatsResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: System statistics
-      tags:
-      - Admin
-  /admin/users/{id}/impersonate:
-    post:
-      description: Admin only. Issues a 2h customer access token for the given user
-        without mobile/password and sets it as the user_access_token httpOnly cookie.
-        No refresh token is stored, so the session ends when the access token expires.
-        The token carries impersonator_id with the admin's ID.
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Customer user ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_auth.TokenResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Login as customer
+      summary: Enable or disable user
       tags:
       - Admin
   /attributes:
@@ -2236,15 +2093,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: List attributes
       tags:
       - Attributes
@@ -2254,14 +2102,6 @@ paths:
       description: Creates a standalone attribute that can later be assigned to any
         product. key must be unique.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Attribute
         in: body
         name: body
@@ -2280,35 +2120,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Attribute'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create attribute
       tags:
       - Attributes
@@ -2316,14 +2127,6 @@ paths:
     delete:
       description: Soft-deletes the attribute and unassigns it from all products
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Attribute ID
         in: path
         name: id
@@ -2341,17 +2144,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete attribute
       tags:
       - Attributes
@@ -2374,15 +2166,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Attribute'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: Get attribute
       tags:
       - Attributes
@@ -2390,14 +2173,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Attribute ID
         in: path
         name: id
@@ -2421,50 +2196,56 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Attribute'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update attribute
       tags:
       - Attributes
-  /auth/logout:
-    get:
-      description: Deletes the server side refresh token and clears the access cookie
-        for the given user_type, or for both sessions when user_type is omitted.
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Login with mobile/password for every user; the user's roles are read from the database and returned in the body. Every login creates a new session, so each device stays logged in independently; the session stores the device type, user agent and last IP.
+        X-Device-Type 1 (browser, default): a 24h access token is set as the httpOnly x-access-token cookie (SameSite=Lax, Secure in production); the browser sends it automatically. When it expires the server renews it from the stored session (90 days) and sets the new cookie on that same request, so the client never handles the token.
+        X-Device-Type 2 (native app): refresh_token (a 90 day JWT) is returned in the body and no cookie is set. Send it as the X-Access-Token request header (or Authorization: Bearer) on every request.
       parameters:
-      - description: Session to clear
+      - description: 1 = browser (default), 2 = native app
         enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
+        - 1
+        - 2
+        in: header
+        name: X-Device-Type
+        type: integer
+      - description: Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.LoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: x-access-token (httpOnly, browser only)
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.TokenResponse'
+              type: object
+      summary: Login
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      description: 'Ends only the current session: the session of the x-access-token
+        cookie (browser, expired tokens accepted) or of the X-Access-Token request
+        header (app) is deleted and the cookie is cleared. Other devices stay logged
+        in.'
       produces:
       - application/json
       responses:
@@ -2477,15 +2258,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: Logout
       tags:
       - Auth
@@ -2493,8 +2265,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Registers a customer and sets the user_access_token httpOnly cookie.
+      description: Registers a user with the user role and logs them in. Tokens are
+        returned exactly like POST /auth/login, based on X-Device-Type.
       parameters:
+      - description: 1 = browser (default), 2 = native app
+        enum:
+        - 1
+        - 2
+        in: header
+        name: X-Device-Type
+        type: integer
       - description: Registration data
         in: body
         name: body
@@ -2506,6 +2286,10 @@ paths:
       responses:
         "201":
           description: Created
+          headers:
+            Set-Cookie:
+              description: x-access-token (httpOnly, browser only)
+              type: string
           schema:
             allOf:
             - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
@@ -2513,150 +2297,11 @@ paths:
                 data:
                   $ref: '#/definitions/internal_auth.TokenResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      summary: Customer registration
-      tags:
-      - Auth
-  /auth/staff/login:
-    post:
-      consumes:
-      - application/json
-      description: Staff login with mobile/password. Sets the staff_access_token httpOnly
-        cookie; the refresh token is stored server side and replaces any previous
-        staff session.
-      parameters:
-      - description: Credentials
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/internal_auth.LoginDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_auth.TokenResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      summary: Staff login
-      tags:
-      - Auth
-  /auth/user/login:
-    post:
-      consumes:
-      - application/json
-      description: Customer login with mobile/password. Sets the user_access_token
-        httpOnly cookie; the refresh token is stored server side and replaces any
-        previous customer session.
-      parameters:
-      - description: Credentials
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/internal_auth.LoginDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_auth.TokenResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      summary: Customer login
+      summary: Register
       tags:
       - Auth
   /cart:
     get:
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       produces:
       - application/json
       responses:
@@ -2669,17 +2314,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Get current cart
       tags:
       - Cart
@@ -2691,14 +2325,6 @@ paths:
         discount code, issues a system pre-invoice and sends invoice/pre-invoice bot
         messages
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Optional discount code
         in: body
         name: body
@@ -2716,35 +2342,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_finance.Order'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Checkout cart
       tags:
       - Cart
@@ -2754,14 +2351,6 @@ paths:
       - application/json
       description: Adds the product or increases its quantity if already present
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Item
         in: body
         name: body
@@ -2780,40 +2369,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Add product to cart
       tags:
       - Cart
   /cart/items/{id}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Cart item ID
         in: path
         name: id
@@ -2831,17 +2392,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Remove item from cart
       tags:
       - Cart
@@ -2849,14 +2399,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Cart item ID
         in: path
         name: id
@@ -2880,26 +2422,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cart.CartResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update cart item quantity
       tags:
       - Cart
@@ -2926,14 +2448,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Category
         in: body
         name: body
@@ -2952,35 +2466,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create category
       tags:
       - Categories
@@ -2989,14 +2474,6 @@ paths:
       description: Soft-deletes the category; direct children become root categories.
         Fails with 409 while products still belong to it.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Category ID
         in: path
         name: id
@@ -3014,26 +2491,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete category
       tags:
       - Categories
@@ -3056,15 +2513,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: Get category with direct children
       tags:
       - Categories
@@ -3074,14 +2522,6 @@ paths:
       description: Set make_root=true to detach the category from its parent (cannot
         be combined with parent_id)
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Category ID
         in: path
         name: id
@@ -3105,49 +2545,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update category
       tags:
       - Categories
   /categories/{id}/media:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Category ID
         in: path
         name: id
@@ -3165,44 +2568,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Category'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Remove category image
       tags:
       - Categories
@@ -3211,14 +2576,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Banner
         in: body
         name: body
@@ -3237,31 +2594,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.Banner'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create banner
       tags:
       - CMS
   /cms/banners/{id}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Banner ID
         in: path
         name: id
@@ -3279,17 +2617,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete banner
       tags:
       - CMS
@@ -3297,14 +2624,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Banner ID
         in: path
         name: id
@@ -3328,26 +2647,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.Banner'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update banner
       tags:
       - CMS
@@ -3387,15 +2686,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: List blog posts
       tags:
       - CMS
@@ -3403,14 +2693,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Blog post
         in: body
         name: body
@@ -3429,26 +2711,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.BlogPost'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create blog post
       tags:
       - CMS
@@ -3456,14 +2718,6 @@ paths:
     delete:
       description: The path segment is the blog post ID
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Blog ID
         in: path
         name: id
@@ -3481,17 +2735,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete blog post
       tags:
       - CMS
@@ -3501,14 +2744,6 @@ paths:
       description: The path segment is the blog post ID. media_ids, when provided,
         replaces the attached media.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Blog ID
         in: path
         name: id
@@ -3532,26 +2767,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.BlogPost'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update blog post
       tags:
       - CMS
@@ -3574,15 +2789,6 @@ paths:
             - properties:
                 data:
                   $ref: '#/definitions/internal_cms.BlogPost'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
               type: object
       summary: Get blog post by slug
       tags:
@@ -3610,14 +2816,6 @@ paths:
       description: Upserts site content entries by key (H1 titles, footer links, descriptions,
         logos)
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Content items
         in: body
         name: body
@@ -3636,26 +2834,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_cms.ContentResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update site content
       tags:
       - CMS
@@ -3663,14 +2841,6 @@ paths:
     get:
       description: Available to admin, accountant, marketer and support (read-only)
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Code contains
         in: query
         name: code
@@ -3719,26 +2889,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List discount codes
       tags:
       - Discounts
@@ -3750,14 +2900,6 @@ paths:
         and is only allowed for percent type (e.g. 30% up to 50000). When owner_mobile
         is set only the customer with that mobile can use the code.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Discount
         in: body
         name: body
@@ -3776,49 +2918,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Generate discount code
       tags:
       - Discounts
   /discounts/{id}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3836,49 +2941,12 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete discount code
       tags:
       - Discounts
     get:
       description: Available to admin, accountant, marketer and support (read-only)
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3896,35 +2964,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Get discount code
       tags:
       - Discounts
@@ -3934,14 +2973,6 @@ paths:
       description: Updates a discount (admin, accountant, marketer). Send max_price
         0 to remove the cap and owner_mobile "" to make the code public.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Discount ID
         in: path
         name: id
@@ -3965,49 +2996,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.Discount'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update discount code
       tags:
       - Discounts
   /finance/preinvoices:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Status
         enum:
         - issued
@@ -4049,17 +3043,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List pre-invoices
       tags:
       - Finance
@@ -4069,14 +3052,6 @@ paths:
       description: Issues a pre-invoice for an order (amount defaults to the order
         total) and notifies the customer
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Pre-invoice
         in: body
         name: body
@@ -4095,26 +3070,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.PreInvoice'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create manual pre-invoice
       tags:
       - Finance
@@ -4122,14 +3077,6 @@ paths:
     get:
       description: Paid, processing and delivered orders aggregated per period bucket
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - default: daily
         description: Bucket size
         enum:
@@ -4160,40 +3107,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.ReportResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Sales report
       tags:
       - Finance
   /inventory:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - default: 1
         description: Page
         in: query
@@ -4223,17 +3142,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Current stock levels
       tags:
       - Inventory
@@ -4242,14 +3150,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Inbound movement
         in: body
         name: body
@@ -4268,40 +3168,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_inventory.InventoryStock'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Stock intake
       tags:
       - Inventory
   /inventory/logs/{productId}:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: productId
@@ -4336,17 +3208,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Stock movement audit logs
       tags:
       - Inventory
@@ -4355,14 +3216,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Outbound movement
         in: body
         name: body
@@ -4381,38 +3234,57 @@ paths:
                 data:
                   $ref: '#/definitions/internal_inventory.InventoryStock'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Stock dispatch or reduction
       tags:
       - Inventory
+  /me:
+    get:
+      description: Returns the logged in user (every account, including admin and
+        staff roles, is a user). roles lists every role the user has (always includes
+        user; admin has all roles).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.MeResponse'
+              type: object
+      summary: Get current account
+      tags:
+      - Auth
+    patch:
+      consumes:
+      - application/json
+      description: 'Updates the logged in user''s own profile: name, mobile, avatar_media_id,
+        default_avatar_id (preset frontend avatar 1..5), telegram_chat_id, address,
+        latitude and longitude. Role and status can only be changed by an admin.'
+      parameters:
+      - description: Profile fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_user.UpdateProfileDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_auth.MeResponse'
+              type: object
+      summary: Update current account
+      tags:
+      - Auth
   /media/{file}:
     get:
       description: Serves an uploaded image by its exact stored file name (<uuid>.<extension>).
@@ -4433,10 +3305,6 @@ paths:
           description: OK
           schema:
             type: file
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
       summary: Serve uploaded image
       tags:
       - Media
@@ -4445,14 +3313,6 @@ paths:
       description: Permanently deletes the media record and its file from disk, unassigning
         it from every product and category that uses it.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Media ID
         in: path
         name: id
@@ -4470,44 +3330,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete media
       tags:
       - Media
@@ -4519,14 +3341,6 @@ paths:
         or category using it shows the new image. The file gets a new <uuid>.<extension>
         name and the old file is deleted from disk.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Media ID
         in: path
         name: id
@@ -4549,53 +3363,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_media.Media'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "413":
-          description: Request Entity Too Large
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Replace media image
       tags:
       - Media
@@ -4608,14 +3375,6 @@ paths:
         2 = category (exactly one image, replaces the current one). Files are stored
         as <uuid>.<extension> and served from /media/{file}.'
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID or Category ID, depending on type
         in: query
         name: pid
@@ -4649,53 +3408,6 @@ paths:
                     $ref: '#/definitions/internal_media.Media'
                   type: array
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "413":
-          description: Request Entity Too Large
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Upload images for a product or category
       tags:
       - Media
@@ -4727,14 +3439,6 @@ paths:
       responses:
         "302":
           description: Redirect to client payment result page
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
       summary: Zibal payment callback
       tags:
       - Payment
@@ -4744,14 +3448,6 @@ paths:
         the gateway redirect URL. On success the paid amount is credited to the customer
         wallet and the order price is then debited from it.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Order ID
         in: path
         name: orderId
@@ -4769,35 +3465,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.CheckoutResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "502":
-          description: Bad Gateway
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Start Zibal payment for an order
       tags:
       - Payment
@@ -4806,14 +3473,6 @@ paths:
       description: Debits the order total from the customer wallet balance and marks
         the order as paid
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Order ID
         in: path
         name: orderId
@@ -4831,35 +3490,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.WalletPayResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Pay order from wallet
       tags:
       - Payment
@@ -4868,14 +3498,6 @@ paths:
       description: Queries Zibal /v1/inquiry for the track ID and returns it with
         the local transaction record
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Zibal track ID
         in: path
         name: trackId
@@ -4893,49 +3515,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.InquiryResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "502":
-          description: Bad Gateway
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Manual gateway transaction inquiry
       tags:
       - Payment
   /payment/status/{trackId}:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Zibal track ID
         in: path
         name: trackId
@@ -4953,26 +3538,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.PaymentTransaction'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Payment transaction status
       tags:
       - Payment
@@ -4984,14 +3549,6 @@ paths:
         verified payment the wallet is credited automatically and the callback redirects
         to the client app with ?wallet=wlt-<TRACK-ID>
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Charge amount
         in: body
         name: body
@@ -5010,35 +3567,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_payment.CheckoutResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "502":
-          description: Bad Gateway
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Charge wallet via Zibal
       tags:
       - Payment
@@ -5082,32 +3610,16 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: List active products
       tags:
       - Products
     post:
       consumes:
       - application/json
-      description: Product title and SKU must be unique. attribute_ids assigns existing
-        attributes. Images are uploaded afterwards via POST /media/upload?pid={id}&type=1.
+      description: Product title, slug and SKU must be unique. slug defaults to the
+        slugified title. attribute_ids assigns existing attributes. Images are uploaded
+        afterwards via POST /media/upload?pid={id}&type=1.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product
         in: body
         name: body
@@ -5126,49 +3638,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Create product
       tags:
       - Products
   /products/{id}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5186,17 +3661,6 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Delete product
       tags:
       - Products
@@ -5219,15 +3683,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
       summary: Get product
       tags:
       - Products
@@ -5237,14 +3692,6 @@ paths:
       description: attribute_ids, when provided, replaces the product attribute set.
         Images are managed via the /media endpoints.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5268,35 +3715,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update product
       tags:
       - Products
@@ -5307,14 +3725,6 @@ paths:
       description: Adds existing attributes to the product; already assigned attributes
         are kept
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5338,40 +3748,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Assign attributes to product
       tags:
       - Attributes
   /products/{id}/attributes/{attributeId}:
     delete:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5394,26 +3776,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Unassign attribute from product
       tags:
       - Attributes
@@ -5422,14 +3784,6 @@ paths:
       description: Removes the media from this product only; the file stays available
         to other products sharing it.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5452,44 +3806,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Unassign media from product
       tags:
       - Products
@@ -5500,14 +3816,6 @@ paths:
       description: Assigns already uploaded media to the product so multiple products
         can share the same image. Already assigned media are kept.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Product ID
         in: path
         name: id
@@ -5531,159 +3839,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_product.Product'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Assign existing media to product
       tags:
       - Products
-  /staff/me:
-    get:
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_staff.StaffUser'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get current staff profile
-      tags:
-      - Staff
-    patch:
-      consumes:
-      - application/json
-      description: default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id
-        references an uploaded media asset
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Profile fields
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/internal_staff.UpdateProfileDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_staff.StaffUser'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Update current staff profile
-      tags:
-      - Staff
   /support/chat/rooms:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Room status
         enum:
         - open
@@ -5721,40 +3882,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List support chat rooms
       tags:
       - Support
   /support/chat/rooms/{id}/messages:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Room ID
         in: path
         name: id
@@ -5789,26 +3922,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List messages of a chat room
       tags:
       - Support
@@ -5816,14 +3929,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Room ID
         in: path
         name: id
@@ -5847,26 +3952,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_chat.ChatMessage'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Reply to a chat room as support
       tags:
       - Support
@@ -5875,14 +3960,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Room ID
         in: path
         name: id
@@ -5906,40 +3983,12 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Update chat room status
       tags:
       - Support
   /support/orders:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Status
         in: query
         name: status
@@ -5977,31 +4026,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Read-only customer orders
       tags:
       - Support
   /support/preinvoices:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Status
         in: query
         name: status
@@ -6039,17 +4069,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Read-only customer pre-invoices
       tags:
       - Support
@@ -6057,14 +4076,6 @@ paths:
     get:
       description: Chat history of the current customer including automated bot messages
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - default: 1
         description: Page
         in: query
@@ -6094,17 +4105,6 @@ paths:
                         type: array
                     type: object
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Customer chat inbox
       tags:
       - Chat
@@ -6114,14 +4114,6 @@ paths:
       description: REST fallback for sending a message to support; opens a room if
         none is active
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Message
         in: body
         name: body
@@ -6140,26 +4132,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_chat.ChatMessage'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Send chat message as customer
       tags:
       - Chat
@@ -6170,14 +4142,6 @@ paths:
       description: Validates a discount code for the current customer against an amount
         and returns the discount and payable amount without redeeming it
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Code and amount
         in: body
         name: body
@@ -6196,26 +4160,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_discount.CheckResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Check discount code
       tags:
       - User
@@ -6223,14 +4167,6 @@ paths:
     get:
       description: Personal and broadcast in-app notifications
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - default: 1
         description: Page
         in: query
@@ -6260,31 +4196,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Customer in-app notifications
       tags:
       - User
   /user/notifications/{id}/read:
     patch:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Notification ID
         in: path
         name: id
@@ -6302,31 +4219,12 @@ paths:
                 data:
                   $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Mark notification as read
       tags:
       - User
   /user/orders:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Status
         in: query
         name: status
@@ -6360,31 +4258,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Customer orders
       tags:
       - User
   /user/orders/{id}:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Order ID
         in: path
         name: id
@@ -6402,31 +4281,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_finance.Order'
               type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Customer order details
       tags:
       - User
   /user/preinvoices:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - default: 1
         description: Page
         in: query
@@ -6456,142 +4316,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Customer pre-invoices
-      tags:
-      - User
-  /user/profile:
-    get:
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_user.User'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get customer profile
-      tags:
-      - User
-    patch:
-      consumes:
-      - application/json
-      description: Updates name, mobile, address, coordinates and telegram chat id
-        (customers have no avatar)
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Profile fields
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/internal_user.UpdateProfileDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_user.User'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "409":
-          description: Conflict
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Update customer profile
       tags:
       - User
   /wallet:
     get:
-      description: Returns the wallet of the authenticated user or staff member
-      parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
+      description: Returns the wallet of the authenticated user
       produces:
       - application/json
       responses:
@@ -6604,40 +4334,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.Wallet'
               type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Get my wallet
       tags:
       - Wallet
   /wallet/transactions:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Type
         enum:
         - credit
@@ -6682,56 +4384,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List my wallet transactions
       tags:
       - Wallet
   /wallets:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
-      - description: Owner type
-        enum:
-        - user
-        - staff
-        in: query
-        name: owner_type
-        type: string
       - description: Owner ID
         in: query
         name: owner_id
@@ -6765,40 +4423,12 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List wallets
       tags:
       - Wallet Management
   /wallets/{id}:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -6816,35 +4446,6 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.Wallet'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Get wallet
       tags:
       - Wallet Management
@@ -6853,17 +4454,9 @@ paths:
       consumes:
       - application/json
       description: Credits or debits a wallet (admin and accountant only). Admin wallets
-        are locked and cannot be modified by anyone, and staff cannot change their
-        own wallet.
+        are locked and cannot be modified by anyone, and nobody can change their own
+        wallet.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -6887,49 +4480,12 @@ paths:
                 data:
                   $ref: '#/definitions/internal_wallet.AdjustResponse'
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Change wallet amount
       tags:
       - Wallet Management
   /wallets/{id}/transactions:
     get:
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
-        in: query
-        name: user_type
-        type: string
       - description: Wallet ID
         in: path
         name: id
@@ -6979,79 +4535,32 @@ paths:
                         type: array
                     type: object
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: List wallet transactions
       tags:
       - Wallet Management
   /ws/chat:
     get:
-      description: Upgrades to WebSocket. Authenticates via the staff_access_token
-        or user_access_token httpOnly cookie (select with ?user_type=). Customers
-        send {"message":"..."}; support agents send {"room_id":1,"message":"..."}.
-        Server pushes ChatMessage JSON frames.
+      description: Upgrades to WebSocket. Authenticates with the httpOnly x-access-token
+        cookie (browsers send it automatically), the X-Access-Token request header
+        (app), or the token query parameter (?token=<access_token>); the roles are
+        taken from the JWT; users with the support or admin role join as agents, everyone
+        else as a customer. Customers send {"message":"..."}; support agents send
+        {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
       parameters:
-      - description: Session to authenticate with; selects the staff or customer auth
-          cookie
-        enum:
-        - staff
-        - customer
+      - description: Access token, for clients that cannot send the Authorization
+          header
         in: query
-        name: user_type
+        name: token
         type: string
       responses:
         "101":
           description: Switching Protocols
           schema:
             $ref: '#/definitions/internal_chat.ChatMessage'
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse'
-              type: object
-      security:
-      - BearerAuth: []
       summary: Real-time support chat WebSocket
       tags:
       - Chat
 schemes:
 - http
 - https
-securityDefinitions:
-  BearerAuth:
-    description: Type "Bearer" followed by a space and the JWT token.
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

@@ -1,36 +1,50 @@
 package product
 
 type CreateCategoryDto struct {
-	Name     string `json:"name" binding:"required,max=100"`
-	Slug     string `json:"slug" binding:"required,max=120"`
-	ParentID *uint  `json:"parent_id" binding:"omitempty,min=1"`
+	Name           string   `json:"name" binding:"required,max=100"`
+	SeoTitle       string   `json:"seo_title" binding:"max=200"`
+	SeoDescription string   `json:"seo_description" binding:"max=500"`
+	SeoKeywords    []string `json:"seo_keywords" binding:"max=20,dive,max=100"`
+	Slug           string   `json:"slug" binding:"required,max=120"`
+	ParentID       *uint    `json:"parent_id" binding:"omitempty,min=1"`
 }
 
 type UpdateCategoryDto struct {
-	Name     *string `json:"name" binding:"omitempty,max=100"`
-	Slug     *string `json:"slug" binding:"omitempty,max=120"`
-	ParentID *uint   `json:"parent_id" binding:"omitempty,min=1,excluded_with=MakeRoot"`
-	MakeRoot bool    `json:"make_root"`
+	Name           *string   `json:"name" binding:"omitempty,max=100"`
+	SeoTitle       *string   `json:"seo_title" binding:"omitempty,max=200"`
+	SeoDescription *string   `json:"seo_description" binding:"omitempty,max=500"`
+	SeoKeywords    *[]string `json:"seo_keywords" binding:"omitempty,max=20,dive,max=100"`
+	Slug           *string   `json:"slug" binding:"omitempty,max=120"`
+	ParentID       *uint     `json:"parent_id" binding:"omitempty,min=1,excluded_with=MakeRoot"`
+	MakeRoot       bool      `json:"make_root"`
 }
 
 type CreateProductDto struct {
-	Title        string  `json:"title" binding:"required,max=200"`
-	Description  string  `json:"description"`
-	Price        float64 `json:"price" binding:"required,gt=0"`
-	SKU          string  `json:"sku" binding:"required,max=64"`
-	IsActive     *bool   `json:"is_active"`
-	CategoryID   uint    `json:"category_id" binding:"required,min=1"`
-	AttributeIDs []uint  `json:"attribute_ids"`
+	Title          string   `json:"title" binding:"required,max=200"`
+	Slug           string   `json:"slug" binding:"max=220"`
+	Description    string   `json:"description"`
+	SeoTitle       string   `json:"seo_title" binding:"max=200"`
+	SeoDescription string   `json:"seo_description" binding:"max=500"`
+	SeoKeywords    []string `json:"seo_keywords" binding:"max=20,dive,max=100"`
+	Price          float64  `json:"price" binding:"required,gt=0"`
+	SKU            string   `json:"sku" binding:"required,max=64"`
+	IsActive       *bool    `json:"is_active"`
+	CategoryID     uint     `json:"category_id" binding:"required,min=1"`
+	AttributeIDs   []uint   `json:"attribute_ids"`
 }
 
 type UpdateProductDto struct {
-	Title        *string  `json:"title" binding:"omitempty,max=200"`
-	Description  *string  `json:"description"`
-	Price        *float64 `json:"price" binding:"omitempty,gt=0"`
-	SKU          *string  `json:"sku" binding:"omitempty,max=64"`
-	IsActive     *bool    `json:"is_active"`
-	CategoryID   *uint    `json:"category_id" binding:"omitempty,min=1"`
-	AttributeIDs *[]uint  `json:"attribute_ids"`
+	Title          *string   `json:"title" binding:"omitempty,max=200"`
+	Slug           *string   `json:"slug" binding:"omitempty,max=220"`
+	Description    *string   `json:"description"`
+	SeoTitle       *string   `json:"seo_title" binding:"omitempty,max=200"`
+	SeoDescription *string   `json:"seo_description" binding:"omitempty,max=500"`
+	SeoKeywords    *[]string `json:"seo_keywords" binding:"omitempty,max=20,dive,max=100"`
+	Price          *float64  `json:"price" binding:"omitempty,gt=0"`
+	SKU            *string   `json:"sku" binding:"omitempty,max=64"`
+	IsActive       *bool     `json:"is_active"`
+	CategoryID     *uint     `json:"category_id" binding:"omitempty,min=1"`
+	AttributeIDs   *[]uint   `json:"attribute_ids"`
 }
 
 type ProductQuery struct {
@@ -41,13 +55,16 @@ type ProductQuery struct {
 }
 
 type CategoryTree struct {
-	ID       uint           `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	ParentID *uint          `json:"parent_id"`
-	MediaID  *uint          `json:"media_id"`
-	MediaURL *string        `json:"media_url"`
-	Children []CategoryTree `json:"children"`
+	ID             uint           `json:"id"`
+	Name           string         `json:"name"`
+	Slug           string         `json:"slug"`
+	SeoTitle       string         `json:"seo_title"`
+	SeoDescription string         `json:"seo_description"`
+	SeoKeywords    []string       `json:"seo_keywords"`
+	ParentID       *uint          `json:"parent_id"`
+	MediaID        *uint          `json:"media_id"`
+	MediaURL       *string        `json:"media_url"`
+	Children       []CategoryTree `json:"children"`
 }
 
 type CreateAttributeDto struct {

@@ -8,9 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/proarash/ecommerce-server/internal/middleware"
-	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/types"
-	"github.com/proarash/ecommerce-server/pkg/token"
+	"github.com/proarash/ecommerce-server/internal/user"
 )
 
 var upgrader = websocket.Upgrader{
@@ -53,19 +52,18 @@ func (h *Handler) RegisterRoutes(ws gin.IRouter, customer gin.IRouter, support g
 
 // ServeWS godoc
 // @Summary Real-time support chat WebSocket
-// @Description Upgrades to WebSocket. Authenticates via the staff_access_token or user_access_token httpOnly cookie (select with ?user_type=). Customers send {"message":"..."}; support agents send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
+// @Description Upgrades to WebSocket. Authenticates with the httpOnly x-access-token cookie (browsers send it automatically), the X-Access-Token request header (app), or the token query parameter (?token=<access_token>); the roles are taken from the JWT; users with the support or admin role join as agents, everyone else as a customer. Customers send {"message":"..."}; support agents send {"room_id":1,"message":"..."}. Server pushes ChatMessage JSON frames.
 // @Tags Chat
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
+// @Param token query string false "Access token, for clients that cannot send the Authorization header"
 // @Success 101 {object} ChatMessage
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /ws/chat [get]
 func (h *Handler) ServeWS(c *gin.Context) {
 	p := middleware.GetAuth(c)
 	client := &Client{hub: h.hub, service: h.service, send: make(chan []byte, 256), senderID: p.UserID}
 	switch {
-	case p.UserType == token.UserTypeCustomer:
+	case p.HasRole(user.RoleSupport) || p.HasRole(user.RoleAdmin):
+		client.isSupport = true
+	default:
 		room, created, err := h.service.EnsureRoom(c.Request.Context(), p.UserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.ErrorResponse{Error: err.Error()})
@@ -75,11 +73,6 @@ func (h *Handler) ServeWS(c *gin.Context) {
 			go h.service.OnRoomCreated(context.Background(), room)
 		}
 		client.roomID = room.ID
-	case p.UserType == token.UserTypeStaff && (p.Role == staff.RoleSupport || p.Role == staff.RoleAdmin):
-		client.isSupport = true
-	default:
-		c.JSON(http.StatusForbidden, types.ErrorResponse{Error: "forbidden"})
-		return
 	}
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -97,12 +90,9 @@ func (h *Handler) ServeWS(c *gin.Context) {
 // @Description Chat history of the current customer including automated bot messages
 // @Tags Chat
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/chat/messages [get]
 func (h *Handler) UserMessages(c *gin.Context) {
 	var q types.Pagination
@@ -124,12 +114,8 @@ func (h *Handler) UserMessages(c *gin.Context) {
 // @Tags Chat
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/chat/messages [post]
 func (h *Handler) UserSend(c *gin.Context) {
 	var dto SendMessageDto
@@ -158,14 +144,10 @@ func (h *Handler) UserSend(c *gin.Context) {
 // @Summary List support chat rooms
 // @Tags Support
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param status query string false "Room status" Enums(open, in_progress, closed)
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatRoom}}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/chat/rooms [get]
 func (h *Handler) Rooms(c *gin.Context) {
 	var q RoomsQuery
@@ -185,14 +167,10 @@ func (h *Handler) Rooms(c *gin.Context) {
 // @Summary List messages of a chat room
 // @Tags Support
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]ChatMessage}}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/chat/rooms/{id}/messages [get]
 func (h *Handler) RoomMessages(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -217,13 +195,9 @@ func (h *Handler) RoomMessages(c *gin.Context) {
 // @Tags Support
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param body body SendMessageDto true "Message"
 // @Success 201 {object} types.ApiResponse{data=ChatMessage}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/chat/rooms/{id}/messages [post]
 func (h *Handler) SupportSend(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -248,13 +222,9 @@ func (h *Handler) SupportSend(c *gin.Context) {
 // @Tags Support
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Room ID"
 // @Param body body RoomStatusDto true "Status"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/chat/rooms/{id}/status [patch]
 func (h *Handler) UpdateRoomStatus(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

@@ -6,9 +6,6 @@ import (
 )
 
 const (
-	OwnerUser  = "user"
-	OwnerStaff = "staff"
-
 	TxCredit = "credit"
 	TxDebit  = "debit"
 
@@ -19,10 +16,9 @@ const (
 
 type Wallet struct {
 	gorm.Model
-	OwnerID   uint    `json:"owner_id" gorm:"not null;uniqueIndex:idx_wallet_owner"`
-	OwnerType string  `json:"owner_type" gorm:"size:16;not null;uniqueIndex:idx_wallet_owner" enums:"user,staff"`
-	Amount    float64 `json:"amount" gorm:"not null;default:0"`
-	Locked    bool    `json:"locked" gorm:"not null;default:false"`
+	OwnerID uint    `json:"owner_id" gorm:"not null;uniqueIndex"`
+	Amount  float64 `json:"amount" gorm:"not null;default:0"`
+	Locked  bool    `json:"locked" gorm:"not null;default:false"`
 }
 
 type WalletTransaction struct {
@@ -39,7 +35,7 @@ type WalletTransaction struct {
 	Description   string  `json:"description"`
 }
 
-func CreateFor(tx *gorm.DB, ownerType string, ownerID uint, locked bool) error {
-	w := Wallet{OwnerType: ownerType, OwnerID: ownerID, Locked: locked}
-	return tx.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "owner_type"}, {Name: "owner_id"}}, DoNothing: true}).Create(&w).Error
+func CreateFor(tx *gorm.DB, ownerID uint, locked bool) error {
+	w := Wallet{OwnerID: ownerID, Locked: locked}
+	return tx.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "owner_id"}}, DoNothing: true}).Create(&w).Error
 }

@@ -63,13 +63,8 @@ func (h *Handler) resolveOwner(ctx context.Context, mobile string) (*uint, error
 // @Tags Discounts
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body CreateDiscountDto true "Discount"
 // @Success 201 {object} types.ApiResponse{data=Discount}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /discounts [post]
 func (h *Handler) Create(c *gin.Context) {
 	var dto CreateDiscountDto
@@ -111,8 +106,6 @@ func (h *Handler) Create(c *gin.Context) {
 // @Description Available to admin, accountant, marketer and support (read-only)
 // @Tags Discounts
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param code query string false "Code contains"
 // @Param type query string false "Type" Enums(percent, value)
 // @Param status query bool false "Status"
@@ -120,8 +113,6 @@ func (h *Handler) Create(c *gin.Context) {
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Discount}}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /discounts [get]
 func (h *Handler) List(c *gin.Context) {
 	var q ListQuery
@@ -142,13 +133,8 @@ func (h *Handler) List(c *gin.Context) {
 // @Description Available to admin, accountant, marketer and support (read-only)
 // @Tags Discounts
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Discount ID"
 // @Success 200 {object} types.ApiResponse{data=Discount}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /discounts/{id} [get]
 func (h *Handler) Get(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -169,14 +155,9 @@ func (h *Handler) Get(c *gin.Context) {
 // @Tags Discounts
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Discount ID"
 // @Param body body UpdateDiscountDto true "Fields to update"
 // @Success 200 {object} types.ApiResponse{data=Discount}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /discounts/{id} [patch]
 func (h *Handler) Update(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -248,13 +229,8 @@ func (h *Handler) Update(c *gin.Context) {
 // @Summary Delete discount code
 // @Tags Discounts
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Discount ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /discounts/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -274,12 +250,8 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Tags User
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body CheckDto true "Code and amount"
 // @Success 200 {object} types.ApiResponse{data=CheckResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/discounts/check [post]
 func (h *Handler) Check(c *gin.Context) {
 	var dto CheckDto

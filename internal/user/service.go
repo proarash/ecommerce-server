@@ -19,6 +19,12 @@ func (s *Service) UpdateProfile(ctx context.Context, id uint, dto UpdateProfileD
 	if dto.Name != nil {
 		fields["name"] = *dto.Name
 	}
+	if dto.AvatarMediaID != nil {
+		fields["avatar_media_id"] = *dto.AvatarMediaID
+	}
+	if dto.DefaultAvatarID != nil {
+		fields["default_avatar_id"] = *dto.DefaultAvatarID
+	}
 	if dto.Mobile != nil {
 		fields["mobile"] = *dto.Mobile
 	}

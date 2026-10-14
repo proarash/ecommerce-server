@@ -53,14 +53,10 @@ func (h *Handler) listPreInvoices(c *gin.Context, q ListQuery) {
 // @Description Paid, processing and delivered orders aggregated per period bucket
 // @Tags Finance
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param period query string false "Bucket size" Enums(daily, weekly, monthly, annually) default(daily)
 // @Param from query string false "From date (YYYY-MM-DD)"
 // @Param to query string false "To date inclusive (YYYY-MM-DD)"
 // @Success 200 {object} types.ApiResponse{data=ReportResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /finance/reports [get]
 func (h *Handler) Reports(c *gin.Context) {
 	var q ReportQuery
@@ -82,12 +78,8 @@ func (h *Handler) Reports(c *gin.Context) {
 // @Tags Finance
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body CreatePreInvoiceDto true "Pre-invoice"
 // @Success 201 {object} types.ApiResponse{data=PreInvoice}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /finance/preinvoices [post]
 func (h *Handler) CreatePreInvoice(c *gin.Context) {
 	var dto CreatePreInvoiceDto
@@ -108,14 +100,11 @@ func (h *Handler) CreatePreInvoice(c *gin.Context) {
 // @Summary List pre-invoices
 // @Tags Finance
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param status query string false "Status" Enums(issued, paid, cancelled)
 // @Param user_id query int false "User ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /finance/preinvoices [get]
 func (h *Handler) ListPreInvoices(c *gin.Context) {
 	var q ListQuery
@@ -130,13 +119,10 @@ func (h *Handler) ListPreInvoices(c *gin.Context) {
 // @Summary Customer orders
 // @Tags User
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param status query string false "Status"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Order}}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/orders [get]
 func (h *Handler) UserOrders(c *gin.Context) {
 	var q ListQuery
@@ -152,11 +138,8 @@ func (h *Handler) UserOrders(c *gin.Context) {
 // @Summary Customer order details
 // @Tags User
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Order ID"
 // @Success 200 {object} types.ApiResponse{data=Order}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/orders/{id} [get]
 func (h *Handler) UserOrder(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -175,12 +158,9 @@ func (h *Handler) UserOrder(c *gin.Context) {
 // @Summary Customer pre-invoices
 // @Tags User
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /user/preinvoices [get]
 func (h *Handler) UserPreInvoices(c *gin.Context) {
 	var q ListQuery
@@ -196,14 +176,11 @@ func (h *Handler) UserPreInvoices(c *gin.Context) {
 // @Summary Read-only customer orders
 // @Tags Support
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param status query string false "Status"
 // @Param user_id query int false "User ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]Order}}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/orders [get]
 func (h *Handler) SupportOrders(c *gin.Context) {
 	var q ListQuery
@@ -218,14 +195,11 @@ func (h *Handler) SupportOrders(c *gin.Context) {
 // @Summary Read-only customer pre-invoices
 // @Tags Support
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param status query string false "Status"
 // @Param user_id query int false "User ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]PreInvoice}}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /support/preinvoices [get]
 func (h *Handler) SupportPreInvoices(c *gin.Context) {
 	var q ListQuery

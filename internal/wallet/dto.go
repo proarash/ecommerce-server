@@ -17,10 +17,9 @@ type AdjustDto struct {
 }
 
 type ListQuery struct {
-	Page      int    `form:"page,default=1" binding:"min=1"`
-	Limit     int    `form:"limit,default=20" binding:"min=1,max=100"`
-	OwnerType string `form:"owner_type" binding:"omitempty,oneof=user staff"`
-	OwnerID   uint   `form:"owner_id"`
+	Page    int  `form:"page,default=1" binding:"min=1"`
+	Limit   int  `form:"limit,default=20" binding:"min=1,max=100"`
+	OwnerID uint `form:"owner_id"`
 }
 
 func (q ListQuery) Offset() int {

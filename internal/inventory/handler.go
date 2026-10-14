@@ -29,12 +29,9 @@ func (h *Handler) RegisterRoutes(storekeeper gin.IRouter) {
 // @Summary Current stock levels
 // @Tags Inventory
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]InventoryStock}}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /inventory [get]
 func (h *Handler) List(c *gin.Context) {
 	var q types.Pagination
@@ -55,12 +52,8 @@ func (h *Handler) List(c *gin.Context) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body InboundDto true "Inbound movement"
 // @Success 200 {object} types.ApiResponse{data=InventoryStock}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /inventory/inbound [post]
 func (h *Handler) Inbound(c *gin.Context) {
 	var dto InboundDto
@@ -81,13 +74,8 @@ func (h *Handler) Inbound(c *gin.Context) {
 // @Tags Inventory
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body OutboundDto true "Outbound movement"
 // @Success 200 {object} types.ApiResponse{data=InventoryStock}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 409 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /inventory/outbound [post]
 func (h *Handler) Outbound(c *gin.Context) {
 	var dto OutboundDto
@@ -111,13 +99,10 @@ func (h *Handler) Outbound(c *gin.Context) {
 // @Summary Stock movement audit logs
 // @Tags Inventory
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param productId path int true "Product ID"
 // @Param page query int false "Page" default(1)
 // @Param limit query int false "Limit" default(20)
 // @Success 200 {object} types.ApiResponse{data=types.PaginatedResponse{items=[]InventoryLog}}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /inventory/logs/{productId} [get]
 func (h *Handler) Logs(c *gin.Context) {
 	id, ok := types.ParamID(c, "productId")

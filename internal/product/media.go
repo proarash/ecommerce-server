@@ -11,15 +11,9 @@ import (
 // @Tags Products
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Product ID"
 // @Param body body AssignMediaDto true "Media IDs"
 // @Success 200 {object} types.ApiResponse{data=Product}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /products/{id}/media/assign [post]
 func (h *Handler) AssignProductMedia(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -43,15 +37,9 @@ func (h *Handler) AssignProductMedia(c *gin.Context) {
 // @Description Removes the media from this product only; the file stays available to other products sharing it.
 // @Tags Products
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Product ID"
 // @Param mediaId path int true "Media ID"
 // @Success 200 {object} types.ApiResponse{data=Product}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /products/{id}/media/{mediaId} [delete]
 func (h *Handler) DetachProductMedia(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -73,14 +61,8 @@ func (h *Handler) DetachProductMedia(c *gin.Context) {
 // @Summary Remove category image
 // @Tags Categories
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Category ID"
 // @Success 200 {object} types.ApiResponse{data=Category}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /categories/{id}/media [delete]
 func (h *Handler) RemoveCategoryMedia(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")

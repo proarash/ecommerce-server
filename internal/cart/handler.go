@@ -41,10 +41,7 @@ func (h *Handler) fail(c *gin.Context, err error, notFound string) {
 // @Summary Get current cart
 // @Tags Cart
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /cart [get]
 func (h *Handler) Get(c *gin.Context) {
 	cart, err := h.store.Get(c.Request.Context(), middleware.GetAuth(c).UserID)
@@ -67,12 +64,8 @@ func (h *Handler) Get(c *gin.Context) {
 // @Tags Cart
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body AddItemDto true "Item"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /cart/items [post]
 func (h *Handler) AddItem(c *gin.Context) {
 	var dto AddItemDto
@@ -92,13 +85,9 @@ func (h *Handler) AddItem(c *gin.Context) {
 // @Tags Cart
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Cart item ID"
 // @Param body body UpdateItemDto true "Quantity"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /cart/items/{id} [patch]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -121,11 +110,8 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 // @Summary Remove item from cart
 // @Tags Cart
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Cart item ID"
 // @Success 200 {object} types.ApiResponse{data=CartResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /cart/items/{id} [delete]
 func (h *Handler) RemoveItem(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -145,13 +131,8 @@ func (h *Handler) RemoveItem(c *gin.Context) {
 // @Tags Cart
 // @Accept json
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param body body CheckoutDto false "Optional discount code"
 // @Success 201 {object} types.ApiResponse{data=finance.Order}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /cart/checkout [post]
 func (h *Handler) Checkout(c *gin.Context) {
 	var dto CheckoutDto

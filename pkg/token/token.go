@@ -2,27 +2,25 @@ package token
 
 import (
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
-	UserTypeStaff    = "staff"
-	UserTypeCustomer = "customer"
-	RoleUser         = "user"
-	AccessTTL        = 2 * time.Hour
-	RefreshTTL       = 90 * 24 * time.Hour
-	StaffCookie      = "staff_access_token"
-	CustomerCookie   = "user_access_token"
+	AccessTTL   = 24 * time.Hour
+	RefreshTTL  = 90 * 24 * time.Hour
+	KindAccess  = "access"
+	KindRefresh = "refresh"
 )
 
 type AuthPayload struct {
-	UserID         uint   `json:"user_id"`
-	Mobile         string `json:"mobile"`
-	Role           string `json:"role"`
-	UserType       string `json:"user_type"`
-	ImpersonatorID *uint  `json:"impersonator_id,omitempty"`
+	UserID         uint     `json:"user_id"`
+	Mobile         string   `json:"mobile"`
+	Roles          []string `json:"roles"`
+	Kind           string   `json:"kind"`
+	ImpersonatorID *uint    `json:"impersonator_id,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -55,4 +53,12 @@ func ParseJwt(tokenStr, secret string) (*AuthPayload, error) {
 
 func ParseExpiredJwt(tokenStr, secret string) (*AuthPayload, error) {
 	return parse(tokenStr, secret, jwt.WithoutClaimsValidation())
+}
+
+func IsExpired(err error) bool {
+	return errors.Is(err, jwt.ErrTokenExpired)
+}
+
+func (p *AuthPayload) HasRole(role string) bool {
+	return slices.Contains(p.Roles, role)
 }

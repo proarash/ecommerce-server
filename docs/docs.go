@@ -17,11 +17,6 @@ const docTemplate = `{
     "paths": {
         "/admin/notifications": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -30,16 +25,6 @@ const docTemplate = `{
                 ],
                 "summary": "List notifications",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Filter by user ID",
@@ -94,33 +79,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Stores the notification and dispatches it via Telegram when channel is telegram or both. Omit user_id to broadcast.",
                 "consumes": [
                     "application/json"
@@ -133,16 +95,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create and dispatch notification",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Notification",
                         "name": "body",
@@ -171,53 +123,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/admin/notifications/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -226,16 +137,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get notification",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -262,33 +163,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -297,16 +175,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete notification",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -333,33 +201,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -371,16 +216,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update notification",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -416,9 +251,23 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    }
+                }
+            }
+        },
+        "/admin/stats": {
+            "get": {
+                "description": "users counts accounts that only have the user role; staff counts accounts with any other role.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "System statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -428,25 +277,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/internal_admin.StatsResponse"
                                         }
                                     }
                                 }
@@ -456,33 +287,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/staff": {
+        "/admin/users": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
+                "description": "Lists all users. Filter by a role the user has, or set staff=true to list every user with at least one role besides \"user\".",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Admin"
                 ],
-                "summary": "List staff users",
+                "summary": "List users",
                 "parameters": [
                     {
                         "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
+                            "user",
                             "admin",
                             "storekeeper",
                             "accountant",
@@ -492,6 +310,18 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Role",
                         "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only users with at least one staff role",
+                        "name": "staff",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search in mobile or name",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -531,7 +361,7 @@ const docTemplate = `{
                                                         "items": {
                                                             "type": "array",
                                                             "items": {
-                                                                "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser"
+                                                                "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
                                                             }
                                                         }
                                                     }
@@ -542,34 +372,11 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates storekeeper, accountant, marketer or support users. Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset.",
+                "description": "Creates a user with the given roles (any of user, storekeeper, accountant, marketer, support; the user role is always included). Creating another admin is not allowed. default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset.",
                 "consumes": [
                     "application/json"
                 ],
@@ -579,25 +386,15 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Create staff user",
+                "summary": "Create user",
                 "parameters": [
                     {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Staff user",
+                        "description": "User",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_admin.CreateStaffDto"
+                            "$ref": "#/definitions/internal_admin.CreateUserDto"
                         }
                     }
                 ],
@@ -613,61 +410,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
                                         }
                                     }
                                 }
@@ -677,49 +420,22 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/staff/{id}/status": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
+        "/admin/users/{id}": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Enable or disable staff user",
+                "summary": "Get user",
                 "parameters": [
                     {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
-                        "description": "Staff ID",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Status",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_admin.UpdateStaffStatusDto"
-                        }
                     }
                 ],
                 "responses": {
@@ -734,127 +450,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_staff.StaffUser"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/stats": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "System statistics",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_admin.StatsResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
                                         }
                                     }
                                 }
@@ -866,33 +462,18 @@ const docTemplate = `{
         },
         "/admin/users/{id}/impersonate": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Admin only. Issues a 2h customer access token for the given user without mobile/password and sets it as the user_access_token httpOnly cookie. No refresh token is stored, so the session ends when the access token expires. The token carries impersonator_id with the admin's ID.",
+                "description": "Admin only. Returns a 24h access token for the given user as the httpOnly x-access-token cookie (replacing the admin session cookie in this browser), without mobile/password. No session is stored, so it is not renewed and ends when it expires. The token carries impersonator_id with the admin's ID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Login as customer",
+                "summary": "Login as user",
                 "parameters": [
                     {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
-                        "description": "Customer user ID",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -915,10 +496,51 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        },
+                        "headers": {
+                            "Set-Cookie": {
+                                "type": "string",
+                                "description": "x-access-token for the impersonated user (httpOnly)"
+                            }
                         }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/roles": {
+            "patch": {
+                "description": "Replaces the roles of a user with the given list (any of user, storekeeper, accountant, marketer, support). The user role is always kept. The admin role cannot be granted or removed. The user's current token keeps the old roles until it is renewed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Set user roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    {
+                        "description": "Roles",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_admin.UpdateRolesDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -928,33 +550,50 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
                                         }
                                     }
                                 }
                             ]
                         }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/status": {
+            "patch": {
+                "description": "Disabled users cannot log in or refresh their token. Admin accounts and your own account cannot be changed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Enable or disable user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    {
+                        "description": "Status",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_admin.UpdateStatusDto"
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -964,25 +603,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
                                         }
                                     }
                                 }
@@ -1056,33 +677,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Creates a standalone attribute that can later be assigned to any product. key must be unique.",
                 "consumes": [
                     "application/json"
@@ -1095,16 +693,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create attribute",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Attribute",
                         "name": "body",
@@ -1128,60 +716,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_product.Attribute"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -1227,33 +761,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Soft-deletes the attribute and unassigns it from all products",
                 "produces": [
                     "application/json"
@@ -1263,16 +774,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete attribute",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Attribute ID",
@@ -1299,33 +800,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1337,16 +815,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update attribute",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Attribute ID",
@@ -1382,27 +850,47 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Login with mobile/password for every user; the user's roles are read from the database and returned in the body. Every login creates a new session, so each device stays logged in independently; the session stores the device type, user agent and last IP.\nX-Device-Type 1 (browser, default): a 24h access token is set as the httpOnly x-access-token cookie (SameSite=Lax, Secure in production); the browser sends it automatically. When it expires the server renews it from the stored session (90 days) and sets the new cookie on that same request, so the client never handles the token.\nX-Device-Type 2 (native app): refresh_token (a 90 day JWT) is returned in the body and no cookie is set. Send it as the X-Access-Token request header (or Authorization: Bearer) on every request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "description": "1 = browser (default), 2 = native app",
+                        "name": "X-Device-Type",
+                        "in": "header"
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    {
+                        "description": "Credentials",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_auth.LoginDto"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1412,37 +900,25 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/internal_auth.TokenResponse"
                                         }
                                     }
                                 }
                             ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                        },
+                        "headers": {
+                            "Set-Cookie": {
+                                "type": "string",
+                                "description": "x-access-token (httpOnly, browser only)"
+                            }
                         }
                     }
                 }
             }
         },
         "/auth/logout": {
-            "get": {
-                "description": "Deletes the server side refresh token and clears the access cookie for the given user_type, or for both sessions when user_type is omitted.",
+            "post": {
+                "description": "Ends only the current session: the session of the x-access-token cookie (browser, expired tokens accepted) or of the X-Access-Token request header (app) is deleted and the cookie is cleared. Other devices stay logged in.",
                 "produces": [
                     "application/json"
                 ],
@@ -1450,18 +926,6 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "Logout",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to clear",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1480,31 +944,13 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/auth/register": {
             "post": {
-                "description": "Registers a customer and sets the user_access_token httpOnly cookie.",
+                "description": "Registers a user with the user role and logs them in. Tokens are returned exactly like POST /auth/login, based on X-Device-Type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1514,8 +960,18 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Customer registration",
+                "summary": "Register",
                 "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "description": "1 = browser (default), 2 = native app",
+                        "name": "X-Device-Type",
+                        "in": "header"
+                    },
                     {
                         "description": "Registration data",
                         "name": "body",
@@ -1543,242 +999,12 @@ const docTemplate = `{
                                     }
                                 }
                             ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/staff/login": {
-            "post": {
-                "description": "Staff login with mobile/password. Sets the staff_access_token httpOnly cookie; the refresh token is stored server side and replaces any previous staff session.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Staff login",
-                "parameters": [
-                    {
-                        "description": "Credentials",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_auth.LoginDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_auth.TokenResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/user/login": {
-            "post": {
-                "description": "Customer login with mobile/password. Sets the user_access_token httpOnly cookie; the refresh token is stored server side and replaces any previous customer session.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Customer login",
-                "parameters": [
-                    {
-                        "description": "Credentials",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_auth.LoginDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_auth.TokenResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                        },
+                        "headers": {
+                            "Set-Cookie": {
+                                "type": "string",
+                                "description": "x-access-token (httpOnly, browser only)"
+                            }
                         }
                     }
                 }
@@ -1786,11 +1012,6 @@ const docTemplate = `{
         },
         "/cart": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1798,18 +1019,6 @@ const docTemplate = `{
                     "Cart"
                 ],
                 "summary": "Get current cart",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1828,35 +1037,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cart/checkout": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Converts the cart into a pending order, optionally redeeming a discount code, issues a system pre-invoice and sends invoice/pre-invoice bot messages",
                 "consumes": [
                     "application/json"
@@ -1869,16 +1055,6 @@ const docTemplate = `{
                 ],
                 "summary": "Checkout cart",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Optional discount code",
                         "name": "body",
@@ -1906,71 +1082,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cart/items": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Adds the product or increases its quantity if already present",
                 "consumes": [
                     "application/json"
@@ -1983,16 +1100,6 @@ const docTemplate = `{
                 ],
                 "summary": "Add product to cart",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Item",
                         "name": "body",
@@ -2021,53 +1128,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cart/items/{id}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2076,16 +1142,6 @@ const docTemplate = `{
                 ],
                 "summary": "Remove item from cart",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Cart item ID",
@@ -2112,33 +1168,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2150,16 +1183,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update cart item quantity",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Cart item ID",
@@ -2190,42 +1213,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_cart.CartResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -2269,11 +1256,6 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2285,16 +1267,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create category",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Category",
                         "name": "body",
@@ -2318,60 +1290,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_product.Category"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -2417,33 +1335,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Soft-deletes the category; direct children become root categories. Fails with 409 while products still belong to it.",
                 "produces": [
                     "application/json"
@@ -2453,16 +1348,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete category",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Category ID",
@@ -2489,51 +1374,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Set make_root=true to detach the category from its parent (cannot be combined with parent_id)",
                 "consumes": [
                     "application/json"
@@ -2546,16 +1390,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update category",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Category ID",
@@ -2591,71 +1425,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/categories/{id}/media": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2664,16 +1439,6 @@ const docTemplate = `{
                 ],
                 "summary": "Remove category image",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Category ID",
@@ -2700,89 +1465,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cms/banners": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2794,16 +1482,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create banner",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Banner",
                         "name": "body",
@@ -2832,35 +1510,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cms/banners/{id}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -2869,16 +1524,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete banner",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Banner ID",
@@ -2905,33 +1550,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2943,16 +1565,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update banner",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Banner ID",
@@ -2983,42 +1595,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_cms.Banner"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -3092,33 +1668,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -3130,16 +1683,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create blog post",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Blog post",
                         "name": "body",
@@ -3168,53 +1711,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/cms/blogs/{id}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "The path segment is the blog post ID",
                 "produces": [
                     "application/json"
@@ -3224,16 +1726,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete blog post",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Blog ID",
@@ -3260,33 +1752,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "The path segment is the blog post ID. media_ids, when provided, replaces the attached media.",
                 "consumes": [
                     "application/json"
@@ -3299,16 +1768,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update blog post",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Blog ID",
@@ -3339,42 +1798,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_cms.BlogPost"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -3420,24 +1843,6 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
@@ -3473,11 +1878,6 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Upserts site content entries by key (H1 titles, footer links, descriptions, logos)",
                 "consumes": [
                     "application/json"
@@ -3490,16 +1890,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update site content",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Content items",
                         "name": "body",
@@ -3528,53 +1918,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/discounts": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Available to admin, accountant, marketer and support (read-only)",
                 "produces": [
                     "application/json"
@@ -3584,16 +1933,6 @@ const docTemplate = `{
                 ],
                 "summary": "List discount codes",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Code contains",
@@ -3670,51 +2009,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Creates a discount code (admin, accountant, marketer). Omit code to auto-generate an 8 character uppercase code. max_price caps the discount and is only allowed for percent type (e.g. 30% up to 50000). When owner_mobile is set only the customer with that mobile can use the code.",
                 "consumes": [
                     "application/json"
@@ -3727,16 +2025,6 @@ const docTemplate = `{
                 ],
                 "summary": "Generate discount code",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Discount",
                         "name": "body",
@@ -3765,71 +2053,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/discounts/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Available to admin, accountant, marketer and support (read-only)",
                 "produces": [
                     "application/json"
@@ -3839,16 +2068,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get discount code",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Discount ID",
@@ -3875,69 +2094,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3946,16 +2106,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete discount code",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Discount ID",
@@ -3982,69 +2132,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Updates a discount (admin, accountant, marketer). Send max_price 0 to remove the cap and owner_mobile \"\" to make the code public.",
                 "consumes": [
                     "application/json"
@@ -4057,16 +2148,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update discount code",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Discount ID",
@@ -4102,71 +2183,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/finance/preinvoices": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4175,16 +2197,6 @@ const docTemplate = `{
                 ],
                 "summary": "List pre-invoices",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "enum": [
                             "issued",
@@ -4250,33 +2262,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Issues a pre-invoice for an order (amount defaults to the order total) and notifies the customer",
                 "consumes": [
                     "application/json"
@@ -4289,16 +2278,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create manual pre-invoice",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Pre-invoice",
                         "name": "body",
@@ -4327,53 +2306,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/finance/reports": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Paid, processing and delivered orders aggregated per period bucket",
                 "produces": [
                     "application/json"
@@ -4383,16 +2321,6 @@ const docTemplate = `{
                 ],
                 "summary": "Sales report",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "enum": [
                             "daily",
@@ -4437,53 +2365,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/inventory": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4492,16 +2379,6 @@ const docTemplate = `{
                 ],
                 "summary": "Current stock levels",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -4550,35 +2427,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/inventory/inbound": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -4590,16 +2444,6 @@ const docTemplate = `{
                 ],
                 "summary": "Stock intake",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Inbound movement",
                         "name": "body",
@@ -4628,53 +2472,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/inventory/logs/{productId}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -4683,16 +2486,6 @@ const docTemplate = `{
                 ],
                 "summary": "Stock movement audit logs",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -4748,35 +2541,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/inventory/outbound": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -4788,16 +2558,6 @@ const docTemplate = `{
                 ],
                 "summary": "Stock dispatch or reduction",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Outbound movement",
                         "name": "body",
@@ -4826,9 +2586,23 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "description": "Returns the logged in user (every account, including admin and staff roles, is a user). roles lists every role the user has (always includes user; admin has all roles).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get current account",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -4838,33 +2612,41 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/internal_auth.MeResponse"
                                         }
                                     }
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates the logged in user's own profile: name, mobile, avatar_media_id, default_avatar_id (preset frontend avatar 1..5), telegram_chat_id, address, latitude and longitude. Role and status can only be changed by an admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Update current account",
+                "parameters": [
+                    {
+                        "description": "Profile fields",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.UpdateProfileDto"
                         }
-                    },
-                    "409": {
-                        "description": "Conflict",
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -4874,7 +2656,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
+                                            "$ref": "#/definitions/internal_auth.MeResponse"
                                         }
                                     }
                                 }
@@ -4886,11 +2668,6 @@ const docTemplate = `{
         },
         "/media/upload": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Uploads images (jpeg, png, gif, webp; max 2MB each) and assigns them to the target selected by type: 1 = product (one or more images, appended), 2 = category (exactly one image, replaces the current one). Files are stored as \u003cuuid\u003e.\u003cextension\u003e and served from /media/{file}.",
                 "consumes": [
                     "multipart/form-data"
@@ -4903,16 +2680,6 @@ const docTemplate = `{
                 ],
                 "summary": "Upload images for a product or category",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID or Category ID, depending on type",
@@ -4960,96 +2727,6 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "413": {
-                        "description": "Request Entity Too Large",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
@@ -5082,23 +2759,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "file"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                        }
                     }
                 }
             }
         },
         "/media/{id}": {
             "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Replaces the image file of an existing media record (jpeg, png, gif, webp; max 2MB). The record keeps its ID and assignments, so every product or category using it shows the new image. The file gets a new \u003cuuid\u003e.\u003cextension\u003e name and the old file is deleted from disk.",
                 "consumes": [
                     "multipart/form-data"
@@ -5111,16 +2777,6 @@ const docTemplate = `{
                 ],
                 "summary": "Replace media image",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Media ID",
@@ -5154,105 +2810,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "413": {
-                        "description": "Request Entity Too Large",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Permanently deletes the media record and its file from disk, unassigning it from every product and category that uses it.",
                 "produces": [
                     "application/json"
@@ -5262,16 +2823,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete media",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Media ID",
@@ -5293,78 +2844,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.MessageResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -5411,29 +2890,12 @@ const docTemplate = `{
                 "responses": {
                     "302": {
                         "description": "Redirect to client payment result page"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                        }
                     }
                 }
             }
         },
         "/payment/checkout/{orderId}": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Requests a Zibal trackId for a pending/failed order and returns the gateway redirect URL. On success the paid amount is credited to the customer wallet and the order price is then debited from it.",
                 "produces": [
                     "application/json"
@@ -5443,16 +2905,6 @@ const docTemplate = `{
                 ],
                 "summary": "Start Zibal payment for an order",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -5479,71 +2931,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/payment/checkout/{orderId}/wallet": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Debits the order total from the customer wallet balance and marks the order as paid",
                 "produces": [
                     "application/json"
@@ -5553,16 +2946,6 @@ const docTemplate = `{
                 ],
                 "summary": "Pay order from wallet",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -5589,71 +2972,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/payment/inquiry/{trackId}": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Queries Zibal /v1/inquiry for the track ID and returns it with the local transaction record",
                 "produces": [
                     "application/json"
@@ -5663,16 +2987,6 @@ const docTemplate = `{
                 ],
                 "summary": "Manual gateway transaction inquiry",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Zibal track ID",
@@ -5699,71 +3013,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/payment/status/{trackId}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -5772,16 +3027,6 @@ const docTemplate = `{
                 ],
                 "summary": "Payment transaction status",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Zibal track ID",
@@ -5808,53 +3053,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/payment/wallet/charge": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Requests a Zibal trackId to top up the customer wallet. After a verified payment the wallet is credited automatically and the callback redirects to the client app with ?wallet=wlt-\u003cTRACK-ID\u003e",
                 "consumes": [
                     "application/json"
@@ -5867,16 +3071,6 @@ const docTemplate = `{
                 ],
                 "summary": "Charge wallet via Zibal",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Charge amount",
                         "name": "body",
@@ -5900,60 +3094,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_payment.CheckoutResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -6033,34 +3173,11 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Product title and SKU must be unique. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}\u0026type=1.",
+                "description": "Product title, slug and SKU must be unique. slug defaults to the slugified title. attribute_ids assigns existing attributes. Images are uploaded afterwards via POST /media/upload?pid={id}\u0026type=1.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6072,16 +3189,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Product",
                         "name": "body",
@@ -6105,60 +3212,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/internal_product.Product"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
                                         }
                                     }
                                 }
@@ -6204,33 +3257,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -6239,16 +3269,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6275,33 +3295,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "attribute_ids, when provided, replaces the product attribute set. Images are managed via the /media endpoints.",
                 "consumes": [
                     "application/json"
@@ -6314,16 +3311,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6359,71 +3346,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/products/{id}/attributes": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Adds existing attributes to the product; already assigned attributes are kept",
                 "consumes": [
                     "application/json"
@@ -6436,16 +3364,6 @@ const docTemplate = `{
                 ],
                 "summary": "Assign attributes to product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6481,53 +3399,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/products/{id}/attributes/{attributeId}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -6536,16 +3413,6 @@ const docTemplate = `{
                 ],
                 "summary": "Unassign attribute from product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6579,53 +3446,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/products/{id}/media/assign": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Assigns already uploaded media to the product so multiple products can share the same image. Already assigned media are kept.",
                 "consumes": [
                     "application/json"
@@ -6638,16 +3464,6 @@ const docTemplate = `{
                 ],
                 "summary": "Assign existing media to product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6683,89 +3499,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/products/{id}/media/{mediaId}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Removes the media from this product only; the file stays available to other products sharing it.",
                 "produces": [
                     "application/json"
@@ -6775,16 +3514,6 @@ const docTemplate = `{
                 ],
                 "summary": "Unassign media from product",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Product ID",
@@ -6818,268 +3547,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/staff/me": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Staff"
-                ],
-                "summary": "Get current staff profile",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_staff.StaffUser"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "default_avatar_id is a preset frontend avatar index (1..5); avatar_media_id references an uploaded media asset",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Staff"
-                ],
-                "summary": "Update current staff profile",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Profile fields",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_staff.UpdateProfileDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_staff.StaffUser"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/support/chat/rooms": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -7088,16 +3561,6 @@ const docTemplate = `{
                 ],
                 "summary": "List support chat rooms",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "enum": [
                             "open",
@@ -7157,53 +3620,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/support/chat/rooms/{id}/messages": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -7212,16 +3634,6 @@ const docTemplate = `{
                 ],
                 "summary": "List messages of a chat room",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Room ID",
@@ -7277,51 +3689,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -7333,16 +3704,6 @@ const docTemplate = `{
                 ],
                 "summary": "Reply to a chat room as support",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Room ID",
@@ -7378,53 +3739,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/support/chat/rooms/{id}/status": {
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -7436,16 +3756,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update chat room status",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Room ID",
@@ -7481,53 +3791,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/support/orders": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -7536,16 +3805,6 @@ const docTemplate = `{
                 ],
                 "summary": "Read-only customer orders",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -7606,35 +3865,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/support/preinvoices": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -7643,16 +3879,6 @@ const docTemplate = `{
                 ],
                 "summary": "Read-only customer pre-invoices",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -7713,35 +3939,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/chat/messages": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Chat history of the current customer including automated bot messages",
                 "produces": [
                     "application/json"
@@ -7751,16 +3954,6 @@ const docTemplate = `{
                 ],
                 "summary": "Customer chat inbox",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -7809,33 +4002,10 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "REST fallback for sending a message to support; opens a room if none is active",
                 "consumes": [
                     "application/json"
@@ -7848,16 +4018,6 @@ const docTemplate = `{
                 ],
                 "summary": "Send chat message as customer",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Message",
                         "name": "body",
@@ -7886,53 +4046,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/discounts/check": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Validates a discount code for the current customer against an amount and returns the discount and payable amount without redeeming it",
                 "consumes": [
                     "application/json"
@@ -7945,16 +4064,6 @@ const docTemplate = `{
                 ],
                 "summary": "Check discount code",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "description": "Code and amount",
                         "name": "body",
@@ -7983,53 +4092,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/notifications": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Personal and broadcast in-app notifications",
                 "produces": [
                     "application/json"
@@ -8039,16 +4107,6 @@ const docTemplate = `{
                 ],
                 "summary": "Customer in-app notifications",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -8097,35 +4155,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/notifications/{id}/read": {
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8134,16 +4169,6 @@ const docTemplate = `{
                 ],
                 "summary": "Mark notification as read",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Notification ID",
@@ -8170,35 +4195,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/orders": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8207,16 +4209,6 @@ const docTemplate = `{
                 ],
                 "summary": "Customer orders",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Status",
@@ -8271,35 +4263,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/orders/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8308,16 +4277,6 @@ const docTemplate = `{
                 ],
                 "summary": "Customer order details",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Order ID",
@@ -8344,35 +4303,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/user/preinvoices": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8381,16 +4317,6 @@ const docTemplate = `{
                 ],
                 "summary": "Customer pre-invoices",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -8439,233 +4365,13 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/user/profile": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get customer profile",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_user.User"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates name, mobile, address, coordinates and telegram chat id (customers have no avatar)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Update customer profile",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Profile fields",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_user.UpdateProfileDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_user.User"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallet": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns the wallet of the authenticated user or staff member",
+                "description": "Returns the wallet of the authenticated user",
                 "produces": [
                     "application/json"
                 ],
@@ -8673,18 +4379,6 @@ const docTemplate = `{
                     "Wallet"
                 ],
                 "summary": "Get my wallet",
-                "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -8703,53 +4397,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallet/transactions": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8758,16 +4411,6 @@ const docTemplate = `{
                 ],
                 "summary": "List my wallet transactions",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "enum": [
                             "credit",
@@ -8837,71 +4480,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallets": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -8910,26 +4494,6 @@ const docTemplate = `{
                 ],
                 "summary": "List wallets",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "user",
-                            "staff"
-                        ],
-                        "type": "string",
-                        "description": "Owner type",
-                        "name": "owner_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Owner ID",
@@ -8984,53 +4548,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallets/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -9039,16 +4562,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get wallet",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -9075,72 +4588,13 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallets/{id}/adjust": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Credits or debits a wallet (admin and accountant only). Admin wallets are locked and cannot be modified by anyone, and staff cannot change their own wallet.",
+                "description": "Credits or debits a wallet (admin and accountant only). Admin wallets are locked and cannot be modified by anyone, and nobody can change their own wallet.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9152,16 +4606,6 @@ const docTemplate = `{
                 ],
                 "summary": "Change wallet amount",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -9197,71 +4641,12 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/wallets/{id}/transactions": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -9270,16 +4655,6 @@ const docTemplate = `{
                 ],
                 "summary": "List wallet transactions",
                 "parameters": [
-                    {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
-                        "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Wallet ID",
@@ -9356,67 +4731,22 @@ const docTemplate = `{
                                 }
                             ]
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
         },
         "/ws/chat": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Upgrades to WebSocket. Authenticates via the staff_access_token or user_access_token httpOnly cookie (select with ?user_type=). Customers send {\"message\":\"...\"}; support agents send {\"room_id\":1,\"message\":\"...\"}. Server pushes ChatMessage JSON frames.",
+                "description": "Upgrades to WebSocket. Authenticates with the httpOnly x-access-token cookie (browsers send it automatically), the X-Access-Token request header (app), or the token query parameter (?token=\u003caccess_token\u003e); the roles are taken from the JWT; users with the support or admin role join as agents, everyone else as a customer. Customers send {\"message\":\"...\"}; support agents send {\"room_id\":1,\"message\":\"...\"}. Server pushes ChatMessage JSON frames.",
                 "tags": [
                     "Chat"
                 ],
                 "summary": "Real-time support chat WebSocket",
                 "parameters": [
                     {
-                        "enum": [
-                            "staff",
-                            "customer"
-                        ],
                         "type": "string",
-                        "description": "Session to authenticate with; selects the staff or customer auth cookie",
-                        "name": "user_type",
+                        "description": "Access token, for clients that cannot send the Authorization header",
+                        "name": "token",
                         "in": "query"
                     }
                 ],
@@ -9425,42 +4755,6 @@ const docTemplate = `{
                         "description": "Switching Protocols",
                         "schema": {
                             "$ref": "#/definitions/internal_chat.ChatMessage"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_types.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
                         }
                     }
                 }
@@ -9625,6 +4919,18 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "integer"
                 },
+                "seo_description": {
+                    "type": "string"
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string"
+                },
                 "slug": {
                     "type": "string"
                 },
@@ -9672,7 +4978,22 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "seo_description": {
+                    "type": "string"
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string"
+                },
                 "sku": {
+                    "type": "string"
+                },
+                "slug": {
                     "type": "string"
                 },
                 "title": {
@@ -9683,67 +5004,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_proarash_ecommerce-server_internal_staff.StaffUser": {
-            "type": "object",
-            "properties": {
-                "avatar_media": {
-                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_media.Media"
-                },
-                "avatar_media_id": {
-                    "type": "integer"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "default_avatar_id": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                    ]
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "boolean"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "wallet": {
-                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet"
-                }
-            }
-        },
         "github_com_proarash_ecommerce-server_internal_types.ApiResponse": {
             "type": "object",
             "properties": {
                 "data": {},
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_proarash_ecommerce-server_internal_types.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
                     "type": "string"
                 }
             }
@@ -9771,14 +5036,73 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_proarash_ecommerce-server_internal_user.UpdateProfileDto": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "avatar_media_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "default_avatar_id": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1,
+                    "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "example": 1
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "telegram_chat_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_proarash_ecommerce-server_internal_user.User": {
             "type": "object",
             "properties": {
                 "address": {
                     "type": "string"
                 },
+                "avatar_media": {
+                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_media.Media"
+                },
+                "avatar_media_id": {
+                    "type": "integer"
+                },
                 "createdAt": {
                     "type": "string"
+                },
+                "default_avatar_id": {
+                    "type": "integer",
+                    "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ]
                 },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
@@ -9797,6 +5121,20 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "admin",
+                            "storekeeper",
+                            "accountant",
+                            "marketer",
+                            "support"
+                        ]
+                    }
                 },
                 "status": {
                     "type": "boolean"
@@ -9833,13 +5171,6 @@ const docTemplate = `{
                 "owner_id": {
                     "type": "integer"
                 },
-                "owner_type": {
-                    "type": "string",
-                    "enum": [
-                        "user",
-                        "staff"
-                    ]
-                },
                 "updatedAt": {
                     "type": "string"
                 }
@@ -9857,13 +5188,12 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_admin.CreateStaffDto": {
+        "internal_admin.CreateUserDto": {
             "type": "object",
             "required": [
                 "mobile",
                 "name",
-                "password",
-                "role"
+                "password"
             ],
             "properties": {
                 "avatar_media_id": {
@@ -9897,14 +5227,18 @@ const docTemplate = `{
                     "maxLength": 72,
                     "minLength": 6
                 },
-                "role": {
-                    "type": "string",
-                    "enum": [
-                        "storekeeper",
-                        "accountant",
-                        "marketer",
-                        "support"
-                    ]
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "storekeeper",
+                            "accountant",
+                            "marketer",
+                            "support"
+                        ]
+                    }
                 }
             }
         },
@@ -9937,7 +5271,28 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_admin.UpdateStaffStatusDto": {
+        "internal_admin.UpdateRolesDto": {
+            "type": "object",
+            "required": [
+                "roles"
+            ],
+            "properties": {
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "storekeeper",
+                            "accountant",
+                            "marketer",
+                            "support"
+                        ]
+                    }
+                }
+            }
+        },
+        "internal_admin.UpdateStatusDto": {
             "type": "object",
             "required": [
                 "status"
@@ -9964,6 +5319,31 @@ const docTemplate = `{
                     "maxLength": 72,
                     "minLength": 6,
                     "example": "secret123"
+                }
+            }
+        },
+        "internal_auth.MeResponse": {
+            "type": "object",
+            "properties": {
+                "impersonator_id": {
+                    "type": "integer"
+                },
+                "profile": {
+                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_user.User"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "admin",
+                            "storekeeper",
+                            "accountant",
+                            "marketer",
+                            "support"
+                        ]
+                    }
                 }
             }
         },
@@ -9994,18 +5374,35 @@ const docTemplate = `{
         "internal_auth.TokenResponse": {
             "type": "object",
             "properties": {
-                "role": {
+                "device_type": {
+                    "type": "integer",
+                    "enum": [
+                        1,
+                        2
+                    ]
+                },
+                "expires_at": {
                     "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "admin",
+                            "storekeeper",
+                            "accountant",
+                            "marketer",
+                            "support"
+                        ]
+                    }
                 },
                 "user_id": {
                     "type": "integer"
-                },
-                "user_type": {
-                    "type": "string",
-                    "enum": [
-                        "staff",
-                        "customer"
-                    ]
                 }
             }
         },
@@ -11342,6 +6739,18 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "integer"
                 },
+                "seo_description": {
+                    "type": "string"
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string"
+                },
                 "slug": {
                     "type": "string"
                 },
@@ -11373,6 +6782,18 @@ const docTemplate = `{
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "seo_description": {
+                    "type": "string"
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string"
                 },
                 "slug": {
                     "type": "string"
@@ -11419,6 +6840,21 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 1
                 },
+                "seo_description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "slug": {
                     "type": "string",
                     "maxLength": 120
@@ -11453,9 +6889,28 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "seo_description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "sku": {
                     "type": "string",
                     "maxLength": 64
+                },
+                "slug": {
+                    "type": "string",
+                    "maxLength": 220
                 },
                 "title": {
                     "type": "string",
@@ -11502,7 +6957,22 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "seo_description": {
+                    "type": "string"
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string"
+                },
                 "sku": {
+                    "type": "string"
+                },
+                "slug": {
                     "type": "string"
                 },
                 "title": {
@@ -11544,6 +7014,21 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 1
                 },
+                "seo_description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "slug": {
                     "type": "string",
                     "maxLength": 120
@@ -11572,155 +7057,32 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "seo_description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "seo_keywords": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "seo_title": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "sku": {
                     "type": "string",
                     "maxLength": 64
                 },
+                "slug": {
+                    "type": "string",
+                    "maxLength": 220
+                },
                 "title": {
                     "type": "string",
                     "maxLength": 200
-                }
-            }
-        },
-        "internal_staff.StaffUser": {
-            "type": "object",
-            "properties": {
-                "avatar_media": {
-                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_media.Media"
-                },
-                "avatar_media_id": {
-                    "type": "integer"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "default_avatar_id": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                    ]
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "boolean"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "wallet": {
-                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet"
-                }
-            }
-        },
-        "internal_staff.UpdateProfileDto": {
-            "type": "object",
-            "properties": {
-                "avatar_media_id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "default_avatar_id": {
-                    "type": "integer",
-                    "maximum": 5,
-                    "minimum": 1,
-                    "enum": [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                    ],
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                }
-            }
-        },
-        "internal_user.UpdateProfileDto": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                },
-                "telegram_chat_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_user.User": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "boolean"
-                },
-                "telegram_chat_id": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "wallet": {
-                    "$ref": "#/definitions/github_com_proarash_ecommerce-server_internal_wallet.Wallet"
                 }
             }
         },
@@ -11780,13 +7142,6 @@ const docTemplate = `{
                 },
                 "owner_id": {
                     "type": "integer"
-                },
-                "owner_type": {
-                    "type": "string",
-                    "enum": [
-                        "user",
-                        "staff"
-                    ]
                 },
                 "updatedAt": {
                     "type": "string"
@@ -11848,14 +7203,6 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "description": "Type \"Bearer\" followed by a space and the JWT token.",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }`

@@ -68,14 +68,14 @@ func ApiResponseMiddleware(c *gin.Context) {
 	})
 }
 
-func Cors(allowed []string) gin.HandlerFunc {
+func Cors(allowed []string, allowAll bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 		c.Header("Vary", "Origin")
-		if origin != "" && slices.Contains(allowed, origin) {
+		if origin != "" && (allowAll || slices.Contains(allowed, origin)) {
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Credentials", "true")
-			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Device-Type, X-Access-Token")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
 		}
 		if c.Request.Method == http.MethodOptions {

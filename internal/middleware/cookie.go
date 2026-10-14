@@ -7,29 +7,26 @@ import (
 	"github.com/proarash/ecommerce-server/pkg/token"
 )
 
-var accessCookies = map[string]string{
-	token.UserTypeStaff:    token.StaffCookie,
-	token.UserTypeCustomer: token.CustomerCookie,
-}
-
-var userTypes = []string{token.UserTypeStaff, token.UserTypeCustomer}
-
-func AccessCookie(userType string) (string, bool) {
-	name, ok := accessCookies[userType]
-	return name, ok
-}
+const AccessTokenCookie = "x-access-token"
 
 type CookieWriter struct {
 	Domain string
 	Secure bool
 }
 
-func (w CookieWriter) Set(c *gin.Context, name, value string) {
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(name, value, int(token.RefreshTTL.Seconds()), "/", w.Domain, w.Secure, true)
+func (w CookieWriter) domain() string {
+	if w.Domain == "localhost" {
+		return ""
+	}
+	return w.Domain
 }
 
-func (w CookieWriter) Clear(c *gin.Context, name string) {
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(name, "", -1, "/", w.Domain, w.Secure, true)
+func (w CookieWriter) Set(c *gin.Context, value string) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(AccessTokenCookie, value, int(token.RefreshTTL.Seconds()), "/", w.domain(), w.Secure, true)
+}
+
+func (w CookieWriter) Clear(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(AccessTokenCookie, "", -1, "/", w.domain(), w.Secure, true)
 }

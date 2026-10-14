@@ -55,17 +55,10 @@ func formFiles(c *gin.Context, field string) ([]*multipart.FileHeader, bool) {
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param pid query int true "Product ID or Category ID, depending on type"
 // @Param type query int true "Target type: 1 = product, 2 = category" Enums(1, 2)
 // @Param files formData file true "Image files; repeat the field for multiple product images, exactly one for a category"
 // @Success 201 {object} types.ApiResponse{data=[]Media}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 413 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /media/upload [post]
 func (h *Handler) Upload(c *gin.Context) {
 	var q UploadQuery
@@ -95,16 +88,9 @@ func (h *Handler) Upload(c *gin.Context) {
 // @Tags Media
 // @Accept multipart/form-data
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Media ID"
 // @Param file formData file true "Image file"
 // @Success 200 {object} types.ApiResponse{data=Media}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 413 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /media/{id} [put]
 func (h *Handler) Replace(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -132,14 +118,8 @@ func (h *Handler) Replace(c *gin.Context) {
 // @Description Permanently deletes the media record and its file from disk, unassigning it from every product and category that uses it.
 // @Tags Media
 // @Produce json
-// @Param user_type query string false "Session to authenticate with; selects the staff or customer auth cookie" Enums(staff, customer)
-// @Security BearerAuth
 // @Param id path int true "Media ID"
 // @Success 200 {object} types.ApiResponse{data=types.MessageResponse}
-// @Failure 400 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 401 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 403 {object} types.ApiResponse{data=types.ErrorResponse}
-// @Failure 404 {object} types.ApiResponse{data=types.ErrorResponse}
 // @Router /media/{id} [delete]
 func (h *Handler) Delete(c *gin.Context) {
 	id, ok := types.ParamID(c, "id")
@@ -160,7 +140,6 @@ func (h *Handler) Delete(c *gin.Context) {
 // @Produce image/jpeg,image/png,image/gif,image/webp
 // @Param file path string true "Stored file name, e.g. 3f2b8c1e-9a4d-4e2f-8b1a-2c3d4e5f6a7b.jpg"
 // @Success 200 {file} binary
-// @Failure 404 {object} types.ErrorResponse
 // @Router /media/{file} [get]
 func (h *Handler) Serve(c *gin.Context) {
 	path, err := h.service.Resolve(c.Param("file"))

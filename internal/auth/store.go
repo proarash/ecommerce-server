@@ -3,11 +3,11 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"time"
 
-	"github.com/proarash/ecommerce-server/internal/staff"
 	"github.com/proarash/ecommerce-server/internal/user"
 	"github.com/proarash/ecommerce-server/pkg/token"
 	"golang.org/x/crypto/bcrypt"
@@ -22,33 +22,30 @@ var (
 )
 
 type AuthRepo interface {
-	LoginStaff(ctx context.Context, dto LoginDto) (TokenResponse, error)
-	LoginCustomer(ctx context.Context, dto LoginDto) (TokenResponse, error)
-	Register(ctx context.Context, dto RegisterDto) (TokenResponse, error)
-	Refresh(ctx context.Context, expired *token.AuthPayload) (*token.AuthPayload, string, error)
+	Login(ctx context.Context, dto LoginDto, device Device) (Issued, error)
+	Register(ctx context.Context, dto RegisterDto, device Device) (Issued, error)
+	Renew(ctx context.Context, expired *token.AuthPayload, ip string) (*token.AuthPayload, string, error)
 	Revoke(ctx context.Context, p *token.AuthPayload) error
-	Impersonate(ctx context.Context, adminID, userID uint) (TokenResponse, error)
+	Impersonate(ctx context.Context, adminID, userID uint) (Issued, error)
+}
+
+type Issued struct {
+	AccessToken  string
+	RefreshToken string
+	Response     TokenResponse
 }
 
 type authRepo struct {
 	db     *gorm.DB
-	staff  staff.Store
 	users  user.Store
 	secret string
 }
 
-func NewAuthRepo(db *gorm.DB, staffStore staff.Store, userStore user.Store, secret string) AuthRepo {
-	return &authRepo{db: db, staff: staffStore, users: userStore, secret: secret}
+func NewAuthRepo(db *gorm.DB, userStore user.Store, secret string) AuthRepo {
+	return &authRepo{db: db, users: userStore, secret: secret}
 }
 
-func ownerColumn(userType string) string {
-	if userType == token.UserTypeStaff {
-		return "staff_id"
-	}
-	return "user_id"
-}
-
-func newSessionToken() (string, error) {
+func newSessionID() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
@@ -56,43 +53,64 @@ func newSessionToken() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-func (r *authRepo) accessToken(id uint, mobile, role, userType, session string) (*token.AuthPayload, string, error) {
-	p := &token.AuthPayload{UserID: id, Mobile: mobile, Role: role, UserType: userType}
+func hashToken(t string) string {
+	sum := sha256.Sum256([]byte(t))
+	return hex.EncodeToString(sum[:])
+}
+
+func (r *authRepo) sign(u user.User, kind, session string, ttl time.Duration) (*token.AuthPayload, string, error) {
+	p := &token.AuthPayload{UserID: u.ID, Mobile: u.Mobile, Roles: u.Roles, Kind: kind}
 	p.ID = session
-	t, err := token.GenerateJwt(p, r.secret, token.AccessTTL)
+	t, err := token.GenerateJwt(p, r.secret, ttl)
 	return p, t, err
 }
 
-func (r *authRepo) issue(ctx context.Context, id uint, mobile, role, userType string) (TokenResponse, error) {
-	session, err := newSessionToken()
+func (r *authRepo) issue(ctx context.Context, u user.User, device Device) (Issued, error) {
+	session, err := newSessionID()
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	rt := RefreshToken{Token: session, ExpiresAt: time.Now().Add(token.RefreshTTL)}
-	if userType == token.UserTypeStaff {
-		rt.StaffID = &id
-	} else {
-		rt.UserID = &id
+	_, refresh, err := r.sign(u, token.KindRefresh, session, token.RefreshTTL)
+	if err != nil {
+		return Issued{}, err
+	}
+	rt := RefreshToken{
+		SessionID:  session,
+		TokenHash:  hashToken(refresh),
+		UserID:     u.ID,
+		DeviceType: device.Type,
+		UserAgent:  device.UserAgent,
+		LastIP:     device.IP,
+		ExpiresAt:  time.Now().Add(token.RefreshTTL),
 	}
 	err = r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Unscoped().Where(ownerColumn(userType)+" = ?", id).Delete(&RefreshToken{}).Error; err != nil {
+		if err := tx.Unscoped().Where("user_id = ? AND expires_at < ?", u.ID, time.Now()).Delete(&RefreshToken{}).Error; err != nil {
 			return err
 		}
 		return tx.Create(&rt).Error
 	})
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	_, access, err := r.accessToken(id, mobile, role, userType, session)
+	res := TokenResponse{UserID: u.ID, Roles: u.Roles, DeviceType: device.Type}
+	if device.Type == DeviceApp {
+		res.RefreshToken = refresh
+		res.ExpiresAt = &rt.ExpiresAt
+		return Issued{RefreshToken: refresh, Response: res}, nil
+	}
+	_, access, err := r.sign(u, token.KindAccess, session, token.AccessTTL)
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	return TokenResponse{AccessToken: access, UserID: id, Role: role, UserType: userType}, nil
+	return Issued{AccessToken: access, Response: res}, nil
 }
 
-func (r *authRepo) Refresh(ctx context.Context, expired *token.AuthPayload) (*token.AuthPayload, string, error) {
+func (r *authRepo) Renew(ctx context.Context, expired *token.AuthPayload, ip string) (*token.AuthPayload, string, error) {
+	if expired.Kind != token.KindAccess || expired.ID == "" {
+		return nil, "", ErrSessionExpired
+	}
 	var rt RefreshToken
-	err := r.db.WithContext(ctx).Where(ownerColumn(expired.UserType)+" = ? AND token = ?", expired.UserID, expired.ID).First(&rt).Error
+	err := r.db.WithContext(ctx).Where("session_id = ? AND user_id = ?", expired.ID, expired.UserID).First(&rt).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, "", ErrSessionExpired
 	}
@@ -103,95 +121,70 @@ func (r *authRepo) Refresh(ctx context.Context, expired *token.AuthPayload) (*to
 		r.db.WithContext(ctx).Unscoped().Delete(&rt)
 		return nil, "", ErrSessionExpired
 	}
-	var mobile, role string
-	var active bool
-	if expired.UserType == token.UserTypeStaff {
-		s, err := r.staff.FindByID(ctx, expired.UserID)
-		if err != nil {
-			return nil, "", ErrSessionExpired
-		}
-		mobile, role, active = s.Mobile, s.Role, s.Status
-	} else {
-		u, err := r.users.FindByID(ctx, expired.UserID)
-		if err != nil {
-			return nil, "", ErrSessionExpired
-		}
-		mobile, role, active = u.Mobile, token.RoleUser, u.Status
+	u, err := r.users.FindByID(ctx, expired.UserID)
+	if err != nil {
+		return nil, "", ErrSessionExpired
 	}
-	if !active {
+	if !u.Status {
 		r.db.WithContext(ctx).Unscoped().Delete(&rt)
 		return nil, "", ErrInactive
 	}
-	return r.accessToken(expired.UserID, mobile, role, expired.UserType, rt.Token)
+	if ip != "" && ip != rt.LastIP {
+		r.db.WithContext(ctx).Model(&rt).Update("last_ip", ip)
+	}
+	return r.sign(u, token.KindAccess, rt.SessionID, token.AccessTTL)
 }
 
 func (r *authRepo) Revoke(ctx context.Context, p *token.AuthPayload) error {
-	return r.db.WithContext(ctx).Unscoped().Where(ownerColumn(p.UserType)+" = ? AND token = ?", p.UserID, p.ID).Delete(&RefreshToken{}).Error
+	return r.db.WithContext(ctx).Unscoped().Where("session_id = ? AND user_id = ?", p.ID, p.UserID).Delete(&RefreshToken{}).Error
 }
 
-func (r *authRepo) LoginStaff(ctx context.Context, dto LoginDto) (TokenResponse, error) {
-	s, err := r.staff.FindByMobile(ctx, dto.Mobile)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return TokenResponse{}, ErrInvalidCredentials
-		}
-		return TokenResponse{}, err
-	}
-	if bcrypt.CompareHashAndPassword([]byte(s.Password), []byte(dto.Password)) != nil {
-		return TokenResponse{}, ErrInvalidCredentials
-	}
-	if !s.Status {
-		return TokenResponse{}, ErrInactive
-	}
-	return r.issue(ctx, s.ID, s.Mobile, s.Role, token.UserTypeStaff)
-}
-
-func (r *authRepo) LoginCustomer(ctx context.Context, dto LoginDto) (TokenResponse, error) {
+func (r *authRepo) Login(ctx context.Context, dto LoginDto, device Device) (Issued, error) {
 	u, err := r.users.FindByMobile(ctx, dto.Mobile)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return TokenResponse{}, ErrInvalidCredentials
+			return Issued{}, ErrInvalidCredentials
 		}
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
 	if bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(dto.Password)) != nil {
-		return TokenResponse{}, ErrInvalidCredentials
+		return Issued{}, ErrInvalidCredentials
 	}
 	if !u.Status {
-		return TokenResponse{}, ErrInactive
+		return Issued{}, ErrInactive
 	}
-	return r.issue(ctx, u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
+	return r.issue(ctx, u, device)
 }
 
-func (r *authRepo) Register(ctx context.Context, dto RegisterDto) (TokenResponse, error) {
+func (r *authRepo) Register(ctx context.Context, dto RegisterDto, device Device) (Issued, error) {
 	if _, err := r.users.FindByMobile(ctx, dto.Mobile); err == nil {
-		return TokenResponse{}, ErrMobileTaken
+		return Issued{}, ErrMobileTaken
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	u := user.User{Name: dto.Name, Mobile: dto.Mobile, Password: string(hash), Status: true}
+	u := user.User{Name: dto.Name, Mobile: dto.Mobile, Password: string(hash), Roles: user.NewRoles(), Status: true}
 	if err := r.users.Create(ctx, &u); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return TokenResponse{}, ErrMobileTaken
+			return Issued{}, ErrMobileTaken
 		}
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	return r.issue(ctx, u.ID, u.Mobile, token.RoleUser, token.UserTypeCustomer)
+	return r.issue(ctx, u, device)
 }
 
-func (r *authRepo) Impersonate(ctx context.Context, adminID, userID uint) (TokenResponse, error) {
+func (r *authRepo) Impersonate(ctx context.Context, adminID, userID uint) (Issued, error) {
 	u, err := r.users.FindByID(ctx, userID)
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	p := &token.AuthPayload{UserID: u.ID, Mobile: u.Mobile, Role: token.RoleUser, UserType: token.UserTypeCustomer, ImpersonatorID: &adminID}
+	p := &token.AuthPayload{UserID: u.ID, Mobile: u.Mobile, Roles: u.Roles, Kind: token.KindAccess, ImpersonatorID: &adminID}
 	access, err := token.GenerateJwt(p, r.secret, token.AccessTTL)
 	if err != nil {
-		return TokenResponse{}, err
+		return Issued{}, err
 	}
-	return TokenResponse{AccessToken: access, UserID: u.ID, Role: token.RoleUser, UserType: token.UserTypeCustomer}, nil
+	return Issued{AccessToken: access, Response: TokenResponse{UserID: u.ID, Roles: u.Roles, DeviceType: DeviceBrowser}}, nil
 }
