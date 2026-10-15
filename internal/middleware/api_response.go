@@ -24,6 +24,8 @@ func (w responseWriter) WriteString(s string) (int, error) {
 	return w.body.WriteString(s)
 }
 
+const xlsxMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 var skipPrefixes = []string{"/ws", "/swagger", "/payment/callback"}
 
 func ApiResponseMiddleware(c *gin.Context) {
@@ -53,6 +55,11 @@ func ApiResponseMiddleware(c *gin.Context) {
 	if statusCode >= 300 && statusCode < 400 {
 		return
 	}
+	if strings.HasPrefix(c.Writer.Header().Get("Content-Type"), xlsxMime) {
+		c.Writer.WriteHeader(statusCode)
+		c.Writer.Write(writer.body.Bytes())
+		return
+	}
 
 	var data any
 	raw := writer.body.Bytes()
@@ -76,6 +83,7 @@ func Cors(allowed []string, allowAll bool) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Device-Type, X-Access-Token")
+			c.Header("Access-Control-Expose-Headers", "Content-Disposition")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
 		}
 		if c.Request.Method == http.MethodOptions {

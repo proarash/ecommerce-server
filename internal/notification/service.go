@@ -2,12 +2,10 @@ package notification
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html"
 	"log"
 
-	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/user"
 	"gorm.io/gorm"
 )
@@ -18,6 +16,7 @@ const (
 	MsgPaymentSuccess = "payment_success"
 	MsgPaymentFailed  = "payment_failed"
 	MsgSupport        = "support"
+	MsgOrderReviewed  = "order_reviewed"
 )
 
 type AutomatedMessagePayload struct {
@@ -32,32 +31,16 @@ type AutomatedMessagePayload struct {
 type Service struct {
 	db       *gorm.DB
 	store    Store
-	chat     *chat.Service
 	telegram *TelegramClient
 }
 
-func NewService(db *gorm.DB, store Store, chatService *chat.Service, telegram *TelegramClient) *Service {
-	return &Service{db: db, store: store, chat: chatService, telegram: telegram}
-}
-
-func chatType(t string) string {
-	switch t {
-	case MsgInvoice:
-		return chat.TypeInvoice
-	case MsgPreInvoice:
-		return chat.TypePreInvoice
-	case MsgPaymentSuccess:
-		return chat.TypePaymentSuccess
-	case MsgPaymentFailed:
-		return chat.TypePaymentFailed
-	default:
-		return chat.TypeText
-	}
+func NewService(db *gorm.DB, store Store, telegram *TelegramClient) *Service {
+	return &Service{db: db, store: store, telegram: telegram}
 }
 
 func notificationType(t string) string {
 	switch t {
-	case MsgInvoice, MsgPreInvoice:
+	case MsgInvoice, MsgPreInvoice, MsgOrderReviewed:
 		return TypeOrder
 	case MsgPaymentSuccess, MsgPaymentFailed:
 		return TypePayment
@@ -71,20 +54,8 @@ func formatTelegram(title, message string) string {
 }
 
 func (s *Service) SendAutomatedMessage(ctx context.Context, payload AutomatedMessagePayload) error {
-	var payloadStr *string
-	if len(payload.ExtraData) > 0 {
-		if b, err := json.Marshal(payload.ExtraData); err == nil {
-			str := string(b)
-			payloadStr = &str
-		}
-	}
-
 	if payload.Type == MsgSupport {
 		return s.telegram.SendAdmin(ctx, formatTelegram(payload.Title, payload.Message))
-	}
-
-	if _, err := s.chat.BotMessage(ctx, payload.UserID, payload.Message, chatType(payload.Type), payloadStr); err != nil {
-		return err
 	}
 
 	chatID := payload.TelegramChatID
@@ -138,20 +109,4 @@ func (s *Service) Dispatch(ctx context.Context, n *Notification) error {
 		}
 	}()
 	return nil
-}
-
-func (s *Service) OnChatRoomCreated(ctx context.Context, room chat.ChatRoom) {
-	err := s.SendAutomatedMessage(ctx, AutomatedMessagePayload{
-		UserID:    room.UserID,
-		Title:     "New support inquiry",
-		Message:   fmt.Sprintf("Customer #%d opened support chat room #%d", room.UserID, room.ID),
-		Type:      MsgSupport,
-		ExtraData: map[string]interface{}{"room_id": room.ID},
-	})
-	if err != nil {
-		log.Println("notification:", err)
-	}
-	if _, err := s.chat.BotMessage(ctx, room.UserID, "Welcome! A support agent will reply shortly.", chat.TypeText, nil); err != nil {
-		log.Println("notification:", err)
-	}
 }

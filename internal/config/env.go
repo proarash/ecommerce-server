@@ -17,6 +17,8 @@ type EnvConfig struct {
 	ZibalMerchant       string
 	ZibalCallbackURL    string
 	ClientPaymentURL    string
+	SiteName            string
+	SiteURL             string
 	AdminName           string
 	AdminMobile         string
 	AdminPassword       string
@@ -53,6 +55,8 @@ func GetEnvConfig() *EnvConfig {
 		ZibalMerchant:       getEnv("ZIBAL_MERCHANT", "zibal"),
 		ZibalCallbackURL:    getEnv("ZIBAL_CALLBACK_URL", "http://localhost:4000/payment/callback"),
 		ClientPaymentURL:    getEnv("CLIENT_PAYMENT_REDIRECT_URL", "http://localhost:3000/payment/result"),
+		SiteName:            getEnv("SITE_NAME", "Shop"),
+		SiteURL:             getEnv("SITE_URL", "http://localhost:3000"),
 		AdminName:           getEnv("ADMIN_NAME", "Admin"),
 		AdminMobile:         os.Getenv("ADMIN_MOBILE"),
 		AdminPassword:       os.Getenv("ADMIN_PASSWORD"),

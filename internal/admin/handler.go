@@ -23,6 +23,7 @@ func NewHandler(db *gorm.DB, userStore user.Store) *Handler {
 func (h *Handler) RegisterRoutes(admin gin.IRouter) {
 	admin.POST("/users", h.CreateUser)
 	admin.GET("/users", h.ListUsers)
+	admin.GET("/users/export", h.ExportUsers)
 	admin.GET("/users/:id", h.GetUser)
 	admin.PATCH("/users/:id/status", h.UpdateStatus)
 	admin.PATCH("/users/:id/roles", h.UpdateRoles)
@@ -203,7 +204,6 @@ func (h *Handler) Stats(c *gin.Context) {
 	count("products", &s.Products)
 	count("orders", &s.Orders)
 	count("orders", &s.PaidOrders, "status IN ?", paid)
-	count("chat_rooms", &s.OpenChats, "status <> ?", "closed")
 	count("blog_posts", &s.BlogPosts)
 	if err == nil {
 		err = db.Table("orders").Where("deleted_at IS NULL AND status IN ?", paid).Select("COALESCE(SUM(total_amount), 0)").Scan(&s.Revenue).Error

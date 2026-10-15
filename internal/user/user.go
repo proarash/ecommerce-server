@@ -33,5 +33,5 @@ type User struct {
 }
 
 func (u *User) AfterCreate(tx *gorm.DB) error {
-	return wallet.CreateFor(tx, u.ID, u.Roles.Has(RoleAdmin))
+	return wallet.CreateFor(tx, u.ID, false)
 }

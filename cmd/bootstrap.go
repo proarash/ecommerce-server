@@ -9,11 +9,11 @@ import (
 	"github.com/proarash/ecommerce-server/internal/admin"
 	"github.com/proarash/ecommerce-server/internal/auth"
 	"github.com/proarash/ecommerce-server/internal/cart"
-	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/config"
 	"github.com/proarash/ecommerce-server/internal/database"
 	"github.com/proarash/ecommerce-server/internal/discount"
+	"github.com/proarash/ecommerce-server/internal/export"
 	"github.com/proarash/ecommerce-server/internal/finance"
 	"github.com/proarash/ecommerce-server/internal/inventory"
 	"github.com/proarash/ecommerce-server/internal/media"
@@ -69,14 +69,10 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	discountReader := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer, user.RoleSupport))
 	discountManager := api.Group("", authMW, middleware.RequireRoles(user.RoleAccountant, user.RoleMarketer))
 	adminGroup := api.Group("/admin", authMW, middleware.RequireRoles(user.RoleAdmin))
-	ws := router.Group("/ws", middleware.AuthWithQueryToken(envConfig.JwtSecret, authRepo, cookies))
 
-	hub := chat.NewHub()
-	chatService := chat.NewService(db, hub)
 	telegram := notification.NewTelegramClient(envConfig.TelegramBotToken, envConfig.TelegramAdminChatID)
 	notificationStore := notification.NewStore(db)
-	notifier := notification.NewService(db, notificationStore, chatService, telegram)
-	chatService.OnRoomCreated = notifier.OnChatRoomCreated
+	notifier := notification.NewService(db, notificationStore, telegram)
 
 	financeStore := finance.NewStore(db, notifier)
 	walletStore := wallet.NewStore(db)
@@ -88,14 +84,15 @@ func Bootstrap(envConfig *config.EnvConfig) {
 	product.NewHandler(product.NewStore(db)).RegisterRoutes(api, storekeeper)
 	inventory.NewHandler(inventory.NewStore(db)).RegisterRoutes(storekeeper)
 	cart.NewHandler(cart.NewStore(db, financeStore, discountStore)).RegisterRoutes(protected)
-	finance.NewHandler(financeStore).RegisterRoutes(accountant, protected, support)
+	finance.NewHandler(financeStore, walletStore).RegisterRoutes(accountant, protected, support)
 	payment.NewHandler(payment.NewStore(db), payment.NewClient(envConfig.ZibalMerchant, envConfig.ZibalCallbackURL), financeStore, walletStore, notifier, envConfig.ClientPaymentURL).RegisterRoutes(api, protected, accountant)
 	cms.NewHandler(cms.NewStore(db)).RegisterRoutes(api, marketer)
-	chat.NewHandler(hub, chatService).RegisterRoutes(ws, protected, support)
 	notification.NewHandler(notificationStore, notifier).RegisterRoutes(adminGroup, protected)
 	admin.NewHandler(db, userStore).RegisterRoutes(adminGroup)
 	wallet.NewHandler(walletStore).RegisterRoutes(protected, accountant)
 	discount.NewHandler(discountStore, userStore).RegisterRoutes(discountReader, discountManager, protected)
+
+	export.SetSite(envConfig.SiteName, envConfig.SiteURL)
 
 	log.Println("server listening on :" + envConfig.Port)
 	if err := router.Run(":" + envConfig.Port); err != nil {

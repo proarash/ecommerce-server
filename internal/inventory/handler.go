@@ -20,6 +20,7 @@ func NewHandler(store Store) *Handler {
 func (h *Handler) RegisterRoutes(storekeeper gin.IRouter) {
 	g := storekeeper.Group("/inventory")
 	g.GET("", h.List)
+	g.GET("/export", h.Export)
 	g.POST("/inbound", h.Inbound)
 	g.POST("/outbound", h.Outbound)
 	g.GET("/logs/:productId", h.Logs)

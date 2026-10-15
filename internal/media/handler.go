@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mime/multipart"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/proarash/ecommerce-server/internal/middleware"
@@ -25,15 +26,39 @@ func (h *Handler) RegisterRoutes(public gin.IRouter, storekeeper gin.IRouter, up
 	uploader.GET("/media", h.List)
 	uploader.POST("/media/upload", h.Upload)
 	storekeeper.PUT("/media/:id", h.Replace)
+	storekeeper.PATCH("/media/:id", h.Update)
 	storekeeper.DELETE("/media/:id", h.Delete)
 }
 
 func (h *Handler) fail(c *gin.Context, err error, notFound string) {
-	if errors.Is(err, ErrFileTooLarge) || errors.Is(err, ErrUnsupportedImage) || errors.Is(err, ErrSingleImage) {
+	if errors.Is(err, ErrFileTooLarge) || errors.Is(err, ErrUnsupportedImage) || errors.Is(err, ErrSingleImage) || errors.Is(err, ErrEmptyMeta) {
 		types.BadRequest(c, err)
 		return
 	}
 	types.HandleError(c, err, notFound)
+}
+
+func formMeta(c *gin.Context, count int) ([]Meta, bool) {
+	titles := c.PostFormArray("titles")
+	alts := c.PostFormArray("alts")
+	if len(titles) > count || len(alts) > count {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "titles and alts cannot have more items than files"})
+		return nil, false
+	}
+	metas := make([]Meta, count)
+	for i := range metas {
+		if i < len(titles) {
+			metas[i].Title = titles[i]
+		}
+		if i < len(alts) {
+			metas[i].Alt = alts[i]
+		}
+		if utf8.RuneCountInString(metas[i].Title) > MaxMetaLength || utf8.RuneCountInString(metas[i].Alt) > MaxMetaLength {
+			c.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "title and alt must be at most 255 characters"})
+			return nil, false
+		}
+	}
+	return metas, true
 }
 
 func formFiles(c *gin.Context, field string) ([]*multipart.FileHeader, bool) {
@@ -86,6 +111,8 @@ func (h *Handler) List(c *gin.Context) {
 // @Param pid query int false "Product, category or banner ID; required together with type"
 // @Param type query int false "Target type: 1 = product, 2 = category, 3 = banner; omit both to upload without assigning" Enums(1, 2, 3)
 // @Param files formData file true "Image files; repeat the field for multiple product images, exactly one for a category or banner"
+// @Param titles formData []string false "Title of each file, in the same order as files; defaults to the original file name without extension" collectionFormat(multi)
+// @Param alts formData []string false "Alt text of each file, in the same order as files; defaults to the title" collectionFormat(multi)
 // @Success 201 {object} types.ApiResponse{data=[]Media}
 // @Security BearerAuth
 // @Router /media/upload [post]
@@ -116,12 +143,45 @@ func (h *Handler) Upload(c *gin.Context) {
 	case TargetBanner:
 		notFound = "banner not found"
 	}
-	items, err := h.service.Upload(c.Request.Context(), q.Type, q.PID, files)
+	metas, ok := formMeta(c, len(files))
+	if !ok {
+		return
+	}
+	items, err := h.service.Upload(c.Request.Context(), q.Type, q.PID, files, metas)
 	if err != nil {
 		h.fail(c, err, notFound)
 		return
 	}
 	c.JSON(http.StatusCreated, items)
+}
+
+// Update godoc
+// @Summary Update media title and alt
+// @Description Changes the title and/or alt text of an existing media record (max 255 characters each, cannot be blank). Omitted fields are kept.
+// @Tags Media
+// @Accept json
+// @Produce json
+// @Param id path int true "Media ID"
+// @Param body body UpdateDto true "Title and alt"
+// @Success 200 {object} types.ApiResponse{data=Media}
+// @Security BearerAuth
+// @Router /media/{id} [patch]
+func (h *Handler) Update(c *gin.Context) {
+	id, ok := types.ParamID(c, "id")
+	if !ok {
+		return
+	}
+	var dto UpdateDto
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		types.BadRequest(c, err)
+		return
+	}
+	m, err := h.service.Update(c.Request.Context(), id, dto)
+	if err != nil {
+		h.fail(c, err, "media not found")
+		return
+	}
+	c.JSON(http.StatusOK, m)
 }
 
 // Replace godoc
@@ -132,6 +192,8 @@ func (h *Handler) Upload(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Media ID"
 // @Param file formData file true "Image file"
+// @Param title formData string false "New title; kept when omitted"
+// @Param alt formData string false "New alt text; kept when omitted"
 // @Success 200 {object} types.ApiResponse{data=Media}
 // @Security BearerAuth
 // @Router /media/{id} [put]
@@ -148,7 +210,12 @@ func (h *Handler) Replace(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "exactly one file is required in the file field"})
 		return
 	}
-	m, err := h.service.Replace(c.Request.Context(), id, files[0])
+	meta := Meta{Title: c.PostForm("title"), Alt: c.PostForm("alt")}
+	if utf8.RuneCountInString(meta.Title) > MaxMetaLength || utf8.RuneCountInString(meta.Alt) > MaxMetaLength {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{Error: "title and alt must be at most 255 characters"})
+		return
+	}
+	m, err := h.service.Replace(c.Request.Context(), id, files[0], meta)
 	if err != nil {
 		h.fail(c, err, "media not found")
 		return

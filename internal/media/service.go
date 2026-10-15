@@ -21,6 +21,7 @@ var (
 	ErrUnsupportedImage = errors.New("only webp and svg images are allowed")
 	ErrInvalidFileName  = errors.New("invalid media file name")
 	ErrSingleImage      = errors.New("a category or banner accepts exactly one image")
+	ErrEmptyMeta        = errors.New("title and alt cannot be empty")
 )
 
 var imageExtensions = map[string]string{
@@ -88,6 +89,18 @@ func (s *Service) path(name string) string {
 	return filepath.Join(s.dir, name)
 }
 
+func (meta Meta) resolve(fileName string) Meta {
+	meta.Title = strings.TrimSpace(meta.Title)
+	meta.Alt = strings.TrimSpace(meta.Alt)
+	if meta.Title == "" {
+		meta.Title = strings.TrimSuffix(fileName, filepath.Ext(fileName))
+	}
+	if meta.Alt == "" {
+		meta.Alt = meta.Title
+	}
+	return meta
+}
+
 func (sf storedFile) apply(m *Media) {
 	m.URL = "/media/" + sf.name
 	m.MediaType = TypeImage
@@ -96,12 +109,13 @@ func (sf storedFile) apply(m *Media) {
 	m.FileName = sf.name
 }
 
-func (s *Service) saveImage(ctx context.Context, fh *multipart.FileHeader) (Media, error) {
+func (s *Service) saveImage(ctx context.Context, fh *multipart.FileHeader, meta Meta) (Media, error) {
 	sf, err := s.writeImage(fh)
 	if err != nil {
 		return Media{}, err
 	}
-	var m Media
+	meta = meta.resolve(fh.Filename)
+	m := Media{Title: meta.Title, Alt: meta.Alt}
 	sf.apply(&m)
 	if err := s.store.Create(ctx, &m); err != nil {
 		os.Remove(s.path(sf.name))
@@ -121,7 +135,7 @@ func (s *Service) List(ctx context.Context, q ListQuery) ([]Media, int64, error)
 	return s.store.List(ctx, q)
 }
 
-func (s *Service) Upload(ctx context.Context, target int, targetID uint, files []*multipart.FileHeader) ([]Media, error) {
+func (s *Service) Upload(ctx context.Context, target int, targetID uint, files []*multipart.FileHeader, metas []Meta) ([]Media, error) {
 	if target != 0 && target != TargetProduct && len(files) != 1 {
 		return nil, ErrSingleImage
 	}
@@ -131,8 +145,12 @@ func (s *Service) Upload(ctx context.Context, target int, targetID uint, files [
 		}
 	}
 	saved := make([]Media, 0, len(files))
-	for _, fh := range files {
-		m, err := s.saveImage(ctx, fh)
+	for i, fh := range files {
+		var meta Meta
+		if i < len(metas) {
+			meta = metas[i]
+		}
+		m, err := s.saveImage(ctx, fh, meta)
 		if err != nil {
 			s.discard(ctx, saved)
 			return nil, err
@@ -149,7 +167,28 @@ func (s *Service) Upload(ctx context.Context, target int, targetID uint, files [
 	return saved, nil
 }
 
-func (s *Service) Replace(ctx context.Context, id uint, fh *multipart.FileHeader) (Media, error) {
+func (s *Service) Update(ctx context.Context, id uint, dto UpdateDto) (Media, error) {
+	m, err := s.store.FindByID(ctx, id)
+	if err != nil {
+		return Media{}, err
+	}
+	if dto.Title != nil {
+		if m.Title = strings.TrimSpace(*dto.Title); m.Title == "" {
+			return Media{}, ErrEmptyMeta
+		}
+	}
+	if dto.Alt != nil {
+		if m.Alt = strings.TrimSpace(*dto.Alt); m.Alt == "" {
+			return Media{}, ErrEmptyMeta
+		}
+	}
+	if err := s.store.Update(ctx, &m); err != nil {
+		return Media{}, err
+	}
+	return m, nil
+}
+
+func (s *Service) Replace(ctx context.Context, id uint, fh *multipart.FileHeader, meta Meta) (Media, error) {
 	m, err := s.store.FindByID(ctx, id)
 	if err != nil {
 		return Media{}, err
@@ -160,6 +199,12 @@ func (s *Service) Replace(ctx context.Context, id uint, fh *multipart.FileHeader
 	}
 	old := m.FileName
 	sf.apply(&m)
+	if title := strings.TrimSpace(meta.Title); title != "" {
+		m.Title = title
+	}
+	if alt := strings.TrimSpace(meta.Alt); alt != "" {
+		m.Alt = alt
+	}
 	if err := s.store.Update(ctx, &m); err != nil {
 		os.Remove(s.path(sf.name))
 		return Media{}, err

@@ -23,7 +23,7 @@ type CreateProductDto struct {
 	Title          string                 `json:"title" binding:"required,max=200" example:"پاوربانک اوریکو K20"`
 	Slug           string                 `json:"slug" binding:"max=220"`
 	Description    string                 `json:"description" example:"پاوربانک ۲۰۰۰۰ میلی‌آمپر با شارژ سریع"`
-	SeoTitle       string                 `json:"seo_title" binding:"max=200" example:"خرید پاوربانک اوریکو K20 | فروشگاه"`
+	SeoTitle       string                 `json:"seo_title" binding:"max=200" example:"خرید پاوربانک اوریکو K20"`
 	SeoDescription string                 `json:"seo_description" binding:"max=500"`
 	SeoKeywords    []string               `json:"seo_keywords" binding:"max=20,dive,max=100"`
 	Price          float64                `json:"price" binding:"required,gt=0" example:"3900000"`

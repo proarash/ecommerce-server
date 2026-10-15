@@ -13,4 +13,6 @@ type Media struct {
 	MimeType  string    `json:"mime_type"`
 	FileSize  int64     `json:"file_size"`
 	FileName  string    `json:"file_name" gorm:"uniqueIndex"`
+	Title     string    `json:"title" gorm:"not null;default:''"`
+	Alt       string    `json:"alt" gorm:"not null;default:''"`
 }

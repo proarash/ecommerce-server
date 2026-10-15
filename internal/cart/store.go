@@ -154,7 +154,7 @@ func (s *store) Checkout(ctx context.Context, userID uint, discountCode string) 
 				return err
 			}
 		}
-		return tx.Unscoped().Where("cart_id = ?", c.ID).Delete(&CartItem{}).Error
+		return nil
 	})
 	if err != nil {
 		return finance.Order{}, err

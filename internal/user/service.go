@@ -1,6 +1,10 @@
 package user
 
-import "context"
+import (
+	"context"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Service struct {
 	store Store
@@ -39,6 +43,13 @@ func (s *Service) UpdateProfile(ctx context.Context, id uint, dto UpdateProfileD
 	}
 	if dto.Longitude != nil {
 		fields["longitude"] = *dto.Longitude
+	}
+	if dto.Password != nil {
+		hash, err := bcrypt.GenerateFromPassword([]byte(*dto.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return User{}, err
+		}
+		fields["password"] = string(hash)
 	}
 	if len(fields) > 0 {
 		if err := s.store.Update(ctx, id, fields); err != nil {

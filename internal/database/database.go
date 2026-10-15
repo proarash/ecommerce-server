@@ -5,7 +5,6 @@ import (
 
 	"github.com/proarash/ecommerce-server/internal/auth"
 	"github.com/proarash/ecommerce-server/internal/cart"
-	"github.com/proarash/ecommerce-server/internal/chat"
 	"github.com/proarash/ecommerce-server/internal/cms"
 	"github.com/proarash/ecommerce-server/internal/discount"
 	"github.com/proarash/ecommerce-server/internal/finance"
@@ -48,8 +47,6 @@ func Migrate(db *gorm.DB) error {
 		&cms.BlogPost{},
 		&cms.Banner{},
 		&cms.SiteContent{},
-		&chat.ChatRoom{},
-		&chat.ChatMessage{},
 		&notification.Notification{},
 		&discount.Discount{},
 		&auth.RefreshToken{},
@@ -59,15 +56,31 @@ func Migrate(db *gorm.DB) error {
 	if err := purgeLegacyCatalog(db); err != nil {
 		return err
 	}
-	return backfillCatalogSeo(db)
+	if err := backfillCatalogSeo(db); err != nil {
+		return err
+	}
+	return backfillMediaText(db)
+}
+
+func backfillMediaText(db *gorm.DB) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&media.Media{}).Where("title = '' OR title IS NULL").
+			Update("title", gorm.Expr("'تصویر ' || id")).Error; err != nil {
+			return err
+		}
+		return tx.Model(&media.Media{}).Where("alt = '' OR alt IS NULL").
+			Update("alt", gorm.Expr("title")).Error
+	})
 }
 
 func backfillCatalogSeo(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		steps := []string{
-			`UPDATE categories SET seo_title = 'خرید ' || name || ' | فروشگاه' WHERE seo_title = '' OR seo_title IS NULL`,
+			`UPDATE categories SET seo_title = 'خرید ' || name WHERE seo_title = '' OR seo_title IS NULL`,
+			`UPDATE categories SET seo_title = left(seo_title, length(seo_title) - length(' | فروشگاه')) WHERE seo_title LIKE '% | فروشگاه'`,
+			`UPDATE products SET seo_title = left(seo_title, length(seo_title) - length(' | فروشگاه')) WHERE seo_title LIKE '% | فروشگاه'`,
 			`UPDATE categories SET seo_description = 'خرید انواع ' || name || ' با بهترین قیمت و ضمانت اصالت کالا' WHERE seo_description = '' OR seo_description IS NULL`,
-			`UPDATE products SET seo_title = 'خرید ' || title || ' | فروشگاه' WHERE seo_title = '' OR seo_title IS NULL`,
+			`UPDATE products SET seo_title = 'خرید ' || title WHERE seo_title = '' OR seo_title IS NULL`,
 			`UPDATE products SET seo_description = 'خرید ' || title || ' با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا' WHERE seo_description = '' OR seo_description IS NULL`,
 			`UPDATE categories SET seo_keywords = jsonb_build_array(name, 'خرید ' || name, 'قیمت ' || name) WHERE seo_keywords = '[]'::jsonb`,
 			`UPDATE products p SET seo_keywords = jsonb_build_array(c.name, p.title) FROM categories c WHERE c.id = p.category_id AND p.seo_keywords = '[]'::jsonb`,

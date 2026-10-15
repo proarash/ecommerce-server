@@ -131,7 +131,7 @@ func (h *Handler) RemoveItem(c *gin.Context) {
 
 // Checkout godoc
 // @Summary Checkout cart
-// @Description Converts the cart into a pending order, optionally redeeming a discount code, issues a system pre-invoice and sends invoice/pre-invoice bot messages
+// @Description Converts the cart into a pending order (the cart is kept and only emptied once the order is paid), optionally redeeming a discount code, issues a system pre-invoice and sends invoice/pre-invoice bot messages
 // @Tags Cart
 // @Accept json
 // @Produce json

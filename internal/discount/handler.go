@@ -25,6 +25,7 @@ func NewHandler(store Store, users user.Store) *Handler {
 
 func (h *Handler) RegisterRoutes(reader gin.IRouter, manager gin.IRouter, customer gin.IRouter) {
 	reader.GET("/discounts", h.List)
+	reader.GET("/discounts/export", h.Export)
 	reader.GET("/discounts/:id", h.Get)
 
 	manager.POST("/discounts", h.Create)

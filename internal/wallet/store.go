@@ -38,14 +38,9 @@ func (s *store) Transaction(ctx context.Context, fn func(tx *gorm.DB) error) err
 }
 
 func (s *store) Backfill(ctx context.Context) error {
-	db := s.db.WithContext(ctx)
-	if err := db.Exec(`INSERT INTO wallets (created_at, updated_at, owner_id, amount, locked)
-		SELECT NOW(), NOW(), id, 0, roles @> '["admin"]'::jsonb FROM users WHERE deleted_at IS NULL
-		ON CONFLICT (owner_id) DO NOTHING`).Error; err != nil {
-		return err
-	}
-	return db.Exec(`UPDATE wallets SET locked = true WHERE locked = false
-		AND owner_id IN (SELECT id FROM users WHERE roles @> '["admin"]'::jsonb)`).Error
+	return s.db.WithContext(ctx).Exec(`INSERT INTO wallets (created_at, updated_at, owner_id, amount, locked)
+		SELECT NOW(), NOW(), id, 0, false FROM users WHERE deleted_at IS NULL
+		ON CONFLICT (owner_id) DO NOTHING`).Error
 }
 
 func (s *store) FindByID(ctx context.Context, id uint) (Wallet, error) {

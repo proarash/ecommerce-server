@@ -172,7 +172,7 @@ func (h *authHandler) Me(c *gin.Context) {
 
 // UpdateMe godoc
 // @Summary Update current account
-// @Description Updates the logged in user's own profile: name, mobile, avatar_media_id, default_avatar_id (preset frontend avatar 1..5), telegram_chat_id, address, latitude and longitude. Role and status can only be changed by an admin.
+// @Description Updates the logged in user's own profile: name, mobile, avatar_media_id, default_avatar_id (preset frontend avatar 1..5), telegram_chat_id, address, latitude, longitude and password (6-72 chars, stored hashed). Role and status can only be changed by an admin.
 // @Tags Auth
 // @Accept json
 // @Produce json

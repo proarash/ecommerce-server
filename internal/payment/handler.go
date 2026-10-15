@@ -181,8 +181,10 @@ func (h *Handler) redirect(c *gin.Context, tx PaymentTransaction) {
 	q := u.Query()
 	if tx.OrderID != nil {
 		q.Set("inv", fmt.Sprintf("inv-%d", *tx.OrderID))
+		q.Set("type", "order")
 	} else {
 		q.Set("wallet", fmt.Sprintf("wlt-%d", tx.TrackID))
+		q.Set("type", "wallet")
 	}
 	u.RawQuery = q.Encode()
 	c.Redirect(http.StatusFound, u.String())
@@ -230,7 +232,7 @@ func (h *Handler) settle(ctx context.Context, tx PaymentTransaction) error {
 
 // Callback godoc
 // @Summary Zibal payment callback
-// @Description Called by the Zibal gateway. Verifies the payment and credits the paid amount to the customer wallet. For orders the order price is then debited from the wallet and order/transaction/pre-invoice are updated. Sends bot messages and redirects (302) to the client app with ?inv=inv-<ORDER-ID> for orders or ?wallet=wlt-<TRACK-ID> for wallet charges
+// @Description Called by the Zibal gateway. Verifies the payment and credits the paid amount to the customer wallet. For orders the order price is then debited from the wallet and order/transaction/pre-invoice are updated. Sends bot messages and redirects (302) to the client app with ?inv=inv-<ORDER-ID>&type=order for orders or ?wallet=wlt-<TRACK-ID>&type=wallet for wallet charges
 // @Tags Payment
 // @Param trackId query int true "Zibal track ID"
 // @Param success query int false "1 when payment succeeded"

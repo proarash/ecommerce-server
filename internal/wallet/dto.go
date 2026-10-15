@@ -30,7 +30,7 @@ type TransactionQuery struct {
 	Page   int    `form:"page,default=1" binding:"min=1"`
 	Limit  int    `form:"limit,default=20" binding:"min=1,max=100"`
 	Type   string `form:"type" binding:"omitempty,oneof=credit debit"`
-	Source string `form:"source" binding:"omitempty,oneof=gateway purchase manual"`
+	Source string `form:"source" binding:"omitempty,oneof=gateway purchase manual refund"`
 }
 
 func (q TransactionQuery) Offset() int {

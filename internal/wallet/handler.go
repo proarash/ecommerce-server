@@ -20,11 +20,14 @@ func NewHandler(store Store) *Handler {
 func (h *Handler) RegisterRoutes(protected gin.IRouter, accountant gin.IRouter) {
 	protected.GET("/wallet", h.Mine)
 	protected.GET("/wallet/transactions", h.MyTransactions)
+	protected.GET("/wallet/transactions/export", h.ExportMyTransactions)
 
 	g := accountant.Group("/wallets")
 	g.GET("", h.List)
+	g.GET("/export", h.ExportWallets)
 	g.GET("/:id", h.Get)
 	g.GET("/:id/transactions", h.Transactions)
+	g.GET("/:id/transactions/export", h.ExportWalletTransactions)
 	g.POST("/:id/adjust", h.Adjust)
 }
 
@@ -159,7 +162,7 @@ func (h *Handler) Transactions(c *gin.Context) {
 
 // Adjust godoc
 // @Summary Change wallet amount
-// @Description Credits or debits a wallet (admin and accountant only). Admin wallets are locked and cannot be modified by anyone, and nobody can change their own wallet.
+// @Description Credits or debits a wallet (admin and accountant only). Locked wallets cannot be modified by anyone, and nobody can change their own wallet.
 // @Tags Wallet Management
 // @Accept json
 // @Produce json

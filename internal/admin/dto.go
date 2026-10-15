@@ -24,6 +24,5 @@ type StatsResponse struct {
 	Orders     int64   `json:"orders"`
 	PaidOrders int64   `json:"paid_orders"`
 	Revenue    float64 `json:"revenue"`
-	OpenChats  int64   `json:"open_chats"`
 	BlogPosts  int64   `json:"blog_posts"`
 }

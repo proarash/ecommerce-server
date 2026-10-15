@@ -13,6 +13,9 @@ $env:DSN = "host=localhost user=postgres password=postgres dbname=ecommerce port
 $env:JWT_SECRET = "your-super-secret-jwt-key-here"
 
 # Initial Admin Seed
+$env:SITE_NAME = "Shop"
+$env:SITE_URL = "http://localhost:3000"
+
 $env:ADMIN_NAME = "Admin"
 $env:ADMIN_MOBILE = "09120000000"
 $env:ADMIN_PASSWORD = "Admin!123"

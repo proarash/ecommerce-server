@@ -7,27 +7,38 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/proarash/ecommerce-server/internal/middleware"
 	"github.com/proarash/ecommerce-server/internal/types"
+	"github.com/proarash/ecommerce-server/internal/wallet"
 )
 
 type Handler struct {
-	store Store
+	store   Store
+	wallets wallet.Store
 }
 
-func NewHandler(store Store) *Handler {
-	return &Handler{store: store}
+func NewHandler(store Store, wallets wallet.Store) *Handler {
+	return &Handler{store: store, wallets: wallets}
 }
 
 func (h *Handler) RegisterRoutes(accountant gin.IRouter, customer gin.IRouter, support gin.IRouter) {
 	accountant.GET("/finance/reports", h.Reports)
+	accountant.GET("/finance/reports/export", h.ExportReports)
 	accountant.POST("/finance/preinvoices", h.CreatePreInvoice)
 	accountant.GET("/finance/preinvoices", h.ListPreInvoices)
+	accountant.GET("/finance/preinvoices/export", h.ExportPreInvoices)
 
 	customer.GET("/user/orders", h.UserOrders)
+	customer.GET("/user/orders/export", h.ExportUserOrders)
 	customer.GET("/user/orders/:id", h.UserOrder)
+	customer.GET("/user/orders/:id/invoice", h.ExportUserInvoice)
 	customer.GET("/user/preinvoices", h.UserPreInvoices)
+	customer.GET("/user/preinvoices/export", h.ExportUserPreInvoices)
 
 	support.GET("/orders", h.SupportOrders)
+	support.GET("/orders/export", h.ExportSupportOrders)
+	support.POST("/orders/:id/confirm", h.ConfirmOrder)
+	support.POST("/orders/:id/reject", h.RejectOrder)
 	support.GET("/preinvoices", h.SupportPreInvoices)
+	support.GET("/preinvoices/export", h.ExportSupportPreInvoices)
 }
 
 func (h *Handler) listOrders(c *gin.Context, q ListQuery) {

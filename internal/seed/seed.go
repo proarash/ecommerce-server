@@ -113,6 +113,9 @@ func seedStaff(db *gorm.DB) {
 
 func seedWallets(db *gorm.DB) {
 	admins := db.Model(&user.User{}).Select("id").Where("roles @> ?::jsonb", user.RoleFilter(user.RoleAdmin))
+	if err := db.Model(&wallet.Wallet{}).Where("locked = ? AND owner_id IN (?)", true, admins).Update("locked", false).Error; err != nil {
+		log.Println("seed: unlock admin wallet:", err)
+	}
 	if err := db.Model(&wallet.Wallet{}).Where("amount = 0 AND owner_id IN (?)", admins).Update("amount", adminBalance).Error; err != nil {
 		log.Println("seed: admin wallet:", err)
 	}
@@ -124,7 +127,7 @@ func seedWallets(db *gorm.DB) {
 func seedCategories(db *gorm.DB) map[string]product.Category {
 	cats := make(map[string]product.Category, len(catalog))
 	for _, def := range catalog {
-		c := product.Category{Name: def.name, Slug: def.slug, SeoTitle: fmt.Sprintf("خرید %s | فروشگاه", def.name), SeoDescription: fmt.Sprintf("خرید انواع %s با بهترین قیمت و ضمانت اصالت کالا", def.name), SeoKeywords: product.Keywords{def.name, "خرید " + def.name, "قیمت " + def.name}}
+		c := product.Category{Name: def.name, Slug: def.slug, SeoTitle: "خرید " + def.name, SeoDescription: fmt.Sprintf("خرید انواع %s با بهترین قیمت و ضمانت اصالت کالا", def.name), SeoKeywords: product.Keywords{def.name, "خرید " + def.name, "قیمت " + def.name}}
 		if err := db.Where(product.Category{Slug: def.slug}).FirstOrCreate(&c).Error; err != nil {
 			log.Println("seed: category:", err)
 			continue
@@ -180,7 +183,7 @@ func seedProducts(db *gorm.DB, cats map[string]product.Category) {
 				Title:           title,
 				Slug:            product.Slugify(title),
 				Description:     fmt.Sprintf("%s، از دسته %s، با کیفیت ساخت بالا، ضمانت اصالت و سلامت فیزیکی کالا.", title, def.name),
-				SeoTitle:        fmt.Sprintf("خرید %s | فروشگاه", title),
+				SeoTitle:        "خرید " + title,
 				SeoDescription:  fmt.Sprintf("خرید %s با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا", title),
 				SeoKeywords:     product.Keywords{def.name, def.items[item], def.variants[variant], title},
 				Price:           float64(def.basePrice + item*def.step + variant*def.step*3),
@@ -255,7 +258,7 @@ func seedBanners(db *gorm.DB) {
 		return
 	}
 	for i := 1; i <= 3; i++ {
-		m := media.Media{URL: fmt.Sprintf("https://placehold.co/1200x400?text=Banner+%d", i), MediaType: media.TypeImage, MimeType: "image/png", FileName: fmt.Sprintf("banner-%d.png", i)}
+		m := media.Media{URL: fmt.Sprintf("https://placehold.co/1200x400?text=Banner+%d", i), MediaType: media.TypeImage, MimeType: "image/png", FileName: fmt.Sprintf("banner-%d.png", i), Title: fmt.Sprintf("بنر %d", i), Alt: fmt.Sprintf("بنر %d", i)}
 		if err := db.Create(&m).Error; err != nil {
 			log.Println("seed: banner media:", err)
 			return

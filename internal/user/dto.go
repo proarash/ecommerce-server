@@ -9,6 +9,7 @@ type UpdateProfileDto struct {
 	Address         *string  `json:"address" binding:"omitempty,max=500"`
 	Latitude        *float64 `json:"latitude" binding:"omitempty,latitude"`
 	Longitude       *float64 `json:"longitude" binding:"omitempty,longitude"`
+	Password        *string  `json:"password" binding:"omitempty,min=6,max=72" example:"secret123"`
 }
 
 type ListQuery struct {

@@ -12,6 +12,7 @@ const (
 	SourceGateway  = "gateway"
 	SourcePurchase = "purchase"
 	SourceManual   = "manual"
+	SourceRefund   = "refund"
 )
 
 type Wallet struct {
@@ -25,7 +26,7 @@ type WalletTransaction struct {
 	gorm.Model
 	WalletID      uint    `json:"wallet_id" gorm:"index;not null"`
 	Type          string  `json:"type" gorm:"size:16;not null" enums:"credit,debit"`
-	Source        string  `json:"source" gorm:"size:16;index;not null" enums:"gateway,purchase,manual"`
+	Source        string  `json:"source" gorm:"size:16;index;not null" enums:"gateway,purchase,manual,refund"`
 	Amount        float64 `json:"amount" gorm:"not null"`
 	BalanceBefore float64 `json:"balance_before"`
 	BalanceAfter  float64 `json:"balance_after"`
